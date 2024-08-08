@@ -1,0 +1,15 @@
+# environment.yml
+name: TIDAL
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9.18
+  - ipython
+  - numba
+  - pyarrow
+  - pandas
+  - matplotlib
+  - vector
+  - alive-progress
+  - prettytable
+  - pyyaml
