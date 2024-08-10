@@ -1,4 +1,5 @@
 [submodule "TauAnalysis/ClassicSVfit"]
 	path = TauAnalysis/ClassicSVfit
 	url = git@github.com:Ksavva1021/ClassicSVfit.git
-	branch = wrapper
+	branch = pywrapper
+	ignore = all
