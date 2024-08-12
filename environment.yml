@@ -13,3 +13,4 @@ dependencies:
   - alive-progress
   - prettytable
   - pyyaml
+  - ipykernel

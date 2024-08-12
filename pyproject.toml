@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "Draw"
 version = "0.1.0"
-description = "HEY"
+description = "Tau Integrated Data Analysis Library"
 readme = "README.md"
 requires-python = "==3.9.18"
 authors = [
-    {name = "TIDAL BABY"}
+    {name = "Klitos Savva"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
