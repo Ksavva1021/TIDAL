@@ -6,6 +6,7 @@ Setting up Draw utilities (Multidraw):
 
 `source setup_multidraw.sh`
 
+`pip install -e .`
 
 Setting up SVFIT - Careful:
 
