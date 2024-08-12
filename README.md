@@ -1,5 +1,10 @@
 # TIDAL
 
+```
+git clone --recurse-submodules git@github.com:Ksavva1021/TIDAL.git
+```
+
+
 ### Setup Instructions (Please follow in order to avoid issues :) )
 
 Setting up Draw utilities (Multidraw):
