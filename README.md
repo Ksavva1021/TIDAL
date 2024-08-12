@@ -1,6 +1,6 @@
 # TIDAL
 
-# Setup Instructions (Please follow in order to avoid issues :) )
+### Setup Instructions (Please follow in order to avoid issues :) )
 
 Setting up Draw utilities (Multidraw):
 
@@ -24,7 +24,7 @@ Install the environment:
 
 `micromamba env create -f environment.yml`
 
-# Every-time usage instructions (Important):
+### Every-time usage instructions (Important):
 
 Activate the environment: `micromamba activate TIDAL`
 
@@ -32,7 +32,7 @@ Load ROOT for Draw: `source load_package.sh` $\rightarrow$ Select 1
 
 Load ROOT + SVFIT for SVFIT: `source load_package.sh` $\rightarrow$ Select 2
 
-# Running SVFIT:
+### Running SVFIT:
 For the time being SVFIT is only set up for the $\tau_h \tau_h$ channel. There are extra command-line arguments inside the `scripts\run_svfit.py` script but, you only need `--source_dir` and `--use_condor` 
 
 Example Command - This will submit jobs to the batch (again reminder only for $\tau_h \tau_h$ channel at the moment, skips the rest): 
