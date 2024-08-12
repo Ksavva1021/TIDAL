@@ -27,9 +27,9 @@ Install the environment:
 
 Activate the environment: `micromamba activate TIDAL`
 
-Load ROOT for Draw: `source load_package.sh` \rightarrow Select 1
+Load ROOT for Draw: `source load_package.sh` $\rightarrow$ Select 1
 
-Load ROOT + SVFIT for SVFIT: `source load_package.sh` \rightarrow Select 2
+Load ROOT + SVFIT for SVFIT: `source load_package.sh` $\rightarrow$ Select 2
 
 # Running SVFIT:
 For the time being SVFIT is only set up for the $\tau_h \tau_h$ channel. There are extra command-line arguments inside the `scripts\run_svfit.py` script but, you only need `--source_dir` and `--use_condor` 
