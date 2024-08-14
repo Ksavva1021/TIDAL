@@ -5,40 +5,39 @@ git clone --recurse-submodules git@github.com:Ksavva1021/TIDAL.git
 ```
 
 
-### Setup Instructions (Please follow in order to avoid issues :) )
+## Setup Instructions
 
-Setting up Draw utilities (Multidraw):
+`Note: SVFit is a separate package so, install and load in a clean terminal`
 
-`source setup_multidraw.sh`
 
-`pip install -e .`
+### Install the environment:
 
-SVFIT is a separate tool so run on a fresh terminal.
-Setting up SVFIT - Careful:
+```
+micromamba env create -f environment.yml
+```
 
-`source setup_svfit.sh`
+### Setting up SVFIT - Careful:
+
+```
+source setup_svfit.sh
+```
 
 To check that SVFIT was set up properly. Run interactively in python3:
 
 ```
 from TauAnalysis.ClassicSVfit.wrapper.pybind_wrapper import FastMTT
 x = FastMTT()
-If this goes through, you are fine
 ```
 
-Install the environment:
+#### Using SVFIT:
 
-`micromamba env create -f environment.yml`
+Activate the environment and load ROOT+SVFIT: 
 
-### Every-time usage instructions (Important):
+```
+micromamba activate TIDAL
+source load_package.sh # Select Option 2
+```
 
-Activate the environment: `micromamba activate TIDAL`
-
-Load ROOT for Draw: `source load_package.sh` $\rightarrow$ Select 1
-
-Load ROOT + SVFIT for SVFIT: `source load_package.sh` $\rightarrow$ Select 2
-
-### Running SVFIT:
 For the time being SVFIT is only set up for the $\tau_h \tau_h$ channel. There are extra command-line arguments inside the `scripts\run_svfit.py` script but, you only need `--source_dir` and `--use_condor` 
 
 Example Command - This will submit jobs to the batch (again reminder only for $\tau_h \tau_h$ channel at the moment, skips the rest): 
@@ -50,10 +49,24 @@ Output file is called `svfit.parquet` and contains `run, lumi, event, svfit mass
 
 ```/vols/cms/ks1021/offline/HiggsDNA/IC/output/test/Run3_2022/tt/DYto2L_M-50_madgraphMLM/nominal/svfit.parquet```
 
+Load ROOT for Draw: `source load_package.sh` $\rightarrow$ Select 1
 
+Load ROOT + SVFIT for SVFIT: `source load_package.sh` $\rightarrow$ Select 2
 
+### Setting up Draw Utilities (Separate from SVFIT, clean terminal):
 
+Setting up Draw utilities (Multidraw):
 
+```
+source setup_multidraw.sh
+pip install -e .
+```
 
+#### Using Draw:
 
+Activate the environment and load ROOT: 
 
+```
+micromamba activate TIDAL
+source load_package.sh # Select Option 1
+```
