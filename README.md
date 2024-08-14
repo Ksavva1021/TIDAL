@@ -13,6 +13,7 @@ Setting up Draw utilities (Multidraw):
 
 `pip install -e .`
 
+SVFIT is a separate tool so run on a fresh terminal.
 Setting up SVFIT - Careful:
 
 `source setup_svfit.sh`
