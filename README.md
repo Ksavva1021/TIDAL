@@ -49,9 +49,6 @@ Output file is called `svfit.parquet` and contains `run, lumi, event, svfit mass
 
 ```/vols/cms/ks1021/offline/HiggsDNA/IC/output/test/Run3_2022/tt/DYto2L_M-50_madgraphMLM/nominal/svfit.parquet```
 
-Load ROOT for Draw: `source load_package.sh` $\rightarrow$ Select 1
-
-Load ROOT + SVFIT for SVFIT: `source load_package.sh` $\rightarrow$ Select 2
 
 ### Setting up Draw Utilities (Separate from SVFIT, clean terminal):
 
