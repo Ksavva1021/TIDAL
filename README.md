@@ -19,6 +19,7 @@ micromamba env create -f environment.yml
 ### Setting up SVFIT - Careful:
 
 ```
+micromamba activate TIDAL
 source setup_svfit.sh
 ```
 
@@ -55,6 +56,7 @@ Output file is called `svfit.parquet` and contains `run, lumi, event, svfit mass
 Setting up Draw utilities (Multidraw):
 
 ```
+micromamba activate TIDAL
 source setup_multidraw.sh
 pip install -e .
 ```
