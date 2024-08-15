@@ -172,9 +172,9 @@ export LIBRARY_PATH=$LIBRARY_PATH:$PWD/TauAnalysis/ClassicSVfit/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/TauAnalysis/ClassicSVfit/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.30.04/x86_64-centosstream9-gcc113-opt/lib/
 
-python3 scripts/run_FastMTT.py --input_file {parquet_file} --channel {channel} --running_dir
+python3 scripts/run_fastmtt.py --input_file {parquet_file} --channel {channel} --running_dir
 """
-    shell_script_path = os.path.join(os.path.dirname(parquet_file), 'svfit', 'svfit.sh')
+    shell_script_path = os.path.join(os.path.dirname(parquet_file), 'fastmtt', 'fastmtt.sh')
     if not os.path.exists(os.path.dirname(shell_script_path)):
         os.makedirs(os.path.dirname(shell_script_path))
     with open(shell_script_path, 'w') as f:
@@ -188,9 +188,9 @@ def create_condor_submission_file(shell_script_path):
     directory = os.path.dirname(shell_script_path)
     submission_file_content = f"""
 executable = {shell_script_path}
-output = {directory}/svfit.out
-error = {directory}/svfit.err
-log = {directory}/svfit.log
+output = {directory}/fastmtt.out
+error = {directory}/fastmtt.err
+log = {directory}/fastmtt.log
 request_memory = 8G
 getenv = True
 +MaxRuntime = 10800

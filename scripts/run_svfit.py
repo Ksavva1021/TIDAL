@@ -226,7 +226,7 @@ error = {directory}/svfit.err
 log = {directory}/svfit.log
 request_memory = 8G
 getenv = True
-+MaxRuntime = 10800
++MaxRuntime = 35000
 queue
 """
     submission_file_path = os.path.join(directory, 'condor_submit.sub')
