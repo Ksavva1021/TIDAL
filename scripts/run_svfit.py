@@ -10,6 +10,8 @@ import numpy as np
 import os
 from alive_progress import alive_bar
 import argparse
+import pyarrow.parquet as pq
+
 
 def calculate_p4(pt: ak.Array, eta: ak.Array, phi: ak.Array, mass: ak.Array) -> ak.Array:
     return ak.zip(
@@ -219,7 +221,7 @@ python3 scripts/run_svfit.py --input_file {parquet_file} --channel {channel} --c
         os.makedirs(os.path.dirname(shell_script_path))
     with open(shell_script_path, 'w') as f:
         f.write(script_content)
-    print(f"Shell script created at {shell_script_path}")
+    #print(f"Shell script created at {shell_script_path}")
     os.system(f"chmod +x {shell_script_path}")
     return shell_script_path
 
@@ -228,9 +230,9 @@ def create_condor_submission_file(shell_script_path, chunk_number):
     directory = os.path.dirname(shell_script_path)
     submission_file_content = f"""
 executable = {shell_script_path}
-output = {directory}/svfit_chunk{chunk_number}.out
-error = {directory}/svfit_chunk{chunk_number}.err
-log = {directory}/svfit_chunk{chunk_number}.log
+output = {directory}/svfit_chunk{chunk_number}_$(CLUSTER).out
+error = {directory}/svfit_chunk{chunk_number}_$(CLUSTER).err
+log = {directory}/svfit_chunk{chunk_number}_$(CLUSTER).log
 request_memory = 8G
 getenv = True
 +MaxRuntime = 10800
@@ -244,6 +246,7 @@ queue
 
 
 def submit_condor_job(submission_file_path):
+    print(f"Submitting job {submission_file_path}")
     os.system(f"condor_submit {submission_file_path}")
 
 
@@ -269,15 +272,48 @@ def check_logs(directory, channel):
                             if len(lines) > 0:
                                 last_line = lines[-1]
                                 if "Job is done" not in last_line:
-                                    print(f"Job {log_file} of {process} did not finish properly")
                                     count_failed_jobs += 1
                                 else:
-                                    print(f"Job {log_file} of {process} is done")
                                     count_done += 1
+                                    clusterID = log_file.split("_")[-1].replace(".out", "")
+                                    condor_q = os.popen(f"condor_q {clusterID}").read()
+                                    if "Total for query: 0 jobs; 0 completed, 0 removed, 0 idle, 0 running, 0 held, 0 suspended" not in condor_q:
+                                        print(f"Job {log_file} of {process} is still in queue")
                             else:
                                 count_failed_jobs += 1
-                                print(f"Job {log_file} of {process} is empty")
+
     print(f"{count_failed_jobs} out of {count_jobs} jobs failed out of {count_sub_files} submission files")
+
+
+def merge_svfit_chunks(directory, channel):
+    directory = os.path.join(directory, channel)
+    for process in os.listdir(directory):
+        process_dir = os.path.join(directory, process)
+        if os.path.isdir(process_dir):
+            variation_dir = os.path.join(process_dir, "nominal")
+            if os.path.isdir(variation_dir):
+                svfit_dir = os.path.join(variation_dir, "svfit")
+                parquet_files = [os.path.join(svfit_dir, file) for file in os.listdir(svfit_dir) if file.endswith(".parquet")]
+                if len(parquet_files) == 1:
+                    print(f"Copying single file for {process} and renaming to svfit.parquet")
+                    os.system(f"cp {parquet_files[0]} {variation_dir}/svfit.parquet")
+                if len(parquet_files) > 1:
+                    print(f"Merging svfit chunks for {process}")
+                    schema = None
+                    writer = None
+                    with alive_bar(len(parquet_files)) as bar:
+                        for f in parquet_files:
+                            dataset = pq.ParquetDataset(f)
+                            table = dataset.read()
+                            if schema is None:
+                                schema = table.schema
+                                writer = pq.ParquetWriter(os.path.join(variation_dir, "svfit.parquet"), schema)
+                            else:
+                                table = table.cast(schema)
+                            writer.write_table(table)
+                            bar()
+                    if writer is not None:
+                        writer.close()
 
 
 def main():
@@ -292,10 +328,13 @@ def main():
     parser.add_argument("--running_dir", action="store_true", help="Running directory (used by condor submission)")
     parser.add_argument("--chunk_size", type=int, default=20000, help="Number of events per chunk")
     parser.add_argument("--check_logs", action="store_true", help="Check logs for failed jobs")
+    parser.add_argument("--merge_chunks", action="store_true", help="Merge svfit chunks")
     args = parser.parse_args()
 
     if args.check_logs:
         check_logs(args.source_dir, args.channel)
+    elif args.merge_chunks:
+        merge_svfit_chunks(args.source_dir, args.channel)
     else:
         if not args.running_dir:
             run_processes(args.source_dir, args.use_condor, args.chunk_size)
