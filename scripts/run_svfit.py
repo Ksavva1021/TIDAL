@@ -168,6 +168,8 @@ def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int,
 
     output_file = os.path.join(output_dir, f"svfit_chunk{chunk_number}.parquet")
     ak.to_parquet(chunk_events, output_file)
+    print("Job is done")
+    sys.exit(0)
 
 def run_processes(base_dir, use_condor=False, chunk_size=10000):
     for channel in os.listdir(base_dir):
@@ -197,7 +199,7 @@ def run_process(parquet_file, channel, use_condor, chunk_size):
             run_svfit(parquet_file, channel, chunk_number, start_idx, end_idx)
         else:
             shell_script_path = create_shell_script(parquet_file, channel, chunk_number, start_idx, end_idx)
-            submission_file_path = create_condor_submission_file(shell_script_path)
+            submission_file_path = create_condor_submission_file(shell_script_path, chunk_number)
             submit_condor_job(submission_file_path)
 
 def create_shell_script(parquet_file, channel, chunk_number, start_idx, end_idx):
@@ -222,13 +224,13 @@ python3 scripts/run_svfit.py --input_file {parquet_file} --channel {channel} --c
     return shell_script_path
 
 
-def create_condor_submission_file(shell_script_path):
+def create_condor_submission_file(shell_script_path, chunk_number):
     directory = os.path.dirname(shell_script_path)
     submission_file_content = f"""
 executable = {shell_script_path}
-output = {directory}/svfit_chunk$(Process).out
-error = {directory}/svfit_chunk$(Process).err
-log = {directory}/svfit_chunk$(Process).log
+output = {directory}/svfit_chunk{chunk_number}.out
+error = {directory}/svfit_chunk{chunk_number}.err
+log = {directory}/svfit_chunk{chunk_number}.log
 request_memory = 8G
 getenv = True
 +MaxRuntime = 10800
@@ -244,6 +246,40 @@ queue
 def submit_condor_job(submission_file_path):
     os.system(f"condor_submit {submission_file_path}")
 
+
+def check_logs(directory, channel):
+    count_jobs = 0
+    count_failed_jobs = 0
+    count_sub_files = 0
+    count_done = 0
+    directory = os.path.join(directory, channel)
+    for process in os.listdir(directory):
+        process_dir = os.path.join(directory, process)
+        if os.path.isdir(process_dir):
+            variation_dir = os.path.join(process_dir, "nominal")
+            if os.path.isdir(variation_dir):
+                log_dir = os.path.join(variation_dir, "svfit", "condor")
+                for log_file in os.listdir(log_dir):
+                    if log_file.endswith(".sub"):
+                        count_sub_files += 1
+                    if log_file.endswith(".out"):
+                        count_jobs += 1
+                        with open(os.path.join(log_dir, log_file), 'r') as f:
+                            lines = f.readlines()
+                            if len(lines) > 0:
+                                last_line = lines[-1]
+                                if "Job is done" not in last_line:
+                                    print(f"Job {log_file} of {process} did not finish properly")
+                                    count_failed_jobs += 1
+                                else:
+                                    print(f"Job {log_file} of {process} is done")
+                                    count_done += 1
+                            else:
+                                count_failed_jobs += 1
+                                print(f"Job {log_file} of {process} is empty")
+    print(f"{count_failed_jobs} out of {count_jobs} jobs failed out of {count_sub_files} submission files")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run SVFit")
     parser.add_argument("--source_dir", type=str, help="Source directory with parquet files e.g. /vols/cms/ks1021/offline/HiggsDNA/IC/output/test/Run3_2022/")
@@ -255,12 +291,16 @@ def main():
     parser.add_argument("--end_idx", type=int, help="End index for the chunk (used by condor submission)")
     parser.add_argument("--running_dir", action="store_true", help="Running directory (used by condor submission)")
     parser.add_argument("--chunk_size", type=int, default=20000, help="Number of events per chunk")
+    parser.add_argument("--check_logs", action="store_true", help="Check logs for failed jobs")
     args = parser.parse_args()
 
-    if not args.running_dir:
-        run_processes(args.source_dir, args.use_condor, args.chunk_size)
+    if args.check_logs:
+        check_logs(args.source_dir, args.channel)
     else:
-        run_svfit(args.input_file, args.channel, args.chunk_number, args.start_idx, args.end_idx)
+        if not args.running_dir:
+            run_processes(args.source_dir, args.use_condor, args.chunk_size)
+        else:
+            run_svfit(args.input_file, args.channel, args.chunk_number, args.start_idx, args.end_idx)
 
 if __name__ == "__main__":
     main()
