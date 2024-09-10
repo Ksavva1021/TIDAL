@@ -8,7 +8,7 @@ fi
 echo "Select an option to activate:"
 echo "1: Activate ROOT"
 echo "2: Activate SVFIT"
-echo "3: Activate OPTION3"
+echo "3: Activate CP-TOOLS"
 echo "4: Activate OPTION4"
 
 read -p "Enter the option number: " option
@@ -29,7 +29,8 @@ case $option in
         python -c "import TauAnalysis.ClassicSVfit.wrapper.pybind_wrapper" && echo "Module is working" || echo "Module import failed"
         ;;
     3)
-        echo "Activating OPTION3..."
+        echo "Load CP-TOOLS..."
+        source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin/thisroot.sh
         ;;
     4)
         echo "Activating OPTION4..."

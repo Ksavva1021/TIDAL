@@ -1,3 +1,6 @@
 *egg-info
 *.pyc
 *.so
+
+CP_Tools/plots
+CP_Tools/samples
