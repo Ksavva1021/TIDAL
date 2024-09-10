@@ -2,7 +2,7 @@ import ROOT
 from collections import OrderedDict
 from prettytable import PrettyTable
 
-input_folder = '/vols/cms/ks1021/offline/HiggsDNA/IC/output/production/Run3_2022/'
+input_folder = '/vols/cms/ks1021/offline/HiggsDNA/IC/output/production_v2/Run3_2022/'
 
 VSjet_wp = 5
 VSe_wp = 1
@@ -30,24 +30,31 @@ files = [
 test_dict = OrderedDict()
 
 test_dict["tt"] = [
-    "trg_doubletau",
-    "trg_doubletauandjet",
-    "trg_doubletauandjet_2",
-    "trg_doubletau || trg_doubletauandjet",
-    "trg_doubletau || trg_doubletauandjet_2",
-    "trg_doubletau || trg_doubletauandjet || trg_doubletauandjet_2",
+    "trg_doubletau && pt_1 >= 40 && pt_2 >= 40",
+    "trg_doubletauandjet && pt_1 >= 35 && pt_2 >= 35",
+    "trg_doubletauandjet_2 && pt_1 >= 35 && pt_2 >= 35",
+    "(trg_doubletau && pt_1 >= 40 && pt_2 >= 40) || (trg_doubletauandjet && pt_1 < 40 && pt_2 < 40)",
+    "(trg_doubletau && pt_1 >= 40 && pt_2 >= 40) || (trg_doubletauandjet && pt_1 >= 35 && pt_2 >= 35)",
+    "(trg_doubletau && pt_1 >= 40 && pt_2 >= 40) || (trg_doubletauandjet_2 && pt_1 < 40 && pt_2 < 40)",
+    "(trg_doubletau && pt_1 >= 40 && pt_2 >= 40) || (trg_doubletauandjet_2 && pt_1 >= 35 && pt_2 >= 35)",
+    "(trg_doubletau && pt_1 >= 40 && pt_2 >= 40) || (trg_doubletauandjet && pt_1 < 40 && pt_2 < 40) || (trg_doubletauandjet_2 && pt_1 < 40 && pt_2 < 40)",
+    "(trg_doubletau && pt_1 >= 40 && pt_2 >= 40) || (trg_doubletauandjet && pt_1 >= 35 && pt_2 >= 35) || (trg_doubletauandjet_2 && pt_1 >= 35 && pt_2 >= 35)",
+
 ]
 
 test_dict["mt"] = [
-    "trg_singlemuon",
-    "trg_mt_cross",
-    "trg_singlemuon || trg_mt_cross",
+    "trg_singlemuon && pt_1 >= 25",
+    "trg_mt_cross && pt_1 >= 21 && pt_2 >= 32",
+    "(trg_singlemuon && pt_1 >= 25) || (trg_mt_cross && pt_1 < 25 && pt_2 >= 32)",
+    "(trg_singlemuon && pt_1 >= 25) || (trg_mt_cross && pt_1 >= 21 && pt_2 >= 32)",
 ]
 
 test_dict["et"] = [
-    "trg_singleelectron",
-    "trg_et_cross",
-    "trg_singleelectron || trg_et_cross",
+    "trg_singleelectron && pt_1 >= 31",
+    "trg_et_cross && pt_1 >= 25 && pt_2 >= 35",
+    "(trg_singleelectron && pt_1 >= 31) || (trg_et_cross && pt_1 < 31 && pt_2 >= 35)",
+    "(trg_singleelectron && pt_1 >= 31) || (trg_et_cross && pt_1 >= 25 && pt_2 >= 35)",
+
 ]
 
 output_scores = OrderedDict()
