@@ -47,22 +47,34 @@ def process_event(lep1, lep2, mode, kappa, metx, mety, covMatrix,
 
         isValidSolution = svFitAlgo.isValidSolution()
 
+        tau1_P4 = svFitAlgo.getHistogramAdapter().GetFittedTau1LV()
+        tau2_P4 = svFitAlgo.getHistogramAdapter().GetFittedTau2LV()
+
         if isValidSolution:
-            return (svFitAlgo.getHistogramAdapter().getMass(), svFitAlgo.getHistogramAdapter().getMassErr())
+            return (svFitAlgo.getHistogramAdapter().getMass(), svFitAlgo.getHistogramAdapter().getMassErr(), tau1_P4.Pt(), tau2_P4.Pt())
         else:
-            return (-1, -1)
+            return (-1, -1, -1, -1)
     else:
-        return (-1, -1)
+        return (-1, -1, -1, -1)
 
 
 def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int, end_idx: int):
     # Load the specific chunk of data from the parquet file
-    columns = [
-        "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
-        "pt_1", "eta_1", "phi_1", "mass_1", "decayMode_1",
-        "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
-        "event", "run", "lumi"
-    ]
+
+    if channel_ == "mt" or channel_ == "et":
+        columns = [
+            "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
+            "pt_1", "eta_1", "phi_1", "mass_1",
+            "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
+            "event", "run", "lumi"
+        ]
+    elif channel_ == "tt":
+        columns = [
+            "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
+            "pt_1", "eta_1", "phi_1", "mass_1", "decayMode_1",
+            "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
+            "event", "run", "lumi"
+        ]
 
     events = ak.from_parquet(input_file, columns=columns)[start_idx:end_idx]
     nevents = len(events)
@@ -133,9 +145,15 @@ def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int,
     lep_1 = calculate_p4(events.pt_1, events.eta_1, events.phi_1, events.mass_1)
     lep_2 = calculate_p4(events.pt_2, events.eta_2, events.phi_2, events.mass_2)
 
-    leps1_MeasuredTauLepton = np.array(
-        [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, events.decayMode_1)]
-    )
+    if channel_ == "tt":
+        leps1_MeasuredTauLepton = np.array(
+            [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, events.decayMode_1)]
+        )
+    elif channel_ == "et" or channel_ == "mt":
+        dummy_decayMode = ak.Array([-1] * nevents)
+        leps1_MeasuredTauLepton = np.array(
+            [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, dummy_decayMode)]
+        )
 
     leps2_MeasuredTauLepton = np.array(
         [MeasuredTauLepton(*args) for args in zip(mode, lep_2.pt, lep_2.eta, lep_2.phi, lep_2.mass, events.decayMode_2)]
@@ -149,10 +167,12 @@ def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int,
 
     svfitMass_values = [0] * nevents
     svfitMass_err_values = [0] * nevents
+    pt_1_values = [0] * nevents
+    pt_2_values = [0] * nevents
 
     with alive_bar(nevents) as bar:
         for index in range(nevents):
-            mass, mass_err = process_event(
+            mass, mass_err, pt_1, pt_2 = process_event(
                 lep_1[index], lep_2[index], mode[index], kappa[index],
                 metx[index], mety[index], rootMETMatrices[index],
                 leps1_MeasuredTauLepton[index], leps2_MeasuredTauLepton[index],
@@ -160,6 +180,8 @@ def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int,
             )
             svfitMass_values[index] = mass
             svfitMass_err_values[index] = mass_err
+            pt_1_values[index] = pt_1
+            pt_2_values[index] = pt_2
 
             bar()
 
@@ -167,16 +189,19 @@ def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int,
     chunk_events = ak.from_parquet(input_file, columns=columns_to_store)[start_idx:end_idx]
     chunk_events = ak.with_field(chunk_events, svfitMass_values, "svfitMass")
     chunk_events = ak.with_field(chunk_events, svfitMass_err_values, "svfitMass_err")
+    chunk_events = ak.with_field(chunk_events, pt_1_values, "tau1_pt_svfit")
+    chunk_events = ak.with_field(chunk_events, pt_2_values, "tau2_pt_svfit")
 
     output_file = os.path.join(output_dir, f"svfit_chunk{chunk_number}.parquet")
     ak.to_parquet(chunk_events, output_file)
     print("Job is done")
     sys.exit(0)
 
+
 def run_processes(base_dir, use_condor=False, chunk_size=10000):
     for channel in os.listdir(base_dir):
         channel_dir = os.path.join(base_dir, channel)
-        if channel != "tt":
+        if channel == "tt":
             continue
         if os.path.isdir(channel_dir):
             for process in os.listdir(channel_dir):
@@ -187,6 +212,7 @@ def run_processes(base_dir, use_condor=False, chunk_size=10000):
                         parquet_file = os.path.join(variation_dir, 'merged.parquet')
                         if os.path.exists(parquet_file):
                             run_process(parquet_file, channel, use_condor, chunk_size)
+
 
 def run_process(parquet_file, channel, use_condor, chunk_size):
     events = ak.from_parquet(parquet_file, columns=["event"])  # Load only the event column to determine size
