@@ -1,5 +1,9 @@
 # HiggsTauTauPlot.py
 
+# Methods:
+# 1. Basic method using MC samples & SS method for QCD estimation
+# 2. Basic method using MC samples & SS method for QCD estimation && WJets shape method (High mT control region)
+
 import argparse
 from collections import OrderedDict
 from prettytable import PrettyTable
@@ -29,7 +33,7 @@ available_channels = ['mm', 'em', 'mt', 'et', 'tt']
 
 if args.channel not in available_channels:
     raise ValueError("Invalid channel. Please choose from: {}".format(available_channels))
-available_methods = ["1"]
+available_methods = ["1","2"]
 if args.method not in available_methods:
     raise ValueError("Invalid method. Please choose from: {}".format(available_methods))
 
@@ -44,7 +48,7 @@ table.add_row(['Method', args.method])
 table.add_row(['Selection', args.sel])
 table.add_row(['Variable', args.var])
 
-method = args.method
+method = int(args.method)
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define baseline selections and different categories
@@ -199,7 +203,7 @@ gen_sels_dict['vv_sels'] = vv_sels
 
 # RunPlotting handles how each process is added to the analysis
 
-def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='', cat_data='', categories={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0):
+def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='', cat_data='', categories={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0, method=1):
     '''
     RunPlotting handles how each process is added to the analysis
     ana: Analysis object
@@ -237,8 +241,8 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='
     GenerateZLL(ana, nodename, add_name, samples_dict['ztt_samples'], plot, wt, sel, cat, gen_sels_dict['z_sels'], not args.do_ss, doZL, doZJ)
     GenerateTop(ana, nodename, add_name, samples_dict['top_samples'], plot, wt, sel, cat, gen_sels_dict['top_sels'], not args.do_ss, doTTT, doTTJ)
     GenerateVV(ana, nodename, add_name, samples_dict['vv_samples'], plot, wt, sel, cat, gen_sels_dict['vv_sels'], not args.do_ss, doVVT, doVVJ)
-    GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat, cat_data, categories, method, qcd_factor, not args.do_ss)
-    GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat, cat_data, method, qcd_factor, not args.do_ss)
+    GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat, cat_data, categories, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+    GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat, cat_data, categories=categories, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -332,7 +336,7 @@ while len(systematics) > 0:
             do_data = True
         else:
             do_data = False
-        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, categories['baseline'], categories_unmodified['baseline'], categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor)
+        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, categories['baseline'], categories_unmodified['baseline'], categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor, method)
 
         del systematics[systematic]
 
@@ -344,7 +348,6 @@ while len(systematics) > 0:
       GetTotals(analysis, nodename, suffix, samples_dict, outfile)
     PrintSummary(analysis, nodename, ['data_obs'], add_names=systematic_suffixes, channel=args.channel, samples_dict=samples_dict)
 # ------------------------------------------------------------------------------------------------------------------------
-
 
 outfile.Close()
 plot_file = ROOT.TFile(output_name, 'READ')
