@@ -2908,6 +2908,23 @@ def HTTPlot(
                     R.TColor.GetColor(100, 192, 232),
                 ),
             ],
+            "mm": [
+                backgroundComp("QCD", ["QCD"], R.TColor.GetColor(250, 202, 255)),
+                backgroundComp(
+                    "t#bar{t}", ["TTT", "TTJ"], R.TColor.GetColor(155, 152, 204)
+                ),
+                backgroundComp(
+                    "Electroweak", ["VVT", "VVJ", "W"], R.TColor.GetColor(222, 90, 106)
+                ),
+                backgroundComp(
+                    "Z#rightarrow#tau#tau", ["ZTT"], R.TColor.GetColor(248, 206, 104)
+                ),
+                backgroundComp(
+                    "Z#rightarrow#mu#mu",
+                    ["ZL", "ZJ", "EWKZ"],
+                    R.TColor.GetColor(100, 192, 232),
+                ),
+            ],
             "zee": [
                 backgroundComp("QCD", ["QCD"], R.TColor.GetColor(250, 202, 255)),
                 backgroundComp(
@@ -3304,6 +3321,7 @@ def HTTPlot(
             if chan not in background_schemes:
                 continue
             schemes = background_schemes[chan]
+            print("HI",chan,schemes)
             for bkg in schemes:
                 if (
                     chan != "zmm"
@@ -3784,9 +3802,9 @@ def HTTPlot(
         channel_label = "#mu_{}#tau_{h}"
     if channel == "tt":
         channel_label = "#tau_{h}#tau_{h}"
-    if channel == "zmm":
+    if channel == "zmm" or channel == "mm":
         channel_label = "Z#rightarrow#mu#mu"
-    if channel == "zee":
+    if channel == "zee" or channel == "ee":
         channel_label = "Z#rightarrow ee"
     if "MVA" in x_title or "NN" in x_title:
         channel_label += " {}".format(cat)
