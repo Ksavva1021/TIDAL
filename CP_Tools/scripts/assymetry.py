@@ -57,56 +57,103 @@ def AcoPlot(bins, r, x, weight_sm, weight_ps, title, savefig):
 
 
 # Open the ROOT file
-Run = "Run3"
+Run = "Run2"
 DM = sys.argv[1]
 deeptau_wp = sys.argv[2]
 deeptau_wp = int(deeptau_wp)
 
 if Run == "Run2":
     # for Run 3 read from a pickle file
-    df = pd.read_pickle("/vols/cms/ks1021/offline/Htt_CPinDecay/Regression/samples/pickle/ggH_DM_1010.pkl")
+    if DM == "0_0":
+        name = "ggH_DM_00.pkl"
+    elif DM == "0_1":
+        name = "ggH_DM_01.pkl"
+    elif DM == "0_10":
+        name = "ggH_DM_010.pkl"
+    elif DM == "1_1":
+        name = "ggH_DM_11.pkl"
+    elif DM == "1_10":
+        name = "ggH_DM_110.pkl"
+    elif DM == "10_10":
+        name = "ggH_DM_1010.pkl"
+    df = pd.read_pickle(f"/vols/cms/ks1021/offline/Htt_CPinDecay/Regression/samples/pickle/{name}")
+    df = df[(df['os'] == 1)]
+    df = df[(df['ip_sig_1'] > 1) & (df['ip_sig_2'] > 1)]
+    df.reset_index(drop=True, inplace=True)
 else:
     file = uproot.open("/vols/cms/ks1021/TIDAL/CP_Tools/samples/merged_cp.root")
     tree = file["ntuple"]
 
     df = tree.pandas.df()
     df = df[(df['os'] == 1)]
-    #df = df[(df['idDeepTau2018v2p5VSjet_1'] >= deeptau_wp)]
-    #df = df[(df['idDeepTau2018v2p5VSjet_2'] >= deeptau_wp)]
-    #df = df[(df['ip_LengthSig_1'] > 1.5) & (df['ip_LengthSig_2'] > 1.5)]
+    df = df[(df['ip_LengthSig_1'] > 1) & (df['ip_LengthSig_2'] > 1)]
     #df = df[(df['decayMode_1'] == 10) & (df['decayMode_2'] == 10)]
     df.reset_index(drop=True, inplace=True)
 
 if Run == "Run2":
-    variable1 = "pv_angle"
+    if DM == "0_0":
+        variable1 = "aco_angle_6"
+    elif DM == "0_1":
+        variable1 = "aco_angle_5"
+    elif DM == "0_10":
+        variable1 = "aco_angle_5"
+    elif DM == "1_1":
+        variable1 = "aco_angle_1"
+    elif DM == "1_10":
+        variable1 = "aco_angle_1"
+    elif DM == "10_10":
+        variable1 = "pv_angle"
+
     data1 = df[variable1].to_numpy()
     weight_sm = df["wt_cp_sm"].to_numpy()
     weight_ps = df["wt_cp_ps"].to_numpy()
 else:
-    variable1 = "aco_angle_" + DM
+    if DM == "e_0":
+        variable1 = "aco_e_pi"
+    elif DM == "e_1":
+        variable1 = "aco_e_rho"
+    elif DM == "e_10":
+        variable1 = "aco_e_a1"
+    elif DM == "mu_0":
+        variable1 = "aco_mu_pi"
+    elif DM == "mu_1":
+        variable1 = "aco_mu_rho"
+    elif DM == "mu_10":
+        variable1 = "aco_mu_a1"
+    elif DM == "0_0":
+        variable1 = "aco_pi_pi"
+    elif DM == "0_1":
+        variable1 = "aco_pi_rho"
+    elif DM == "0_10":
+        variable1 = "aco_pi_a1"
+    elif DM == "1_0":
+        variable1 = "aco_rho_pi"
+    elif DM == "1_1":
+        variable1 = "aco_rho_rho"
+    elif DM == "1_10":
+        variable1 = "aco_rho_a1"
+    elif DM == "10_10":
+        variable1 = "aco_a1_a1"
+    elif DM == "10_1":
+        variable1 = "aco_a1_rho"
+    elif DM == "10_0":
+        variable1 = "aco_a1_pi"
+    elif DM == "0_10_SV":
+        variable1 = "aco_angle_0_10_SV"
+
     variable2 = "wt_cp_sm"
     variable3 = "wt_cp_ps"
+
+    df = df.dropna(subset=[variable1,'wt_cp_sm','wt_cp_ps'])
+    df.reset_index(drop=True, inplace=True)
 
     # Extract the data
     data1 = df[variable1].to_numpy()
     weight_sm = df[variable2].to_numpy()
     weight_ps = df[variable3].to_numpy()
 
-bins = 20
+bins = 30
 r = (0, 2 * np.pi)
-
-#if DM == "0_0":
-#    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\pi$ - $\pi$",f"CP_Tools/plots_sel_IP/WP_{deeptau_wp}/Aco_CP_{Run}_{DM}.png")
-#elif DM == "0_1":
-#    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\pi$ - $\rho$",f"CP_Tools/plots_sel_IP/WP_{deeptau_wp}/Aco_CP_{Run}_{DM}.png")
-#elif DM == "0_10":
-#    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\pi$ - $a_{1}$",f"CP_Tools/plots_sel_IP/WP_{deeptau_wp}/Aco_CP_{Run}_{DM}.png")
-#elif DM == "1_1":
-#    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\rho$ - $\rho$",f"CP_Tools/plots_sel_IP/WP_{deeptau_wp}/Aco_CP_{Run}_{DM}.png")
-#elif DM == "1_10":
-#    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\rho$ - $a_{1}$",f"CP_Tools/plots_sel_IP/WP_{deeptau_wp}/Aco_CP_{Run}_{DM}.png")
-#elif DM == "10_10":
-#    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$a_{1}$ - $a_{1}$",f"CP_Tools/plots_sel_IP/WP_{deeptau_wp}/Aco_CP_{Run}_{DM}.png")
 
 if DM == "0_0":
     AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\pi$ - $\pi$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
@@ -120,3 +167,23 @@ elif DM == "1_10":
     AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\rho$ - $a_{1}$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
 elif DM == "10_10":
     AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$a_{1}$ - $a_{1}$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "1_0":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\rho$ - $\pi$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "10_0":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$a_{1}$ - $\pi$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "10_1":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$a_{1}$ - $\rho$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "e_0":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$e$ - $\pi$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "e_1":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$e$ - $\rho$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "e_10":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$e$ - $a_{1}$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "mu_0":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\mu$ - $\pi$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "mu_1":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\mu$ - $\rho$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "mu_10":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\mu$ - $a_{1}$",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
+elif DM == "0_10_SV":
+    AcoPlot(bins,r,data1,weight_sm,weight_ps,r"$\pi$ - $a_{1}$ SV",f"CP_Tools/plots/Aco_CP_{Run}_{DM}.png")
