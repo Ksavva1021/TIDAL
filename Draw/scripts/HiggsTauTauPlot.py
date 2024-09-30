@@ -3,6 +3,7 @@
 # Methods:
 # 1. Basic method using MC samples & SS method for QCD estimation
 # 2. Basic method using MC samples & SS method for QCD estimation && WJets shape method (High mT control region)
+# 3. ??
 
 import argparse
 from collections import OrderedDict
@@ -33,7 +34,7 @@ available_channels = ['mm', 'em', 'mt', 'et', 'tt']
 
 if args.channel not in available_channels:
     raise ValueError("Invalid channel. Please choose from: {}".format(available_channels))
-available_methods = ["1","2"]
+available_methods = ["1","2","3"]
 if args.method not in available_methods:
     raise ValueError("Invalid method. Please choose from: {}".format(available_methods))
 
@@ -61,13 +62,22 @@ if args.era in ["Run3_2022"]:
     if args.channel == "et":
         categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_singleelectron && pt_1 >= 25))'
     if args.channel == "tt":
-        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 3 && (trg_doubletau && pt_1 > 40 && pt_2 > 40))'
+        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 3 && idDeepTau2018v2p5VSmu_2 >= 3 && (trg_doubletau && pt_1 > 40 && pt_2 > 40))'
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
 categories['btag'] = '(n_bjets>=1)'
 categories['w_sdb'] = 'mt_1>70.'
 categories['w_shape'] = ''
+categories['tt_qcd_norm'] = '(idDeepTau2018v2p5VSjet_1 < 5 && idDeepTau2018v2p5VSjet_1 >= 3 && idDeepTau2018v2p5VSjet_2 < 5 && idDeepTau2018v2p5VSjet_2 >= 3 && idDeepTau2018v2p5VSe_1 >=2 && idDeepTau2018v2p5VSe_2 >=2 && idDeepTau2018v2p5VSmu_1 >= 1 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_doubletau && pt_1 > 40 && pt_2 > 40))'
+
+if args.channel == 'tt':
+    categories["inclusive_pipi"]     = "(decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==0 && ip_LengthSig_2>=1.5)"
+    categories["inclusive_pirho"]       = "((decayMode_1==1 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1))"
+    categories["inclusive_rhorho"]       = "(decayMode_1==1 && decayMode_2==1)"
+    categories["inclusive_a1pi"]     = "((decayMode_1==10 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==10))"
+    categories["inclusive_a1rho"]     = "((decayMode_1==10 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10))"
+    categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10)"
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -287,6 +297,8 @@ elif args.channel == 'et':
     systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Electron_ID*w_Electron_Reco*w_Tau_ID*w_Trigger)',[],False)
 elif args.channel == 'mm':
     systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Muon_ID*w_Muon_Reco*w_Muon_Isolation*w_Trigger)',[],False)
+elif args.channel == 'tt':
+    systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Tau_ID*w_Tau_e_FakeRate*w_Tau_mu_FakeRate*w_Trigger)',[],False)
 # ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -303,6 +315,8 @@ while len(systematics) > 0:
 
     if args.channel in ["mm","mt"]:
         analysis.remaps['Muon'] = 'data_obs'
+    if args.channel == "tt":
+        analysis.remaps['Tau'] = 'data_obs'
 
     previous_systematic_variation = None
     for index, systematic in enumerate(list(systematics.keys())[:max_systematics_per_pass]):
@@ -360,7 +374,7 @@ Plotting.HTTPlot(
   infile=plot_file,
   channel=args.channel,
   scheme=args.channel,
-  ratio_range="0,3",
+  ratio_range="0.7,1.3",
   x_title=x_title,
   y_title=y_title,
   plot_name=output_name.replace('.root',''),

@@ -8,6 +8,7 @@ from Draw.python import MultiDraw
 from uncertainties import ufloat
 import ctypes
 import yaml
+import json
 
 ROOT.TH1.AddDirectory(0)
 
@@ -360,8 +361,16 @@ class Analysis(object):
 
     def AddInfo(self, file, scaleTo=None,add_name=None):
 
-        with open(file) as f:
-            info = yaml.load(f, Loader=yaml.FullLoader)
+        file_ext = os.path.splitext(file)[1].lower()
+
+        if file_ext == '.json':
+            with open(file) as f:
+                info = json.load(f)
+        elif file_ext == '.yaml' or file_ext == '.yml':
+            with open(file) as f:
+                info = yaml.load(f, Loader=yaml.FullLoader)
+        else:
+            raise ValueError("Unsupported file format: only .json and .yaml are supported")
 
         lumi = info["lumi"]
         for sample in info:
@@ -493,3 +502,4 @@ class HttQCDNode(BaseNode):
     def AddRequests(self, manifest):
         for node in self.SubNodes():
             node.AddRequests(manifest)
+

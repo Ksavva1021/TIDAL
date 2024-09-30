@@ -7,3 +7,5 @@ CP_Tools/samples
 
 Draw/plots
 Draw/scripts/HiggsTauTauPlot_Backup.py
+Draw/scripts/HiggsTauTauPlot_CrossChecks.py
+Draw/scripts/params.json

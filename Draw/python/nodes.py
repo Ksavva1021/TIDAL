@@ -130,7 +130,7 @@ def GetWNode(ana, name='W', samples_dict={}, gen_sels_dict={}, plot='',plot_unmo
     else:
         shape_cat = cat
     shape_selection = BuildCutString(wt, sel, shape_cat, OSSS, '')
-    if method == 1:
+    if method in [1,3]:
         w_node = ana.SummedFactory(name, samples_dict['wjets_samples'], plot, full_selection)
     elif method == 2:
         full_selection = BuildCutString(wt, sel, cat, OSSS)
@@ -139,6 +139,7 @@ def GetWNode(ana, name='W', samples_dict={}, gen_sels_dict={}, plot='',plot_unmo
         control_sel = categories['w_sdb']
         w_control_full_selection = BuildCutString(wt, control_sel, cat, OSSS)
         # TODO Weight for data
+        # HERE
         w_control_full_selection_os_data = BuildCutString("weight", control_sel, cat_data)
         w_control_full_selection_ss_data = BuildCutString("weight", control_sel, cat_data, '!os')
         btag_extrap_num_node = None
@@ -233,6 +234,7 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             qcd_ratio = 1.0
 
         # TODO: Weight for data
+        # HERE
         data_weight = '(weight)'
         full_selection = BuildCutString(data_weight, sel, cat_data, '!os')
 
@@ -241,3 +243,36 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
           subtract_node,
           qcd_ratio,
           shape_node))
+
+    elif method == 3:
+        # TODO: Weight for data
+        #HERE
+        data_weight = '(weight)'
+
+        # TODO: Options.cat
+        qcd_sdb_cat = categories['tt_qcd_norm']
+        qcd_sdb_cat_data = categories['tt_qcd_norm']
+
+        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, cat, cat_data, categories, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
+        num_selection = BuildCutString(data_weight, sel, cat_data, '!os')
+        num_node = Analysis.SubtractNode('ratio_num',
+                       ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, num_selection),
+                       subtract_node)
+
+        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, qcd_sdb_cat, qcd_sdb_cat_data, categories, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
+        den_selection = BuildCutString(data_weight, sel, qcd_sdb_cat_data, '!os')
+        den_node = Analysis.SubtractNode('ratio_den',
+                       ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, den_selection),
+                       subtract_node)
+
+        shape_node = None
+        full_selection = BuildCutString(data_weight, sel, qcd_sdb_cat_data, OSSS)
+        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, qcd_sdb_cat, qcd_sdb_cat_data, categories, method, qcd_factor, True, samples_dict, gen_sels_dict, includeW=True)
+
+        ana.nodes[nodename].AddNode(Analysis.HttQCDNode('QCD'+add_name,
+            ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, full_selection),
+            subtract_node,
+            1,
+            shape_node,
+            num_node,
+            den_node))
