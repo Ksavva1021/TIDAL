@@ -20,12 +20,12 @@ ROOT.TH1.SetDefaultSumw2(True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_folder', type=str, help='Input folder')
-parser.add_argument('--parameter_file', type=str, help='Parameter file')
-parser.add_argument('--outputfolder', default='output', help='Output folder')
+parser.add_argument('--output_folder', default='output', help='Output folder')
 parser.add_argument('--channel', default='mm', help='Channel to run on')
 parser.add_argument('--era', default='2016', help='Era to run on')
+parser.add_argument('--parameter_file', type=str, help='Parameter file')
 parser.add_argument('--method', default=1, help='Method to run on')
-parser.add_argument('--sel', type=str, help='Additional Selection to apply')
+parser.add_argument('--sel', type=str, help='Additional Selection to apply', default='')
 parser.add_argument('--var', type=str, help='Variable to plot')
 parser.add_argument('--do_ss', action='store_true', help='Do SS')
 args = parser.parse_args()
@@ -42,7 +42,7 @@ table = PrettyTable()
 table.field_names = ['Details', 'Choices']
 table.add_row(['Input Folder', args.input_folder])
 table.add_row(['Parameter File', args.parameter_file])
-table.add_row(['Output Folder', args.outputfolder])
+table.add_row(['Output Folder', args.output_folder])
 table.add_row(['Channel', args.channel])
 table.add_row(['Era', args.era])
 table.add_row(['Method', args.method])
@@ -269,7 +269,7 @@ if var_name.count(',') == 2:
     is_3d = True
     var_name = var_name.split(',')[0]+'_vs_'+var_name.split(',')[1]+'_vs_'+var_name.split(',')[2]
 
-output_name = f'{args.outputfolder}/datacard_{var_name}_{args.channel}_{args.era}.root'
+output_name = f'{args.output_folder}/datacard_{var_name}_{args.channel}_{args.era}.root'
 outfile = ROOT.TFile(output_name, 'RECREATE')
 # ------------------------------------------------------------------------------------------------------------------------
 
