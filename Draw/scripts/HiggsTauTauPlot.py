@@ -9,7 +9,7 @@ import argparse
 from collections import OrderedDict
 from prettytable import PrettyTable
 import copy
-
+import numpy as np
 import ROOT
 from Draw.python import Analysis
 from Draw.python import Plotting
@@ -25,6 +25,7 @@ parser.add_argument('--channel', default='mm', help='Channel to run on')
 parser.add_argument('--era', default='2016', help='Era to run on')
 parser.add_argument('--parameter_file', type=str, help='Parameter file')
 parser.add_argument('--method', default=1, help='Method to run on')
+parser.add_argument('--category', default='inclusive', help='Category to run on')
 parser.add_argument('--sel', type=str, help='Additional Selection to apply', default='')
 parser.add_argument('--var', type=str, help='Variable to plot')
 parser.add_argument('--do_ss', action='store_true', help='Do SS')
@@ -70,6 +71,9 @@ categories['btag'] = '(n_bjets>=1)'
 categories['w_sdb'] = 'mt_1>70.'
 categories['w_shape'] = ''
 categories['tt_qcd_norm'] = '(idDeepTau2018v2p5VSjet_1 < 5 && idDeepTau2018v2p5VSjet_1 >= 3 && idDeepTau2018v2p5VSjet_2 < 5 && idDeepTau2018v2p5VSjet_2 >= 3 && idDeepTau2018v2p5VSe_1 >=2 && idDeepTau2018v2p5VSe_2 >=2 && idDeepTau2018v2p5VSmu_1 >= 1 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_doubletau && pt_1 > 40 && pt_2 > 40))'
+categories['aminus_low'] = '(alphaAngle_mu_pi_1 < {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
+categories['aminus_high'] = '(alphaAngle_mu_pi_1 > {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
+
 
 if args.channel == 'tt':
     categories["inclusive_pipi"]     = "(decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==0 && ip_LengthSig_2>=1.5)"
@@ -269,7 +273,8 @@ if var_name.count(',') == 2:
     is_3d = True
     var_name = var_name.split(',')[0]+'_vs_'+var_name.split(',')[1]+'_vs_'+var_name.split(',')[2]
 
-output_name = f'{args.output_folder}/datacard_{var_name}_{args.channel}_{args.era}.root'
+datacard_name = args.category
+output_name = f'{args.output_folder}/datacard_{var_name}_{datacard_name}_{args.channel}_{args.era}.root'
 outfile = ROOT.TFile(output_name, 'RECREATE')
 # ------------------------------------------------------------------------------------------------------------------------
 
@@ -299,10 +304,13 @@ elif args.channel == 'mm':
     systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Muon_ID*w_Muon_Reco*w_Muon_Isolation*w_Trigger)',[],False)
 elif args.channel == 'tt':
     systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Tau_ID*w_Tau_e_FakeRate*w_Tau_mu_FakeRate*w_Trigger)',[],False)
+    systematics['nominal'] = ('nominal','','(weight)',[],False)
 # ------------------------------------------------------------------------------------------------------------------------
 
 
 # ------------------------------------------------------------------------------------------------------------------------
+categories['cat'] = '('+categories[args.category]+')*('+categories['baseline']+')'
+
 # Loop over systematics & run plotting, etc
 samples_to_skip_dict = {}
 systematic_suffixes = []
@@ -350,7 +358,7 @@ while len(systematics) > 0:
             do_data = True
         else:
             do_data = False
-        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, categories['baseline'], categories_unmodified['baseline'], categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor, method)
+        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, categories['cat'], categories_unmodified['cat'], categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor, method)
 
         del systematics[systematic]
 

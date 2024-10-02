@@ -9,7 +9,16 @@ def create_bins(variable: str) -> str:
         variable_name = variable.split('(')[0]
         number_of_bins = variable.split('(')[1].split(',')[0]
         lower_bound = variable.split('(')[1].split(',')[1]
+
+        if "pi" in lower_bound:
+            lower_bound = lower_bound.split('pi')
+            lower_bound = str(float(lower_bound[0]) * numpy.pi)
+
         upper_bound = variable.split('(')[1].split(',')[2].split(')')[0]
+        if "pi" in upper_bound:
+            upper_bound = upper_bound.split('pi')
+            upper_bound = str(float(upper_bound[0]) * numpy.pi)
+
         binning = numpy.linspace(float(lower_bound), float(upper_bound), int(number_of_bins))
         binning = ','.join([str(i) for i in binning])
         variable = f"{variable_name}[{binning}]"
@@ -32,7 +41,7 @@ queue
         f.write(condor_template)
     os.system(f"chmod +x {submit_file}")
 
-def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, variable, script_path):
+def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path):
     shell_script = f"""
 #!/bin/bash
 source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin/thisroot.sh
@@ -43,6 +52,7 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
 --channel {channel} \\
 --era {era} \\
 --method {method} \\
+--category {category} \\
 --var {variable}
 """
 
@@ -108,7 +118,7 @@ for era in eras:
                     logs = f"{output_folder}/logs"
                     subprocess.run(["mkdir", "-p", logs])
                     script_path = os.path.join(logs, f"{variable_name}.sh")
-                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, variable, script_path)
+                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path)
 
                     submit_file = os.path.join(logs, f"submit_{variable_name}.sub")
                     create_condor_submit_file(logs, variable_name, submit_file, script_path)
@@ -124,6 +134,7 @@ for era in eras:
                         "--channel", channel,
                         "--era", era,
                         "--method", method,
+                        "--category", category,
                         "--var", variable
                     ]
                     print(" ".join(process))

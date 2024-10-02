@@ -227,16 +227,16 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
         if 'qcd_sub_down' in systematic:
             sub_shift = '*0.9'
 
-        subtract_node = GetSubtractNode(ana , '', plot, plot_unmodified, wt+sub_shift, sel, cat, cat_data, categories, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=False, w_shift=w_shift)
-        if get_os:
-            qcd_ratio = qcd_factor
-        else:
-            qcd_ratio = 1.0
-
         # TODO: Weight for data
         # HERE
         data_weight = '(weight)'
         full_selection = BuildCutString(data_weight, sel, cat_data, '!os')
+        subtract_node = GetSubtractNode(ana , '', plot, plot_unmodified, wt+sub_shift, sel, cat, cat_data, categories, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True, w_shift=w_shift)
+
+        if get_os:
+            qcd_ratio = qcd_factor
+        else:
+            qcd_ratio = 1.0
 
         ana.nodes[nodename].AddNode(Analysis.HttQCDNode('QCD'+add_name,
           ana.SummedFactory('data_ss', samples_dict['data_samples'], plot_unmodified, full_selection),
