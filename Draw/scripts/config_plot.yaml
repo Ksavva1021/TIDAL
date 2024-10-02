@@ -30,6 +30,7 @@ variables:
       - ["2", inclusive, m_vis]
       - ["2", inclusive, pt_1]
       - ["2", inclusive, pt_2]
+      - ["2", inclusive, alphaAngle_mu_pi_1]
       - ["1", aminus_low, aco_mu_pi]
       - ["1", aminus_high, aco_mu_pi]
       - ["2", inclusive, ip_x_1]

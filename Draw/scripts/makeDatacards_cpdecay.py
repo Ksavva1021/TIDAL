@@ -117,10 +117,10 @@ for era in eras:
                 if args.batch:
                     logs = f"{output_folder}/logs"
                     subprocess.run(["mkdir", "-p", logs])
-                    script_path = os.path.join(logs, f"{variable_name}.sh")
+                    script_path = os.path.join(logs, f"{variable_name}_{category}.sh")
                     create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path)
 
-                    submit_file = os.path.join(logs, f"submit_{variable_name}.sub")
+                    submit_file = os.path.join(logs, f"submit_{variable_name}_{category}.sub")
                     create_condor_submit_file(logs, variable_name, submit_file, script_path)
 
                     subprocess.run(["condor_submit", submit_file])
