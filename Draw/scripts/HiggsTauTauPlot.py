@@ -253,16 +253,15 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_n
     samples_dict: dictionary containing the samples
     gen_sels_dict: dictionary containing the gen selections
     systematic: systematic variation
-    cat: category to be used for the selection
-    cat_data: category to be used for the data selection
+    cat_name: the name of the category to be used for the data selection
     categories: dictionary containing the categories
+    categories_unmodified: dictionary containing the categories - unmodified by any systematic variations - to be applied for data only
     sel: additional selection
     add_name: additional name to be added to the process (e.g. ZTT + xxx)
     wt: weight to be applied
     do_data: boolean to decide if data should be added
     qcd_factor: factor to be applied to QCD
     '''
-    #TODO: modify the above descriptions!
 
     cat = categories['cat']
     cat_data = categories_unmodified['cat']
