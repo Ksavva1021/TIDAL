@@ -245,7 +245,7 @@ gen_sels_dict['vv_sels'] = vv_sels
 
 # RunPlotting handles how each process is added to the analysis
 
-def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='', cat_data='', categories={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0, method=1):
+def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_name='', categories={}, categories_unmodified={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0, method=1):
     '''
     RunPlotting handles how each process is added to the analysis
     ana: Analysis object
@@ -262,6 +262,11 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='
     do_data: boolean to decide if data should be added
     qcd_factor: factor to be applied to QCD
     '''
+    #TODO: modify the above descriptions!
+
+    cat = categories['cat']
+    cat_data = categories_unmodified['cat']
+
 
     doZL = True
     doZJ = True
@@ -283,8 +288,8 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='
     GenerateZLL(ana, nodename, add_name, samples_dict['ztt_samples'], plot, wt, sel, cat, gen_sels_dict['z_sels'], not args.do_ss, doZL, doZJ)
     GenerateTop(ana, nodename, add_name, samples_dict['top_samples'], plot, wt, sel, cat, gen_sels_dict['top_sels'], not args.do_ss, doTTT, doTTJ)
     GenerateVV(ana, nodename, add_name, samples_dict['vv_samples'], plot, wt, sel, cat, gen_sels_dict['vv_sels'], not args.do_ss, doVVT, doVVJ)
-    GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat, cat_data, categories, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
-    GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat, cat_data, categories=categories, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+    GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat_name, categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+    GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat_name, categories=categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -365,6 +370,7 @@ while len(systematics) > 0:
 
         sel = args.sel
         plot = args.var
+        # use plot_unmodified and categories_unmodified in cases where the data and MC get different selections due to a systematic variation
         plot_unmodified = plot
         categories_unmodified = copy.deepcopy(categories)
         systematic_folder_name = systematics[systematic][0]
@@ -387,7 +393,7 @@ while len(systematics) > 0:
             do_data = True
         else:
             do_data = False
-        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, categories['cat'], categories_unmodified['cat'], categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor, method)
+        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, args.category, categories, categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor, method)
 
         del systematics[systematic]
 
