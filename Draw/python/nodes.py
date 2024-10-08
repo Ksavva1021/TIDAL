@@ -267,7 +267,7 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
 
         shape_node = None
         full_selection = BuildCutString(data_weight, sel, qcd_sdb_cat_data, OSSS)
-        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, qcd_sdb_cat, qcd_sdb_cat_data, categories, method, qcd_factor, True, samples_dict, gen_sels_dict, includeW=True)
+        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, qcd_sdb_cat, qcd_sdb_cat_data, categories, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
 
         ana.nodes[nodename].AddNode(Analysis.HttQCDNode('QCD'+add_name,
             ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, full_selection),
