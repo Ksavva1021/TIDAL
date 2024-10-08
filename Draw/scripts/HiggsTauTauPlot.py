@@ -303,6 +303,7 @@ if var_name.count(',') == 2:
 
 datacard_name = args.category
 output_name = f'{args.output_folder}/datacard_{var_name}_{datacard_name}_{args.channel}_{args.era}.root'
+if args.do_ss: output_name = output_name.replace('.root','_ss.root')
 outfile = ROOT.TFile(output_name, 'RECREATE')
 # ------------------------------------------------------------------------------------------------------------------------
 
