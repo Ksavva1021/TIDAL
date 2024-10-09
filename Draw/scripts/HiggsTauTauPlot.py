@@ -29,6 +29,7 @@ parser.add_argument('--category', default='inclusive', help='Category to run on'
 parser.add_argument('--sel', type=str, help='Additional Selection to apply', default='')
 parser.add_argument('--var', type=str, help='Variable to plot')
 parser.add_argument('--do_ss', action='store_true', help='Do SS')
+parser.add_argument('--blind', action='store_true', help='Blind the plot (remove data)')
 args = parser.parse_args()
 
 available_channels = ['mm', 'em', 'mt', 'et', 'tt']
@@ -349,7 +350,7 @@ else:
 # - 2nd index sets string to be appended to output histograms
 # - 3rd index specifies the weight to be applied
 # - 4th lists samples that should be skipped
-nodename = args.channel
+nodename = args.channel+'_'+args.category
 systematics = OrderedDict()
 if args.channel == 'mt':
     systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Muon_ID*w_Muon_Reco*w_Muon_Isolation*w_Tau_ID*w_Trigger)',[],False)
@@ -373,7 +374,7 @@ max_systematics_per_pass = 10
 
 while len(systematics) > 0:
     analysis = Analysis.Analysis()
-    analysis.nodes.AddNode(Analysis.ListNode(args.channel))
+    analysis.nodes.AddNode(Analysis.ListNode(nodename))
     analysis.remaps = {}
 
     if args.channel in ["mm","mt"]:
@@ -472,4 +473,5 @@ Plotting.HTTPlot(
   y_title=y_title,
   plot_name=output_name.replace('.root',''),
   lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
+  blind=args.blind,
 )
