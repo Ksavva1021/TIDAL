@@ -13,7 +13,7 @@ import numpy as np
 import ROOT
 from Draw.python import Analysis
 from Draw.python import Plotting
-from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD
+from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD, GenerateReweightedCPSignal
 from Draw.python.HiggsTauTauPlot_utilities import PrintSummary, GetTotals, FixBins
 
 ROOT.TH1.SetDefaultSumw2(True)
@@ -30,7 +30,10 @@ parser.add_argument('--sel', type=str, help='Additional Selection to apply', def
 parser.add_argument('--var', type=str, help='Variable to plot')
 parser.add_argument('--do_ss', action='store_true', help='Do SS')
 parser.add_argument('--blind', action='store_true', help='Blind the plot (remove data)')
+parser.add_argument('--masses', default='125', help='Mass points to process, seperated by commas')
 args = parser.parse_args()
+
+masses = args.masses.split(',')
 
 available_channels = ['mm', 'em', 'mt', 'et', 'tt']
 
@@ -312,6 +315,10 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_n
     GenerateVV(ana, nodename, add_name, samples_dict['vv_samples'], plot, wt, sel, cat, gen_sels_dict['vv_sels'], not args.do_ss, doVVT, doVVJ)
     GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat_name, categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
     GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat_name, categories=categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+
+    # generate correct signal
+    # TODO: add scheme or similar flat to determine which ones to use
+    GenerateReweightedCPSignal(ana, nodename, add_name, samples_dict['signal_samples'], masses, plot, wt, sel, cat, not args.do_ss)
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -409,7 +416,16 @@ while len(systematics) > 0:
         for sample_name in ztt_samples + top_samples + vv_samples + wjets_samples:
             analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
 
+        for key, value in signal_samples.items():
+            if not isinstance(value, (list,)): value = [value] 
+            for samp in value:
+                for mass in masses:
+                    sample_name = samp.replace('*',mass)     
+                    analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
+
+
         analysis.AddInfo(args.parameter_file, scaleTo='data_obs')
+
 
         if systematic == 'nominal':
             do_data = True
