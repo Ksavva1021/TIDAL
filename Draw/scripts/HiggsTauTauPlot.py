@@ -243,6 +243,28 @@ gen_sels_dict['top_sels'] = top_sels
 gen_sels_dict['vv_sels'] = vv_sels
 # ------------------------------------------------------------------------------------------------------------------------
 
+def Get1DBinNumFrom2D(h2d,xbin,ybin):
+    Nxbins = h2d.GetNbinsX()
+    return (ybin-1)*Nxbins + xbin -1
+
+def UnrollHist2D(h2d,inc_y_of=True):
+    '''
+    Unroll a 2D histogram h2d into a 1d histogram
+    inc_y_of = True includes the y over-flow bins
+    '''
+    if inc_y_of: n = 1
+    else: n = 0
+    Nbins = (h2d.GetNbinsY()+n)*(h2d.GetNbinsX())
+    h1d = ROOT.TH1D(h2d.GetName(), '', Nbins, 0, Nbins)
+    for i in range(1,h2d.GetNbinsX()+1):
+      for j in range(1,h2d.GetNbinsY()+1+n):
+        glob_bin = Get1DBinNumFrom2D(h2d,i,j)
+        content = h2d.GetBinContent(i,j)
+        error = h2d.GetBinError(i,j)
+        h1d.SetBinContent(glob_bin+1,content)
+        h1d.SetBinError(glob_bin+1,error)
+    return h1d
+
 # RunPlotting handles how each process is added to the analysis
 
 def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_name='', categories={}, categories_unmodified={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0, method=1):
@@ -404,6 +426,35 @@ while len(systematics) > 0:
       GetTotals(analysis, nodename, suffix, samples_dict, outfile)
     PrintSummary(analysis, nodename, ['data_obs'], add_names=systematic_suffixes, channel=args.channel, samples_dict=samples_dict)
 # ------------------------------------------------------------------------------------------------------------------------
+
+# unroll 2D histograms into 1D histograms but store both versions
+
+if is_2d:
+  x_lines = []
+  y_labels = []
+  first_hist = True
+  # loop over all TH2Ds and for each one unroll to produce TH1D and add to datacard
+  directory = outfile.Get(nodename)
+  outfile.cd(nodename)
+  hists_to_add = []
+  for key in directory.GetListOfKeys():
+    hist_name = key.GetName()
+    hist = directory.Get(hist_name).Clone()
+
+    if not isinstance(hist,ROOT.TDirectory):
+      include_of = False
+
+      h1d = UnrollHist2D(hist,include_of)
+      hists_to_add.append(h1d)
+      if first_hist:
+        first_hist=False
+        Nxbins = hist.GetNbinsX()
+        for i in range(1,hist.GetNbinsY()+1): x_lines.append(Nxbins*i)
+        for j in range(1,hist.GetNbinsY()+1): y_labels.append([hist.GetYaxis().GetBinLowEdge(j),hist.GetYaxis().GetBinLowEdge(j+1)])
+        if include_of: y_labels.append([hist.GetYaxis().GetBinLowEdge(hist.GetNbinsY()+1),-1])
+  for hist in hists_to_add: 
+      directory.Get(hist.GetName()).Write(hist.GetName()+'_2D') # write a copy of the 2D histogram as this will be overwritten by 1D version
+      hist.Write("",ROOT.TObject.kOverwrite)
 
 outfile.Close()
 plot_file = ROOT.TFile(output_name, 'READ')
