@@ -256,7 +256,6 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
         #HERE
         data_weight = '(weight)'
 
-        # TODO: Options.cat
         categories['qcd_sdb_cat'] = categories[cat_name]+'&&'+categories['tt_qcd_norm']
         categories_unmodified['qcd_sdb_cat'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_qcd_norm'] 
 
@@ -283,3 +282,38 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             shape_node,
             num_node,
             den_node))
+
+def GenerateReweightedCPSignal(ana, nodename='', add_name='', samples={}, masses=[], plot='', wt='', sel='', cat='', get_os=True):
+    #TODO: we probably want to reweight pT distributions to NNLOPS to take into account quark mass effects (or use similar tool)
+    weights = {"sm": "wt_cp_sm", "ps": "wt_cp_ps", "mm": "wt_cp_mm", "flat": "1.0"}
+    if get_os: 
+        OSSS = 'os'
+    else: 
+        OSSS = '!os'
+
+    for key, sample in samples.items():
+        non_cp = True 
+        for name in weights:
+            for mass in masses:
+                if key.split("_")[1] == name:
+                    non_cp=False
+                    weight=wt+"*"+weights[name]
+                    full_selection = BuildCutString(weight, sel, cat, OSSS)
+                    name = key
+    
+                    sample_names=[]
+                    if isinstance(samples[key], (list,)):
+                      for i in samples[key]:
+                        sample_names.append(i.replace('*',mass))
+                    else: sample_names = [samples[key].replace('*',mass)]
+                    ana.nodes[nodename].AddNode(ana.SummedFactory(key.replace('*',mass)+add_name, sample_names, plot, full_selection))
+            if non_cp:
+                 full_selection = BuildCutString(wt, sel, cat, OSSS)
+                 name = key
+    
+                 sample_names=[]
+                 if isinstance(samples[key], (list,)):
+                   for i in samples[key]:
+                     sample_names.append(i.replace('*',mass))
+                 else: sample_names = [samples[key].replace('*',mass)]
+                 ana.nodes[nodename].AddNode(ana.SummedFactory(key.replace('*',mass)+add_name, sample_names, plot, full_selection))        
