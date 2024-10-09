@@ -19,7 +19,7 @@ def create_bins(variable: str) -> str:
             upper_bound = upper_bound.split('pi')
             upper_bound = str(float(upper_bound[0]) * numpy.pi)
 
-        binning = numpy.linspace(float(lower_bound), float(upper_bound), int(number_of_bins))
+        binning = numpy.linspace(float(lower_bound), float(upper_bound), int(number_of_bins)+1)
         binning = ','.join([str(i) for i in binning])
         variable = f"{variable_name}[{binning}]"
 
@@ -91,10 +91,10 @@ for era in eras:
     if era not in available_eras:
         raise ValueError(f"Era {era} is not a valid era. Please choose from {available_eras}")
 
-available_schemes = ['cp', 'control']
+available_schemes = ['cpdecay', 'control']
 for scheme in schemes:
     if scheme not in available_schemes:
-        raise ValueError(f"Scheme {scheme} is not a valid scheme. Please choose from ['cp', 'decay']")
+        raise ValueError(f"Scheme {scheme} is not a valid scheme. Please choose from {available_schemes}")
 
 
 for era in eras:
@@ -135,7 +135,8 @@ for era in eras:
                         "--era", era,
                         "--method", method,
                         "--category", category,
-                        "--var", variable
+                        "--var", variable,
+                    #    "--do_ss"
                     ]
                     print(" ".join(process))
                     subprocess.run(process)
