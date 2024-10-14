@@ -293,7 +293,8 @@ def UnrollHist2D(h2d,inc_y_of=True):
     if inc_y_of: n = 1
     else: n = 0
     Nbins = (h2d.GetNbinsY()+n)*(h2d.GetNbinsX())
-    h1d = ROOT.TH1D(h2d.GetName(), '', Nbins, 0, Nbins)
+    if isinstance(h2d, ROOT.TH2D): h1d = ROOT.TH1D(h2d.GetName(), '', Nbins, 0, Nbins)
+    else: h1d = ROOT.TH1F(h2d.GetName(), '', Nbins, 0, Nbins)
     for i in range(1,h2d.GetNbinsX()+1):
       for j in range(1,h2d.GetNbinsY()+1+n):
         glob_bin = Get1DBinNumFrom2D(h2d,i,j)
