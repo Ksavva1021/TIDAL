@@ -388,8 +388,8 @@ class Analysis(object):
                     params["sf"] = lumi * params["xs"] / params["eff"]
                 else:
                     params["sf"] = 1.0
-                if 'efficiency' in params:
-                    params["sf"] *= params["efficiency"]
+                if 'filter_efficiency' in params:
+                    params["sf"] *= params["filter_efficiency"]
 
     def BasicFactory(self, name, sample=None, var='', sel='', factors=[], scaleToLumi=True,add_name=None):
         if sample is None:

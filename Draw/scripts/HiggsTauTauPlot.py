@@ -13,7 +13,7 @@ import numpy as np
 import ROOT
 from Draw.python import Analysis
 from Draw.python import Plotting
-from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD
+from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD, GenerateReweightedCPSignal
 from Draw.python.HiggsTauTauPlot_utilities import PrintSummary, GetTotals, FixBins
 
 ROOT.TH1.SetDefaultSumw2(True)
@@ -29,7 +29,11 @@ parser.add_argument('--category', default='inclusive', help='Category to run on'
 parser.add_argument('--sel', type=str, help='Additional Selection to apply', default='')
 parser.add_argument('--var', type=str, help='Variable to plot')
 parser.add_argument('--do_ss', action='store_true', help='Do SS')
+parser.add_argument('--blind', action='store_true', help='Blind the plot (remove data)')
+parser.add_argument('--masses', default='125', help='Mass points to process, seperated by commas')
 args = parser.parse_args()
+
+masses = args.masses.split(',')
 
 available_channels = ['mm', 'em', 'mt', 'et', 'tt']
 
@@ -133,15 +137,26 @@ if args.era in ["Run3_2022"]:
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
     if args.channel in ['et','mt','tt']:
         signal_samples = {
+            "qqH_sm_unfiltered_htt*": 'VBFHToTauTau_UncorrelatedDecay_UnFiltered',
             "qqH_sm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_ps_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_mm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
-            "ggH_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
-            "ggH_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
-            "ggH_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_sm_unfiltered_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay'],
+            "ggH_sm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_sm_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
+            "ggH_sm_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            "ggH_ps_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_ps_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
+            "ggH_ps_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            "ggH_mm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_mm_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
+            "ggH_mm_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            #"ggH_sm_prod_sm_reweight_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "WH_sm_unfiltered_htt*" : ['WplusHToTauTau_UncorrelatedDecay_UnFiltered','WminusHToTauTau_UncorrelatedDecay_UnFiltered'],
             "WH_sm_htt*" : ['WplusHToTauTau_UncorrelatedDecay_Filtered','WminusHToTauTau_UncorrelatedDecay_Filtered'],
             "WH_ps_htt*" : ['WplusHToTauTau_UncorrelatedDecay_Filtered','WminusHToTauTau_UncorrelatedDecay_Filtered'],
             "WH_mm_htt*" : ['WplusHToTauTau_UncorrelatedDecay_Filtered','WminusHToTauTau_UncorrelatedDecay_Filtered'],
+            "ZH_sm_unfiltered_htt*": 'ZHToTauTau_UncorrelatedDecay_UnFiltered',
             "ZH_sm_htt*": 'ZHToTauTau_UncorrelatedDecay_Filtered',
             "ZH_ps_htt*": 'ZHToTauTau_UncorrelatedDecay_Filtered',
             "ZH_mm_htt*": 'ZHToTauTau_UncorrelatedDecay_Filtered',
@@ -243,6 +258,28 @@ gen_sels_dict['top_sels'] = top_sels
 gen_sels_dict['vv_sels'] = vv_sels
 # ------------------------------------------------------------------------------------------------------------------------
 
+def Get1DBinNumFrom2D(h2d,xbin,ybin):
+    Nxbins = h2d.GetNbinsX()
+    return (ybin-1)*Nxbins + xbin -1
+
+def UnrollHist2D(h2d,inc_y_of=True):
+    '''
+    Unroll a 2D histogram h2d into a 1d histogram
+    inc_y_of = True includes the y over-flow bins
+    '''
+    if inc_y_of: n = 1
+    else: n = 0
+    Nbins = (h2d.GetNbinsY()+n)*(h2d.GetNbinsX())
+    h1d = ROOT.TH1D(h2d.GetName(), '', Nbins, 0, Nbins)
+    for i in range(1,h2d.GetNbinsX()+1):
+      for j in range(1,h2d.GetNbinsY()+1+n):
+        glob_bin = Get1DBinNumFrom2D(h2d,i,j)
+        content = h2d.GetBinContent(i,j)
+        error = h2d.GetBinError(i,j)
+        h1d.SetBinContent(glob_bin+1,content)
+        h1d.SetBinError(glob_bin+1,error)
+    return h1d
+
 # RunPlotting handles how each process is added to the analysis
 
 def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_name='', categories={}, categories_unmodified={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0, method=1):
@@ -289,6 +326,10 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_n
     GenerateVV(ana, nodename, add_name, samples_dict['vv_samples'], plot, wt, sel, cat, gen_sels_dict['vv_sels'], not args.do_ss, doVVT, doVVJ)
     GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat_name, categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
     GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat_name, categories=categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+
+    # generate correct signal
+    # TODO: add scheme or similar flat to determine which ones to use
+    GenerateReweightedCPSignal(ana, nodename, add_name, samples_dict['signal_samples'], masses, plot, wt, sel, cat, not args.do_ss)
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -327,7 +368,7 @@ else:
 # - 2nd index sets string to be appended to output histograms
 # - 3rd index specifies the weight to be applied
 # - 4th lists samples that should be skipped
-nodename = args.channel
+nodename = args.channel+'_'+args.category
 systematics = OrderedDict()
 if args.channel == 'mt':
     systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Muon_ID*w_Muon_Reco*w_Muon_Isolation*w_Tau_ID*w_Trigger)',[],False)
@@ -351,7 +392,7 @@ max_systematics_per_pass = 10
 
 while len(systematics) > 0:
     analysis = Analysis.Analysis()
-    analysis.nodes.AddNode(Analysis.ListNode(args.channel))
+    analysis.nodes.AddNode(Analysis.ListNode(nodename))
     analysis.remaps = {}
 
     if args.channel in ["mm","mt"]:
@@ -386,7 +427,16 @@ while len(systematics) > 0:
         for sample_name in ztt_samples + top_samples + vv_samples + wjets_samples:
             analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
 
+        for key, value in signal_samples.items():
+            if not isinstance(value, (list,)): value = [value] 
+            for samp in value:
+                for mass in masses:
+                    sample_name = samp.replace('*',mass)     
+                    analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
+
+
         analysis.AddInfo(args.parameter_file, scaleTo='data_obs')
+
 
         if systematic == 'nominal':
             do_data = True
@@ -405,6 +455,35 @@ while len(systematics) > 0:
     PrintSummary(analysis, nodename, ['data_obs'], add_names=systematic_suffixes, channel=args.channel, samples_dict=samples_dict)
 # ------------------------------------------------------------------------------------------------------------------------
 
+# unroll 2D histograms into 1D histograms but store both versions
+
+if is_2d:
+  x_lines = []
+  y_labels = []
+  first_hist = True
+  # loop over all TH2Ds and for each one unroll to produce TH1D and add to datacard
+  directory = outfile.Get(nodename)
+  outfile.cd(nodename)
+  hists_to_add = []
+  for key in directory.GetListOfKeys():
+    hist_name = key.GetName()
+    hist = directory.Get(hist_name).Clone()
+
+    if not isinstance(hist,ROOT.TDirectory):
+      include_of = False
+
+      h1d = UnrollHist2D(hist,include_of)
+      hists_to_add.append(h1d)
+      if first_hist:
+        first_hist=False
+        Nxbins = hist.GetNbinsX()
+        for i in range(1,hist.GetNbinsY()+1): x_lines.append(Nxbins*i)
+        for j in range(1,hist.GetNbinsY()+1): y_labels.append([hist.GetYaxis().GetBinLowEdge(j),hist.GetYaxis().GetBinLowEdge(j+1)])
+        if include_of: y_labels.append([hist.GetYaxis().GetBinLowEdge(hist.GetNbinsY()+1),-1])
+  for hist in hists_to_add: 
+      directory.Get(hist.GetName()).Write(hist.GetName()+'_2D') # write a copy of the 2D histogram as this will be overwritten by 1D version
+      hist.Write("",ROOT.TObject.kOverwrite)
+
 outfile.Close()
 plot_file = ROOT.TFile(output_name, 'READ')
 titles = Plotting.SetAxisTitles(args.var,args.channel)
@@ -421,4 +500,5 @@ Plotting.HTTPlot(
   y_title=y_title,
   plot_name=output_name.replace('.root',''),
   lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
+  blind=args.blind,
 )
