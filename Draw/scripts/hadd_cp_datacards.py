@@ -83,8 +83,6 @@ def hadd_root_files(input_files, output_file, dir_combinations):
 
     all_dirs_histograms = combined_dirs_histograms | independent_dirs_histograms
 
-    print(all_dirs_histograms)
-
     for dir_name, histograms in all_dirs_histograms.items():
         # Create the directory in the output file
         output.mkdir(dir_name)
