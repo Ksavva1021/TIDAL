@@ -55,7 +55,7 @@ method = int(args.method)
 # ------------------------------------------------------------------------------------------------------------------------
 # Define baseline selections and different categories
 categories = {}
-if args.era in ["Run3_2022"]:
+if args.era in ["Run3_2022", "Run3_2022EE"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && abs(eta_1) < 2.1))'
     if args.channel == "mt":
@@ -86,15 +86,23 @@ if args.channel == 'tt':
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define the samples (Data and MC (Background & Signal))
-if args.era in ["Run3_2022"]:
+if args.era in ["Run3_2022", "Run3_2022EE"]:
     samples_dict= {}
     # Data Samples
-    if args.channel == "et":
-        data_samples = ['EGamma_Run2022C', 'EGamma_Run2022D']
-    elif args.channel in ["mm","mt"]:
-        data_samples = ['SingleMuon_Run2022C','Muon_Run2022C','Muon_Run2022D']
-    elif args.channel == "tt":
-        data_samples = ['Tau_Run2022C','Tau_Run2022D']
+    if args.era in ["Run3_2022"]:
+        if args.channel == "et":
+            data_samples = ['EGamma_Run2022C', 'EGamma_Run2022D']
+        elif args.channel in ["mm","mt"]:
+            data_samples = ['SingleMuon_Run2022C','Muon_Run2022C','Muon_Run2022D']
+        elif args.channel == "tt":
+            data_samples = ['Tau_Run2022C','Tau_Run2022D']
+    elif args.era in ["Run3_2022EE"]:
+        if args.channel == "et":
+            data_samples = ['EGamma_Run2022E', 'EGamma_Run2022F', 'EGamma_Run2022G']
+        elif args.channel in ["mm","mt"]:
+            data_samples = ['Muon_Run2022E','Muon_Run2022F','Muon_Run2022G']
+        elif args.channel == "tt":
+            data_samples = ['Tau_Run2022E','Tau_Run2022F','Tau_Run2022G']
 
     samples_dict['data_samples'] = data_samples
 
@@ -386,5 +394,6 @@ Plotting.HTTPlot(
   x_title=x_title,
   y_title=y_title,
   plot_name=output_name.replace('.root',''),
-  lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
+  lumi=f"{args.era}",
+  #lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
 )
