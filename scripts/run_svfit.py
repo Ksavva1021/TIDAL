@@ -77,6 +77,7 @@ def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int,
         ]
 
     events = ak.from_parquet(input_file, columns=columns)[start_idx:end_idx]
+    events = ak.fill_none(events, -9999)
     nevents = len(events)
 
     # Create a directory for svfit outputs if it doesn't exist
