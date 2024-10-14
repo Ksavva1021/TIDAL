@@ -201,8 +201,6 @@ def run_svfit(input_file: str, channel_: str, chunk_number: int, start_idx: int,
 def run_processes(base_dir, use_condor=False, chunk_size=10000):
     for channel in os.listdir(base_dir):
         channel_dir = os.path.join(base_dir, channel)
-        if channel == "tt":
-            continue
         if os.path.isdir(channel_dir):
             for process in os.listdir(channel_dir):
                 process_dir = os.path.join(channel_dir, process)

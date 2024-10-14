@@ -19,7 +19,7 @@ def create_bins(variable: str) -> str:
             upper_bound = upper_bound.split('pi')
             upper_bound = str(float(upper_bound[0]) * numpy.pi)
 
-        binning = numpy.linspace(float(lower_bound), float(upper_bound), int(number_of_bins))
+        binning = numpy.linspace(float(lower_bound), float(upper_bound), int(number_of_bins)+1)
         binning = ','.join([str(i) for i in binning])
         variable = f"{variable_name}[{binning}]"
 
@@ -41,7 +41,7 @@ queue
         f.write(condor_template)
     os.system(f"chmod +x {submit_file}")
 
-def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path):
+def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=False):
     shell_script = f"""
 #!/bin/bash
 source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin/thisroot.sh
@@ -53,8 +53,9 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
 --era {era} \\
 --method {method} \\
 --category {category} \\
---var {variable}
-"""
+--var {variable}"""
+
+    if blind: shell_script+=' \\\n--blind'
 
     with open(script_path, "w") as script_file:
         script_file.write(shell_script)
@@ -91,10 +92,10 @@ for era in eras:
     if era not in available_eras:
         raise ValueError(f"Era {era} is not a valid era. Please choose from {available_eras}")
 
-available_schemes = ['cp', 'control']
+available_schemes = ['cpdecay', 'control']
 for scheme in schemes:
     if scheme not in available_schemes:
-        raise ValueError(f"Scheme {scheme} is not a valid scheme. Please choose from ['cp', 'decay']")
+        raise ValueError(f"Scheme {scheme} is not a valid scheme. Please choose from {available_schemes}")
 
 
 for era in eras:
@@ -108,6 +109,8 @@ for era in eras:
                 category = setting[1]
                 variable = setting[2]
 
+                blind = len(setting)>=4 and setting[3]
+
                 variable = config['variables'][scheme]["definitions"][variable]
                 variable = create_bins(variable)
                 variable_name = variable.split('[')[0]
@@ -118,7 +121,7 @@ for era in eras:
                     logs = f"{output_folder}/logs"
                     subprocess.run(["mkdir", "-p", logs])
                     script_path = os.path.join(logs, f"{variable_name}_{category}.sh")
-                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path)
+                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=blind)
 
                     submit_file = os.path.join(logs, f"submit_{variable_name}_{category}.sub")
                     create_condor_submit_file(logs, variable_name, submit_file, script_path)
@@ -135,7 +138,9 @@ for era in eras:
                         "--era", era,
                         "--method", method,
                         "--category", category,
-                        "--var", variable
+                        "--var", variable,
+                    #    "--do_ss"
                     ]
+                    if blind: process.append("--blind")
                     print(" ".join(process))
                     subprocess.run(process)

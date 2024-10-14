@@ -13,7 +13,7 @@ import numpy as np
 import ROOT
 from Draw.python import Analysis
 from Draw.python import Plotting
-from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD
+from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD, GenerateReweightedCPSignal
 from Draw.python.HiggsTauTauPlot_utilities import PrintSummary, GetTotals, FixBins
 
 ROOT.TH1.SetDefaultSumw2(True)
@@ -29,7 +29,11 @@ parser.add_argument('--category', default='inclusive', help='Category to run on'
 parser.add_argument('--sel', type=str, help='Additional Selection to apply', default='')
 parser.add_argument('--var', type=str, help='Variable to plot')
 parser.add_argument('--do_ss', action='store_true', help='Do SS')
+parser.add_argument('--blind', action='store_true', help='Blind the plot (remove data)')
+parser.add_argument('--masses', default='125', help='Mass points to process, seperated by commas')
 args = parser.parse_args()
+
+masses = args.masses.split(',')
 
 available_channels = ['mm', 'em', 'mt', 'et', 'tt']
 
@@ -63,14 +67,20 @@ if args.era in ["Run3_2022", "Run3_2022EE"]:
     if args.channel == "et":
         categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_singleelectron && pt_1 >= 25))'
     if args.channel == "tt":
-        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 3 && idDeepTau2018v2p5VSmu_2 >= 3 && (trg_doubletau && pt_1 > 40 && pt_2 > 40))'
+        doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
+        doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
+        #TODO: add option to change triggers
+        #trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
+        trg_full = '(%s)' % (doubletau_only_trg)
+        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 3 && idDeepTau2018v2p5VSmu_2 >= 3 && %s)' % trg_full
+        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3') 
+
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
 categories['btag'] = '(n_bjets>=1)'
 categories['w_sdb'] = 'mt_1>70.'
 categories['w_shape'] = ''
-categories['tt_qcd_norm'] = '(idDeepTau2018v2p5VSjet_1 < 5 && idDeepTau2018v2p5VSjet_1 >= 3 && idDeepTau2018v2p5VSjet_2 < 5 && idDeepTau2018v2p5VSjet_2 >= 3 && idDeepTau2018v2p5VSe_1 >=2 && idDeepTau2018v2p5VSe_2 >=2 && idDeepTau2018v2p5VSmu_1 >= 1 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_doubletau && pt_1 > 40 && pt_2 > 40))'
 categories['aminus_low'] = '(alphaAngle_mu_pi_1 < {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
 categories['aminus_high'] = '(alphaAngle_mu_pi_1 > {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
 
@@ -79,9 +89,31 @@ if args.channel == 'tt':
     categories["inclusive_pipi"]     = "(decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==0 && ip_LengthSig_2>=1.5)"
     categories["inclusive_pirho"]       = "((decayMode_1==1 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1))"
     categories["inclusive_rhorho"]       = "(decayMode_1==1 && decayMode_2==1)"
-    categories["inclusive_a1pi"]     = "((decayMode_1==10 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==10))"
-    categories["inclusive_a1rho"]     = "((decayMode_1==10 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10))"
-    categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10)"
+    categories["inclusive_a1pi"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==10 && hasRefitSV_2))"
+    categories["inclusive_a1rho"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10 && hasRefitSV_2))"
+    categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10 && hasRefitSV_1 && hasRefitSV_2)"
+
+
+    categories["inclusive_PNet_rhorho"]       = "(decayMode_1==1 && decayModePNet_1==1 && decayMode_2==1 && decayModePNet_2==1)"
+    categories["inclusive_PNet_pirho"]       = "((decayMode_1==1 && decayModePNet_1==1 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayMode_2==1 && decayModePNet_2==1))"
+    categories["inclusive_PNet_a1rho"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==1) || (decayMode_1==1 && decayModePNet_1==1 && decayModePNet_2==10))"
+    categories["inclusive_PNet_a1pi"]     = "((decayModePNet_1==10 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayModePNet_2==10))"
+    categories["inclusive_PNet_a1a1"]     = "(decayModePNet_1==10 && decayModePNet_2==10)"
+    categories["inclusive_PNet_pipi"]     = "(decayModePNet_1==0 && ip_LengthSig_1>=1.5 && ip_LengthSig_2>=1.5 && decayModePNet_2==0)"
+    categories["inclusive_PNet_pia11pr"]     = "((decayModePNet_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==0 && ip_LengthSig_2>=1.5))"
+    categories["inclusive_PNet_rhoa11pr"]     = "(decayMode_1==1 && decayMode_2==1 && ((decayModePNet_1==1&&decayModePNet_2==2) || (decayModePNet_1==2&&decayModePNet_2==1) || (decayModePNet_1==2&&decayModePNet_2==2)))"
+    categories["inclusive_PNet_a1a11pr"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==10))"
+
+    categories['mva_higgs'] = '(BDT_pred_class==1)'
+    categories['mva_fake']  = '(BDT_pred_class==2)'
+    categories['mva_tau']   = '(BDT_pred_class==0)'
+
+    tt_channels = ['rhorho','pirho','a1rho','a1pi','a1a1','pipi','pia11pr','rhoa11pr','a1a11pr']
+    for c in tt_channels:
+        categories["higgs_{}".format(c)] = '({} && {})'.format(categories['mva_higgs'], categories["inclusive_PNet_{}".format(c)])
+        categories["tau_{}".format(c)] = '({} && {})'.format(categories['mva_tau'], categories["inclusive_PNet_{}".format(c)])
+        categories["fake_{}".format(c)] = '({} && {})'.format(categories['mva_fake'], categories["inclusive_PNet_{}".format(c)])
+
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -113,15 +145,26 @@ if args.era in ["Run3_2022", "Run3_2022EE"]:
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
     if args.channel in ['et','mt','tt']:
         signal_samples = {
+            "qqH_sm_unfiltered_htt*": 'VBFHToTauTau_UncorrelatedDecay_UnFiltered',
             "qqH_sm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_ps_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_mm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
-            "ggH_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
-            "ggH_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
-            "ggH_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_sm_unfiltered_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay'],
+            "ggH_sm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_sm_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
+            "ggH_sm_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            "ggH_ps_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_ps_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
+            "ggH_ps_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            "ggH_mm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_mm_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
+            "ggH_mm_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            #"ggH_sm_prod_sm_reweight_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "WH_sm_unfiltered_htt*" : ['WplusHToTauTau_UncorrelatedDecay_UnFiltered','WminusHToTauTau_UncorrelatedDecay_UnFiltered'],
             "WH_sm_htt*" : ['WplusHToTauTau_UncorrelatedDecay_Filtered','WminusHToTauTau_UncorrelatedDecay_Filtered'],
             "WH_ps_htt*" : ['WplusHToTauTau_UncorrelatedDecay_Filtered','WminusHToTauTau_UncorrelatedDecay_Filtered'],
             "WH_mm_htt*" : ['WplusHToTauTau_UncorrelatedDecay_Filtered','WminusHToTauTau_UncorrelatedDecay_Filtered'],
+            "ZH_sm_unfiltered_htt*": 'ZHToTauTau_UncorrelatedDecay_UnFiltered',
             "ZH_sm_htt*": 'ZHToTauTau_UncorrelatedDecay_Filtered',
             "ZH_ps_htt*": 'ZHToTauTau_UncorrelatedDecay_Filtered',
             "ZH_mm_htt*": 'ZHToTauTau_UncorrelatedDecay_Filtered',
@@ -223,9 +266,31 @@ gen_sels_dict['top_sels'] = top_sels
 gen_sels_dict['vv_sels'] = vv_sels
 # ------------------------------------------------------------------------------------------------------------------------
 
+def Get1DBinNumFrom2D(h2d,xbin,ybin):
+    Nxbins = h2d.GetNbinsX()
+    return (ybin-1)*Nxbins + xbin -1
+
+def UnrollHist2D(h2d,inc_y_of=True):
+    '''
+    Unroll a 2D histogram h2d into a 1d histogram
+    inc_y_of = True includes the y over-flow bins
+    '''
+    if inc_y_of: n = 1
+    else: n = 0
+    Nbins = (h2d.GetNbinsY()+n)*(h2d.GetNbinsX())
+    h1d = ROOT.TH1D(h2d.GetName(), '', Nbins, 0, Nbins)
+    for i in range(1,h2d.GetNbinsX()+1):
+      for j in range(1,h2d.GetNbinsY()+1+n):
+        glob_bin = Get1DBinNumFrom2D(h2d,i,j)
+        content = h2d.GetBinContent(i,j)
+        error = h2d.GetBinError(i,j)
+        h1d.SetBinContent(glob_bin+1,content)
+        h1d.SetBinError(glob_bin+1,error)
+    return h1d
+
 # RunPlotting handles how each process is added to the analysis
 
-def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='', cat_data='', categories={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0, method=1):
+def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_name='', categories={}, categories_unmodified={}, sel='', add_name='', wt='wt', do_data=True, qcd_factor=1.0, method=1):
     '''
     RunPlotting handles how each process is added to the analysis
     ana: Analysis object
@@ -233,15 +298,19 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='
     samples_dict: dictionary containing the samples
     gen_sels_dict: dictionary containing the gen selections
     systematic: systematic variation
-    cat: category to be used for the selection
-    cat_data: category to be used for the data selection
+    cat_name: the name of the category to be used for the data selection
     categories: dictionary containing the categories
+    categories_unmodified: dictionary containing the categories - unmodified by any systematic variations - to be applied for data only
     sel: additional selection
     add_name: additional name to be added to the process (e.g. ZTT + xxx)
     wt: weight to be applied
     do_data: boolean to decide if data should be added
     qcd_factor: factor to be applied to QCD
     '''
+
+    cat = categories['cat']
+    cat_data = categories_unmodified['cat']
+
 
     doZL = True
     doZJ = True
@@ -263,8 +332,12 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat='
     GenerateZLL(ana, nodename, add_name, samples_dict['ztt_samples'], plot, wt, sel, cat, gen_sels_dict['z_sels'], not args.do_ss, doZL, doZJ)
     GenerateTop(ana, nodename, add_name, samples_dict['top_samples'], plot, wt, sel, cat, gen_sels_dict['top_sels'], not args.do_ss, doTTT, doTTJ)
     GenerateVV(ana, nodename, add_name, samples_dict['vv_samples'], plot, wt, sel, cat, gen_sels_dict['vv_sels'], not args.do_ss, doVVT, doVVJ)
-    GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat, cat_data, categories, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
-    GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat, cat_data, categories=categories, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+    GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat_name, categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+    GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat_name, categories=categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+
+    # generate correct signal
+    # TODO: add scheme or similar flat to determine which ones to use
+    GenerateReweightedCPSignal(ana, nodename, add_name, samples_dict['signal_samples'], masses, plot, wt, sel, cat, not args.do_ss)
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -283,6 +356,7 @@ if var_name.count(',') == 2:
 
 datacard_name = args.category
 output_name = f'{args.output_folder}/datacard_{var_name}_{datacard_name}_{args.channel}_{args.era}.root'
+if args.do_ss: output_name = output_name.replace('.root','_ss.root')
 outfile = ROOT.TFile(output_name, 'RECREATE')
 # ------------------------------------------------------------------------------------------------------------------------
 
@@ -302,7 +376,7 @@ else:
 # - 2nd index sets string to be appended to output histograms
 # - 3rd index specifies the weight to be applied
 # - 4th lists samples that should be skipped
-nodename = args.channel
+nodename = args.channel+'_'+args.category
 systematics = OrderedDict()
 if args.channel == 'mt':
     systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Muon_ID*w_Muon_Reco*w_Muon_Isolation*w_Tau_ID*w_Trigger)',[],False)
@@ -326,7 +400,7 @@ max_systematics_per_pass = 10
 
 while len(systematics) > 0:
     analysis = Analysis.Analysis()
-    analysis.nodes.AddNode(Analysis.ListNode(args.channel))
+    analysis.nodes.AddNode(Analysis.ListNode(nodename))
     analysis.remaps = {}
 
     if args.channel in ["mm","mt"]:
@@ -344,6 +418,7 @@ while len(systematics) > 0:
 
         sel = args.sel
         plot = args.var
+        # use plot_unmodified and categories_unmodified in cases where the data and MC get different selections due to a systematic variation
         plot_unmodified = plot
         categories_unmodified = copy.deepcopy(categories)
         systematic_folder_name = systematics[systematic][0]
@@ -360,13 +435,22 @@ while len(systematics) > 0:
         for sample_name in ztt_samples + top_samples + vv_samples + wjets_samples:
             analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
 
+        for key, value in signal_samples.items():
+            if not isinstance(value, (list,)): value = [value] 
+            for samp in value:
+                for mass in masses:
+                    sample_name = samp.replace('*',mass)     
+                    analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
+
+
         analysis.AddInfo(args.parameter_file, scaleTo='data_obs')
+
 
         if systematic == 'nominal':
             do_data = True
         else:
             do_data = False
-        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, categories['cat'], categories_unmodified['cat'], categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor, method)
+        RunPlotting(analysis, nodename, samples_dict, gen_sels_dict, systematic, args.category, categories, categories_unmodified, sel, systematic_suffix, weight, do_data, qcd_factor, method)
 
         del systematics[systematic]
 
@@ -378,6 +462,35 @@ while len(systematics) > 0:
       GetTotals(analysis, nodename, suffix, samples_dict, outfile)
     PrintSummary(analysis, nodename, ['data_obs'], add_names=systematic_suffixes, channel=args.channel, samples_dict=samples_dict)
 # ------------------------------------------------------------------------------------------------------------------------
+
+# unroll 2D histograms into 1D histograms but store both versions
+
+if is_2d:
+  x_lines = []
+  y_labels = []
+  first_hist = True
+  # loop over all TH2Ds and for each one unroll to produce TH1D and add to datacard
+  directory = outfile.Get(nodename)
+  outfile.cd(nodename)
+  hists_to_add = []
+  for key in directory.GetListOfKeys():
+    hist_name = key.GetName()
+    hist = directory.Get(hist_name).Clone()
+
+    if not isinstance(hist,ROOT.TDirectory):
+      include_of = False
+
+      h1d = UnrollHist2D(hist,include_of)
+      hists_to_add.append(h1d)
+      if first_hist:
+        first_hist=False
+        Nxbins = hist.GetNbinsX()
+        for i in range(1,hist.GetNbinsY()+1): x_lines.append(Nxbins*i)
+        for j in range(1,hist.GetNbinsY()+1): y_labels.append([hist.GetYaxis().GetBinLowEdge(j),hist.GetYaxis().GetBinLowEdge(j+1)])
+        if include_of: y_labels.append([hist.GetYaxis().GetBinLowEdge(hist.GetNbinsY()+1),-1])
+  for hist in hists_to_add: 
+      directory.Get(hist.GetName()).Write(hist.GetName()+'_2D') # write a copy of the 2D histogram as this will be overwritten by 1D version
+      hist.Write("",ROOT.TObject.kOverwrite)
 
 outfile.Close()
 plot_file = ROOT.TFile(output_name, 'READ')
@@ -396,4 +509,5 @@ Plotting.HTTPlot(
   plot_name=output_name.replace('.root',''),
   lumi=f"{args.era}",
   #lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
+  blind=args.blind,
 )
