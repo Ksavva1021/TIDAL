@@ -59,7 +59,7 @@ method = int(args.method)
 # ------------------------------------------------------------------------------------------------------------------------
 # Define baseline selections and different categories
 categories = {}
-if args.era in ["Run3_2022", "Run3_2022EE"]:
+if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && abs(eta_1) < 2.1))'
     if args.channel == "mt":
@@ -75,7 +75,6 @@ if args.era in ["Run3_2022", "Run3_2022EE"]:
         categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 3 && idDeepTau2018v2p5VSmu_2 >= 3 && %s)' % trg_full
         categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3') 
 
-
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
 categories['btag'] = '(n_bjets>=1)'
@@ -84,7 +83,6 @@ categories['w_shape'] = ''
 categories['aminus_low'] = '(alphaAngle_mu_pi_1 < {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
 categories['aminus_high'] = '(alphaAngle_mu_pi_1 > {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
 
-
 if args.channel == 'tt':
     categories["inclusive_pipi"]     = "(decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==0 && ip_LengthSig_2>=1.5)"
     categories["inclusive_pirho"]       = "((decayMode_1==1 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1))"
@@ -92,7 +90,6 @@ if args.channel == 'tt':
     categories["inclusive_a1pi"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==10 && hasRefitSV_2))"
     categories["inclusive_a1rho"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10 && hasRefitSV_2))"
     categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10 && hasRefitSV_1 && hasRefitSV_2)"
-
 
     categories["inclusive_PNet_rhorho"]       = "(decayMode_1==1 && decayModePNet_1==1 && decayMode_2==1 && decayModePNet_2==1)"
     categories["inclusive_PNet_pirho"]       = "((decayMode_1==1 && decayModePNet_1==1 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayMode_2==1 && decayModePNet_2==1))"
@@ -118,7 +115,7 @@ if args.channel == 'tt':
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define the samples (Data and MC (Background & Signal))
-if args.era in ["Run3_2022", "Run3_2022EE"]:
+if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     samples_dict= {}
     # Data Samples
     if args.era in ["Run3_2022"]:
@@ -135,6 +132,12 @@ if args.era in ["Run3_2022", "Run3_2022EE"]:
             data_samples = ['Muon_Run2022E','Muon_Run2022F','Muon_Run2022G']
         elif args.channel == "tt":
             data_samples = ['Tau_Run2022E','Tau_Run2022F','Tau_Run2022G']
+    elif args.era in ["Run3_2023"]:
+        if args.channel == "mm":
+            data_samples = ['Muon0_Run2023C_v1', 'Muon0_Run2023C_v2', 'Muon0_Run2023C_v3', 'Muon0_Run2023C_v4', 'Muon1_Run2023C_v1', 'Muon1_Run2023C_v2', 'Muon1_Run2023C_v3', 'Muon1_Run2023C_v4']
+    elif args.era in ["Run3_2023BPix"]:
+        if args.channel == "mm":
+            data_samples = ['Muon0_Run2023D_v1', 'Muon0_Run2023D_v2', 'Muon1_Run2023D_v1', 'Muon1_Run2023D_v2']
 
     samples_dict['data_samples'] = data_samples
 
@@ -143,6 +146,22 @@ if args.era in ["Run3_2022", "Run3_2022EE"]:
     top_samples = ['TTto2L2Nu','TTto2L2Nu_ext1','TTtoLNu2Q','TTtoLNu2Q_ext1','TTto4Q','TTto4Q_ext1']
     vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
+
+    if args.era in ["Run3_2023", "Run3_2023BPix"]:
+        ztt_samples.remove('DYto2L_M-50_madgraphMLM_ext1')
+        top_samples.remove('TTto2L2Nu_ext1')
+        top_samples.remove('TTtoLNu2Q_ext1')
+        top_samples.remove('TTto4Q_ext1')
+        vv_samples.remove('ST_t-channel_top_4f_InclusiveDecays')
+        vv_samples.remove('ST_t-channel_antitop_4f_InclusiveDecays')
+        vv_samples.remove('ST_tW_top_2L2Nu_ext1')
+        vv_samples.remove('ST_tW_antitop_2L2Nu_ext1')
+        vv_samples.remove('ST_tW_top_LNu2Q_ext1')
+        if args.era == "Run3_2023":
+            vv_samples.remove('ST_tW_antitop_LNu2Q')
+        vv_samples.remove('ST_tW_antitop_LNu2Q_ext1')
+        wjets_samples.remove('WtoLNu_madgraphMLM_ext1')
+
     if args.channel in ['et','mt','tt']:
         signal_samples = {
             "qqH_sm_unfiltered_htt*": 'VBFHToTauTau_UncorrelatedDecay_UnFiltered',
