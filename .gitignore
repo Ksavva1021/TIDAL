@@ -6,6 +6,6 @@ CP_Tools/plots
 CP_Tools/samples
 
 Draw/plots
-Draw/scripts/HiggsTauTauPlot_Backup.py
-Draw/scripts/HiggsTauTauPlot_CrossChecks.py
-Draw/scripts/params.json
+Draw/scripts/oldFW_crosschecks
+
+jupyter_notebooks

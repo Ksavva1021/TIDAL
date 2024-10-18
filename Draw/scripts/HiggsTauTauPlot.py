@@ -27,10 +27,12 @@ parser.add_argument('--parameter_file', type=str, help='Parameter file')
 parser.add_argument('--method', default=1, help='Method to run on')
 parser.add_argument('--category', default='inclusive', help='Category to run on')
 parser.add_argument('--sel', type=str, help='Additional Selection to apply', default='')
+parser.add_argument('--add_weight', default='', help='Additional weight to apply')
 parser.add_argument('--var', type=str, help='Variable to plot')
 parser.add_argument('--do_ss', action='store_true', help='Do SS')
 parser.add_argument('--blind', action='store_true', help='Blind the plot (remove data)')
 parser.add_argument('--masses', default='125', help='Mass points to process, seperated by commas')
+parser.add_argument('--datacard_name', help='Override the datacard name')
 args = parser.parse_args()
 
 masses = args.masses.split(',')
@@ -373,8 +375,11 @@ if var_name.count(',') == 2:
     is_3d = True
     var_name = var_name.split(',')[0]+'_vs_'+var_name.split(',')[1]+'_vs_'+var_name.split(',')[2]
 
-datacard_name = args.category
-output_name = f'{args.output_folder}/datacard_{var_name}_{datacard_name}_{args.channel}_{args.era}.root'
+category_name = args.category
+if args.datacard_name:
+    output_name = f'{args.output_folder}/datacard_{args.datacard_name}_{category_name}_{args.channel}_{args.era}.root'
+else:
+    output_name = f'{args.output_folder}/datacard_{var_name}_{category_name}_{args.channel}_{args.era}.root'
 if args.do_ss: output_name = output_name.replace('.root','_ss.root')
 outfile = ROOT.TFile(output_name, 'RECREATE')
 # ------------------------------------------------------------------------------------------------------------------------
@@ -390,6 +395,10 @@ elif args.channel == 'et':
 else:
     qcd_factor = 1.0
 
+weight = 'weight'
+if args.add_weight:
+    weight += '*'+args.add_weight
+
 # set systematics:
 # - 1st index sets folder name contaning systematic samples
 # - 2nd index sets string to be appended to output histograms
@@ -398,14 +407,13 @@ else:
 nodename = args.channel+'_'+args.category
 systematics = OrderedDict()
 if args.channel == 'mt':
-    systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Muon_ID*w_Muon_Reco*w_Muon_Isolation*w_Tau_ID*w_Trigger)',[],False)
+    systematics['nominal'] = ('nominal','',f'({weight})',[],False)
 elif args.channel == 'et':
-    systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Electron_ID*w_Electron_Reco*w_Tau_ID*w_Trigger)',[],False)
+    systematics['nominal'] = ('nominal','',f'({weight})',[],False)
 elif args.channel == 'mm':
-    systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Muon_ID*w_Muon_Reco*w_Muon_Isolation*w_Trigger)',[],False)
+    systematics['nominal'] = ('nominal','',f'({weight})',[],False)
 elif args.channel == 'tt':
-    systematics['nominal'] = ('nominal','','(w_Zpt_Reweighting*w_DY_soup*w_WJ_soup*w_Pileup*w_Tau_ID*w_Tau_e_FakeRate*w_Tau_mu_FakeRate*w_Trigger)',[],False)
-    systematics['nominal'] = ('nominal','','(weight)',[],False)
+    systematics['nominal'] = ('nominal','',f'({weight})',[],False)
 # ------------------------------------------------------------------------------------------------------------------------
 
 
