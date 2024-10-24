@@ -49,12 +49,22 @@ def process_event(lep1, lep2, mode, metx, mety, covMatrix,
 
 
 def run_FastMTT(input_file: str, channel_: str):
-    columns = [
-        "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
-        "pt_1", "eta_1", "phi_1", "mass_1", "decayMode_1",
-        "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
-        "event", "run", "lumi"
-    ]
+
+    if channel_ == "mt" or channel_ == "et":
+        columns = [
+            "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
+            "pt_1", "eta_1", "phi_1", "mass_1",
+            "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
+            "event", "run", "lumi"
+        ]
+    elif channel_ == "tt":
+        columns = [
+            "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
+            "pt_1", "eta_1", "phi_1", "mass_1", "decayMode_1",
+            "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
+            "event", "run", "lumi"
+        ]
+
     events = ak.from_parquet(input_file, columns=columns)
     nevents = len(events)
 
@@ -102,9 +112,15 @@ def run_FastMTT(input_file: str, channel_: str):
     lep_1 = calculate_p4(events.pt_1, events.eta_1, events.phi_1, events.mass_1)
     lep_2 = calculate_p4(events.pt_2, events.eta_2, events.phi_2, events.mass_2)
 
-    leps1_MeasuredTauLepton = np.array(
-        [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, events.decayMode_1)]
-    )
+    if channel_ == "tt":
+        leps1_MeasuredTauLepton = np.array(
+            [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, events.decayMode_1)]
+        )
+    elif channel_ == "et" or channel_ == "mt":
+        dummy_decayMode = ak.Array([-1] * nevents)
+        leps1_MeasuredTauLepton = np.array(
+            [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, dummy_decayMode)]
+        )
 
     leps2_MeasuredTauLepton = np.array(
         [MeasuredTauLepton(*args) for args in zip(mode, lep_2.pt, lep_2.eta, lep_2.phi, lep_2.mass, events.decayMode_2)]
@@ -140,8 +156,6 @@ def run_FastMTT(input_file: str, channel_: str):
 def run_processes(base_dir, use_condor=False):
     for channel in os.listdir(base_dir):
         channel_dir = os.path.join(base_dir, channel)
-        if channel != "tt" :
-            continue
         if os.path.isdir(channel_dir):
             for process in os.listdir(channel_dir):
                 process_dir = os.path.join(channel_dir, process)
