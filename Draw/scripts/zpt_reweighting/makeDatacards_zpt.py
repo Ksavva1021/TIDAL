@@ -125,7 +125,7 @@ for era in eras:
                     for selection_name, selection_string in additional_selections.items():
                         variable_name = f"{default_variable_name}_{selection_name}"
                         additional_selection = f"({selection_string})"
-                        additional_weight = "1/w_Zpt_Reweighting"
+                        additional_weight = "(1/w_Zpt_Reweighting)"
 
                         if args.batch:
                             logs = f"{output_folder}/logs"
@@ -159,8 +159,11 @@ for era in eras:
                             subprocess.run(process)
 
                 elif scheme == 'zpt_control':
-                    additional_selection = ""
-                    additional_weight = "1/w_Zpt_Reweighting"
+                    additional_selection = "(m_vis > 50)"
+                    #additional_weight = "1/w_Pileup"
+                    #additional_weight = "(1/w_Zpt_Reweighting) * (1/w_DY_soup)"
+                    #additional_weight = "(1/w_Zpt_Reweighting)"
+                    additional_weight = "(1)"
                     if args.batch:
                         logs = f"{output_folder}/logs"
                         subprocess.run(["mkdir", "-p", logs])

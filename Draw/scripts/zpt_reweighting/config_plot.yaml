@@ -1,37 +1,38 @@
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/production
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots/zpt_reweighting
+#input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/output/archive/production_new
+input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/test_NLO
+output_path: /vols/cms/ks1021/TIDAL/Draw/plots/test_NLO
 channels: [mm]
-eras: [Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix]
+eras: [Run3_2022]
 parameter_path: /vols/cms/ks1021/offline/HiggsDNA/IC/scripts/ditau/config/
-schemes: [zpt_calculation]
+schemes: [zpt_control]
 
 variables:
   zpt_control:
     definitions:
-      m_vis: "m_vis(20,0,200)"
+      m_vis: "m_vis(40,0,200)"
       pt_vis: "pt_vis[0,10,20,30,40,60,80,100,120,160,200,280,320,400,600]"
       eta_1: "eta_1(30,-3,3)"
       eta_2: "eta_2(30,-3,3)"
       n_jets: "n_jets(4,0,4)"
-      pt_1: "pt_1(20,0,200)"
-      pt_2: "pt_2(20,0,200)"
-      mt_1: "mt_1(30,0,300)"
-      mt_2: "mt_2(30,0,300)"
+      pt_1: "pt_1(40,0,200)"
+      pt_2: "pt_2(40,0,200)"
+      mt_1: "mt_1(40,0,300)"
+      mt_2: "mt_2(40,0,300)"
 
     mm:
       - ["1", inclusive, m_vis]
       - ["1", inclusive, pt_vis]
-      - ["1", inclusive, eta_1]
-      - ["1", inclusive, eta_2]
-      - ["1", inclusive, n_jets]
+      #- ["1", inclusive, eta_1]
+      #- ["1", inclusive, eta_2]
+      #- ["1", inclusive, n_jets]
       - ["1", inclusive, pt_1]
       - ["1", inclusive, pt_2]
-      - ["1", inclusive, mt_1]
-      - ["1", inclusive, mt_2]
+      #- ["1", inclusive, mt_1]
+      #- ["1", inclusive, mt_2]
 
   zpt_calculation:
     definitions:
-      pt_vis: "pt_vis[0,10,20,30,40,60,80,100,120,160,200,300,600]"
+      pt_vis: "pt_vis[0,10,20,30,40,60,80,100,120,160,200,280,320,400,600]"
     additional_selections:
         mvis_50to60: "m_vis > 50 && m_vis < 60"
         mvis_60to70: "m_vis > 60 && m_vis < 70"
