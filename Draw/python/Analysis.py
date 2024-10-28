@@ -386,6 +386,8 @@ class Analysis(object):
             for name, params in self.info.items():
                 if 'xs' in params and 'eff' in params:
                     params["sf"] = lumi * params["xs"] / params["eff"]
+                elif 'xs' in params and 'evt' in params:
+                    params["sf"] = lumi * params["xs"] / params["evt"]
                 else:
                     params["sf"] = 1.0
                 if 'filter_efficiency' in params:
