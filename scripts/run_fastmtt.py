@@ -42,8 +42,11 @@ def process_event(lep1, lep2, mode, metx, mety, covMatrix,
         tau1_p4 = fastMTTAlgo.getTau1P4()
         tau2_p4 = fastMTTAlgo.getTau2P4()
 
+        tau1_pt = tau1_p4.Pt()
+        tau2_pt = tau2_p4.Pt()
+
         ditau_mass = (tau1_p4 + tau2_p4).M()
-        return ditau_mass
+        return ditau_mass, tau1_pt, tau2_pt
     else:
         return -1
 
@@ -66,6 +69,7 @@ def run_FastMTT(input_file: str, channel_: str):
         ]
 
     events = ak.from_parquet(input_file, columns=columns)
+    events = ak.fill_none(events, -9999)
     nevents = len(events)
 
     channel = ak.Array([channel_] * nevents)
@@ -129,25 +133,33 @@ def run_FastMTT(input_file: str, channel_: str):
     del events
 
     mass_values = [0] * nevents
+    tau1_pt_values = [0] * nevents
+    tau2_pt_values = [0] * nevents
 
     with alive_bar(nevents) as bar:
         for index in range(nevents):
             try:
-                mass = process_event(
+                mass, tau1_pt, tau2_pt = process_event(
                     lep_1[index], lep_2[index], mode[index],
                     metx[index], mety[index], rootMETMatrices[index],
                     leps1_MeasuredTauLepton[index], leps2_MeasuredTauLepton[index]
                 )
                 mass_values[index] = mass
+                tau1_pt_values[index] = tau1_pt
+                tau2_pt_values[index] = tau2_pt
             except Exception as exc:
                 print(f"Event {index} generated an exception: {exc}")
                 mass_values[index] = -1
+                tau1_pt_values[index] = -1
+                tau2_pt_values[index] = -1
 
             bar()
 
     columns_to_store = ["event", "run", "lumi"]
     events = ak.from_parquet(input_file, columns=columns_to_store)
     events = ak.with_field(events, mass_values, "FastMTT_Mass")
+    events = ak.with_field(events, tau1_pt_values, "FastMTT_Tau1Pt")
+    events = ak.with_field(events, tau2_pt_values, "FastMTT_Tau2Pt")
 
     output_file = input_file.replace("merged", "fastmtt")
     ak.to_parquet(events, output_file)
