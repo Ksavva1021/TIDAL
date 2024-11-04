@@ -1,5 +1,6 @@
 import sys
 import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from TauAnalysis.ClassicSVfit.wrapper.pybind_wrapper import ClassicSVfit, TauTauHistogramAdapter, MeasuredTauLepton
@@ -276,10 +277,11 @@ def submit_condor_job(submission_file_path):
 
 
 def check_logs(directory, channel):
-    count_jobs = 0
     count_failed_jobs = 0
-    count_sub_files = 0
+    count_running_jobs = 0
     count_done = 0
+    count_sub_files = 0
+
     directory = os.path.join(directory, channel)
     for process in os.listdir(directory):
         process_dir = os.path.join(directory, process)
@@ -287,27 +289,68 @@ def check_logs(directory, channel):
             variation_dir = os.path.join(process_dir, "nominal")
             if os.path.isdir(variation_dir):
                 log_dir = os.path.join(variation_dir, "svfit", "condor")
+                if not os.path.exists(os.path.join(variation_dir, "svfit", "resubmit")):
+                    os.makedirs(os.path.join(variation_dir, "svfit", "resubmit"))
                 for log_file in os.listdir(log_dir):
+                    job_status_running = "Total for query: 1 jobs; 0 completed, 0 removed, 0 idle, 1 running, 0 held, 0 suspended"
+                    job_status_idle = "Total for query: 1 jobs; 0 completed, 0 removed, 1 idle, 0 running, 0 held, 0 suspended"
+                    job_status_held = "Total for query: 1 jobs; 0 completed, 0 removed, 0 idle, 0 running, 1 held, 0 suspended"
                     if log_file.endswith(".sub"):
                         count_sub_files += 1
-                    if log_file.endswith(".out"):
-                        count_jobs += 1
-                        with open(os.path.join(log_dir, log_file), 'r') as f:
-                            lines = f.readlines()
-                            if len(lines) > 0:
-                                last_line = lines[-1]
-                                if "Job is done" not in last_line:
-                                    count_failed_jobs += 1
+                    if log_file.endswith(".log"):
+                        chunk_number = log_file.split("_")[-2].replace("chunk", "")
+                        sub_file = f"condor_submit_chunk{chunk_number}.sub"
+                        out_file = log_file.replace(".log", ".out")
+                        clusterID = log_file.split("_")[-1].replace(".log", "")
+                        condor_q = os.popen(f"condor_q {clusterID}").read()
+
+                        if os.path.exists(os.path.join(log_dir, out_file)):
+                            with open(os.path.join(log_dir, out_file), 'r') as f:
+                                lines = f.readlines()
+                                if len(lines) > 0:
+                                    last_line = lines[-1]
+
+                                    if "Job is done" not in last_line:
+                                        if job_status_running not in condor_q and job_status_idle not in condor_q:
+                                            count_failed_jobs += 1
+
+                                            if job_status_held not in condor_q:
+                                                os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, 'svfit', 'resubmit')}")
+                                                os.system(f"mv {os.path.join(log_dir, log_file.replace('.log', '.err'))} {os.path.join(variation_dir, 'svfit', 'resubmit')}")
+                                                os.system(f"mv {os.path.join(log_dir, out_file)} {os.path.join(variation_dir, 'svfit', 'resubmit')}")
+                                                os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
+
+                                        elif job_status_running in condor_q:
+                                            count_running_jobs += 1
+
+                                    elif "Job is done" in last_line:
+                                        if job_status_running in condor_q:
+                                            os.popen(f"condor_rm {clusterID}")
+                                            print(f"Job {clusterID} is done but still running. Removing the job")
+                                        count_done += 1
                                 else:
-                                    count_done += 1
-                                    clusterID = log_file.split("_")[-1].replace(".out", "")
-                                    condor_q = os.popen(f"condor_q {clusterID}").read()
-                                    if "Total for query: 0 jobs; 0 completed, 0 removed, 0 idle, 0 running, 0 held, 0 suspended" not in condor_q:
-                                        print(f"Job {log_file} of {process} is still in queue")
+                                    if job_status_running in condor_q or job_status_idle in condor_q:
+                                        count_running_jobs += 1
+                                    else:
+                                        count_failed_jobs += 1
+                                        if job_status_held not in condor_q:
+                                            os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, 'svfit', 'resubmit')}")
+                                            os.system(f"mv {os.path.join(log_dir, log_file.replace('.log', '.err'))} {os.path.join(variation_dir, 'svfit', 'resubmit')}")
+                                            os.system(f"mv {os.path.join(log_dir, out_file)} {os.path.join(variation_dir, 'svfit', 'resubmit')}")
+                                            os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
+                        else:
+                            if job_status_running in condor_q or job_status_idle in condor_q:
+                                count_running_jobs += 1
                             else:
                                 count_failed_jobs += 1
+                                if job_status_held not in condor_q:
+                                    os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, 'svfit', 'resubmit')}")
+                                    os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
 
-    print(f"{count_failed_jobs} out of {count_jobs} jobs failed out of {count_sub_files} submission files")
+    print(f"Number of jobs currently running: {count_running_jobs}")
+    print(f"Number of finished jobs: {count_done}")
+    print(f"Total number of jobs: {count_sub_files}")
+    print(f"Number of failed jobs: {count_failed_jobs}")
 
 
 def merge_svfit_chunks(directory, channel):
@@ -351,7 +394,7 @@ def main():
     parser.add_argument("--start_idx", type=int, help="Start index for the chunk (used by condor submission)")
     parser.add_argument("--end_idx", type=int, help="End index for the chunk (used by condor submission)")
     parser.add_argument("--running_dir", action="store_true", help="Running directory (used by condor submission)")
-    parser.add_argument("--chunk_size", type=int, default=20000, help="Number of events per chunk")
+    parser.add_argument("--chunk_size", type=int, default=10000, help="Number of events per chunk")
     parser.add_argument("--check_logs", action="store_true", help="Check logs for failed jobs")
     parser.add_argument("--merge_chunks", action="store_true", help="Merge svfit chunks")
     args = parser.parse_args()
