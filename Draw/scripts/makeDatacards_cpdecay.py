@@ -31,7 +31,7 @@ executable = {script_path}
 output = {logs_path}/condor_{variable_name}.out
 error = {logs_path}/condor_{variable_name}.err
 log = {logs_path}/condor_{variable_name}.log
-request_memory = 8G
+request_memory = 8000
 getenv = True
 +MaxRuntime = 10800
 queue
@@ -82,7 +82,7 @@ parameter_path = config['parameter_path']
 schemes = config['schemes']
 variables = config['variables']
 
-available_channels = ['mm', 'et', 'mt', 'tt']
+available_channels = ['ee','mm', 'et', 'mt', 'tt']
 for channel in channels:
     if channel not in available_channels:
         raise ValueError(f"Channel {channel} is not a valid channel. Please choose from {available_channels}")

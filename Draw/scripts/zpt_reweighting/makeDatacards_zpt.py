@@ -31,7 +31,7 @@ executable = {script_path}
 output = {logs_path}/condor_{variable_name}.out
 error = {logs_path}/condor_{variable_name}.err
 log = {logs_path}/condor_{variable_name}.log
-request_memory = 8G
+request_memory = 8000
 getenv = True
 +MaxRuntime = 10800
 queue
