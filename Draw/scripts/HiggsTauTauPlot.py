@@ -37,7 +37,7 @@ args = parser.parse_args()
 
 masses = args.masses.split(',')
 
-available_channels = ['mm', 'em', 'mt', 'et', 'tt']
+available_channels = ['ee', 'mm', 'em', 'mt', 'et', 'tt']
 
 if args.channel not in available_channels:
     raise ValueError("Invalid channel. Please choose from: {}".format(available_channels))
@@ -62,6 +62,8 @@ method = int(args.method)
 # Define baseline selections and different categories
 categories = {}
 if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
+    if args.channel == "ee":
+        categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singleelectron && pt_1 > 31))'
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.1))'
     if args.channel == "mt":
@@ -121,7 +123,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     samples_dict= {}
     # Data Samples
     if args.era in ["Run3_2022"]:
-        if args.channel == "et":
+        if args.channel in ["ee","et"]:
             data_samples = ['EGamma_Run2022C', 'EGamma_Run2022D']
         elif args.channel in ["mm","mt"]:
             data_samples = ['SingleMuon_Run2022C','Muon_Run2022C','Muon_Run2022D']
@@ -135,20 +137,23 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         elif args.channel == "tt":
             data_samples = ['Tau_Run2022E','Tau_Run2022F','Tau_Run2022G']
     elif args.era in ["Run3_2023"]:
-        if args.channel == "mm":
+        if args.channel in ["mm","mt"]:
             data_samples = ['Muon0_Run2023C_v1', 'Muon0_Run2023C_v2', 'Muon0_Run2023C_v3', 'Muon0_Run2023C_v4', 'Muon1_Run2023C_v1', 'Muon1_Run2023C_v2', 'Muon1_Run2023C_v3', 'Muon1_Run2023C_v4']
+        elif args.channel == "tt":
+            data_samples = ['Tau_Run2023C_v1', 'Tau_Run2023C_v2', 'Tau_Run2023C_v3', 'Tau_Run2023C_v4']
     elif args.era in ["Run3_2023BPix"]:
-        if args.channel == "mm":
+        if args.channel in ["mm","mt"]:
             data_samples = ['Muon0_Run2023D_v1', 'Muon0_Run2023D_v2', 'Muon1_Run2023D_v1', 'Muon1_Run2023D_v2']
+        elif args.channel == "tt":
+            data_samples = ['Tau_Run2023D_v1', 'Tau_Run2023D_v2']
 
     samples_dict['data_samples'] = data_samples
 
     # MC Samples
-    ztt_samples = ['DYto2L_M-50_madgraphMLM','DYto2L_M-50_madgraphMLM_ext1','DYto2L_M-50_1J_madgraphMLM','DYto2L_M-50_2J_madgraphMLM','DYto2L_M-50_3J_madgraphMLM','DYto2L_M-50_4J_madgraphMLM']
+    ztt_samples = ['DYto2L_M_50_madgraphMLM','DYto2L_M_50_madgraphMLM_ext1','DYto2L_M_50_1J_madgraphMLM','DYto2L_M_50_2J_madgraphMLM','DYto2L_M_50_3J_madgraphMLM','DYto2L_M_50_4J_madgraphMLM']
     #ztt_samples = ['DYto2L_M-50_0J_amcatnloFXFX', 'DYto2L_M-50_1J_amcatnloFXFX', 'DYto2L_M-50_2J_amcatnloFXFX']
-    #ztt_samples = ['DYto2L_M-50_amcatnloFXFX']
     top_samples = ['TTto2L2Nu','TTto2L2Nu_ext1','TTtoLNu2Q','TTtoLNu2Q_ext1','TTto4Q','TTto4Q_ext1']
-    vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
+    vv_samples = ['WW','WZ','ZZ','ST_t_channel_top_4f_InclusiveDecays','ST_t_channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
 
     if args.era in ["Run3_2023", "Run3_2023BPix"]:
@@ -227,7 +232,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
 
 gen_sels = {}
 gen_sels_dict = {}
-if args.channel == 'mm':
+if args.channel in ['ee','mm']:
 
     gen_sels['ll_sel'] = '(genPartFlav_1==1 & genPartFlav_2==1)'
     gen_sels['tt_sel'] = '(genPartFlav_1==15 & genPartFlav_2==15)'
@@ -388,7 +393,7 @@ outfile = ROOT.TFile(output_name, 'RECREATE')
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define qcd factor, systematics
-if args.channel == 'mm':
+if args.channel in ['ee','mm']:
     qcd_factor = 1.07
 elif args.channel == 'mt':
     qcd_factor = 1.12
@@ -412,7 +417,7 @@ if args.channel == 'mt':
     systematics['nominal'] = ('nominal','',f'({weight})',[],False)
 elif args.channel == 'et':
     systematics['nominal'] = ('nominal','',f'({weight})',[],False)
-elif args.channel == 'mm':
+elif args.channel in ['ee','mm']:
     systematics['nominal'] = ('nominal','',f'({weight})',[],False)
 elif args.channel == 'tt':
     systematics['nominal'] = ('nominal','',f'({weight})',[],False)
@@ -465,10 +470,10 @@ while len(systematics) > 0:
             analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
 
         for key, value in signal_samples.items():
-            if not isinstance(value, (list,)): value = [value] 
+            if not isinstance(value, (list,)): value = [value]
             for samp in value:
                 for mass in masses:
-                    sample_name = samp.replace('*',mass)     
+                    sample_name = samp.replace('*',mass)
                     analysis.AddSamples(f'{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root', 'ntuple', None, sample_name)
 
 
@@ -517,7 +522,7 @@ if is_2d:
         for i in range(1,hist.GetNbinsY()+1): x_lines.append(Nxbins*i)
         for j in range(1,hist.GetNbinsY()+1): y_labels.append([hist.GetYaxis().GetBinLowEdge(j),hist.GetYaxis().GetBinLowEdge(j+1)])
         if include_of: y_labels.append([hist.GetYaxis().GetBinLowEdge(hist.GetNbinsY()+1),-1])
-  for hist in hists_to_add: 
+  for hist in hists_to_add:
       directory.Get(hist.GetName()).Write(hist.GetName()+'_2D') # write a copy of the 2D histogram as this will be overwritten by 1D version
       hist.Write("",ROOT.TObject.kOverwrite)
 
