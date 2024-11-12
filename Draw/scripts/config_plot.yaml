@@ -1,8 +1,9 @@
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/output/production
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots
-channels: [mt]
+input_folder: /vols/cms/ia2318/HiggsDNA/output/noTauID_systs
+output_path: /vols/cms/ia2318/TIDAL/plots_noTauID_systs
+channels: [mt,tt,et]
 eras: [Run3_2022]
-parameter_path: /vols/cms/ks1021/offline/HiggsDNA/IC/scripts/ditau/config/
+parameter_path: /vols/cms/ia2318/HiggsDNA/scripts/ditau/config/
+systematics_config: /vols/cms/ia2318/TIDAL/Draw/scripts/systematics.yaml
 schemes: [control]
 
 variables:
@@ -41,3 +42,8 @@ variables:
       - ["2", inclusive, ip_z_2]
       - ["2", inclusive, decayMode_2]
       - ["2", inclusive, decayModePNet_2]
+
+    et:
+      - ["2", inclusive, m_vis]
+      - ["2", inclusive, pt_1]
+      - ["2", inclusive, pt_2]

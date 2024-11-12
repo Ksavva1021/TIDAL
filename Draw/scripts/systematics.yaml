@@ -1,0 +1,13 @@
+channel:
+  ee:
+    -MuonID: False
+  mm:
+    -MuonID: False
+  em:
+    -MuonID: False
+  et:
+    -MuonID: False
+  mt:
+    -MuonID: False
+  tt:
+    -MuonID: False

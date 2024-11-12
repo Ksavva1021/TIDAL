@@ -41,7 +41,7 @@ queue
         f.write(condor_template)
     os.system(f"chmod +x {submit_file}")
 
-def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=False):
+def create_shell_script(input_folder, output_folder, parameter_file, systematics_file, channel, era, method, category, variable, script_path, blind=False):
     shell_script = f"""
 #!/bin/bash
 source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin/thisroot.sh
@@ -49,6 +49,7 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
 --input_folder {input_folder} \\
 --output_folder {output_folder} \\
 --parameter_file {parameter_file} \\
+-- systematics_file {systematics_file} \\
 --channel {channel} \\
 --era {era} \\
 --method {method} \\
@@ -79,6 +80,7 @@ output_path = config['output_path']
 channels = config['channels']
 eras = config['eras']
 parameter_path = config['parameter_path']
+systematics_file = config['systematics_config']
 schemes = config['schemes']
 variables = config['variables']
 
@@ -117,11 +119,13 @@ for era in eras:
 
                 parameter_file = f"{parameter_path}/{era}/params.yaml"
 
+                systematics_file = f"{systematics_file}"
+
                 if args.batch:
                     logs = f"{output_folder}/logs"
                     subprocess.run(["mkdir", "-p", logs])
                     script_path = os.path.join(logs, f"{variable_name}_{category}.sh")
-                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=blind)
+                    create_shell_script(input_folder, output_folder, parameter_file, systematics_file, channel, era, method, category, variable, script_path, blind=blind)
 
                     submit_file = os.path.join(logs, f"submit_{variable_name}_{category}.sub")
                     create_condor_submit_file(logs, variable_name, submit_file, script_path)
@@ -134,6 +138,7 @@ for era in eras:
                         "--input_folder", input_folder,
                         "--output_folder", output_folder,
                         "--parameter_file", parameter_file,
+                        "--systematics_file", systematics_file,
                         "--channel", channel,
                         "--era", era,
                         "--method", method,

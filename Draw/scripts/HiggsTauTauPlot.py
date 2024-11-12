@@ -24,6 +24,7 @@ parser.add_argument('--output_folder', default='output', help='Output folder')
 parser.add_argument('--channel', default='mm', help='Channel to run on')
 parser.add_argument('--era', default='2016', help='Era to run on')
 parser.add_argument('--parameter_file', type=str, help='Parameter file')
+parser.add_argument('--systematics_file', type=str, help='Systematics file')
 parser.add_argument('--method', default=1, help='Method to run on')
 parser.add_argument('--category', default='inclusive', help='Category to run on')
 parser.add_argument('--sel', type=str, help='Additional Selection to apply', default='')
@@ -49,6 +50,7 @@ table = PrettyTable()
 table.field_names = ['Details', 'Choices']
 table.add_row(['Input Folder', args.input_folder])
 table.add_row(['Parameter File', args.parameter_file])
+table.add_row(['Systematics File', args.systematics_file])
 table.add_row(['Output Folder', args.output_folder])
 table.add_row(['Channel', args.channel])
 table.add_row(['Era', args.era])
@@ -57,6 +59,10 @@ table.add_row(['Selection', args.sel])
 table.add_row(['Variable', args.var])
 
 method = int(args.method)
+
+# Load systematics from YAML file
+with open(args.systematics_file, 'r') as syst_file:
+    systematics_config = yaml.safe_load(syst_file)
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define baseline selections and different categories
@@ -421,6 +427,22 @@ elif args.channel in ['ee','mm']:
     systematics['nominal'] = ('nominal','',f'({weight})',[],False)
 elif args.channel == 'tt':
     systematics['nominal'] = ('nominal','',f'({weight})',[],False)
+
+
+# Add syst_muon_id systematics if activated in the YAML file
+
+if systematics_config['channel'][args.channel][0]['MuonID']:
+    up_var = 'w_Muon_ID_Up'
+    down_var = 'w_Muon_ID_Down'
+    if args.channel == "mm":
+        systematics['syst_muon_id_up'] = ('syst_muon_id_up', '_syst_muon_idUp', f'{weight}*(({up_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))*(({up_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+        systematics['syst_muon_id_down'] = ('syst_muon_id_down', '_syst_muon_idDown', f'{weight}*(({down_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))*(({down_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+    elif args.channel == "mt":
+        systematics['syst_muon_id_up'] = ('syst_muon_id_up', '_syst_muon_idUp', f'{weight}*(({up_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))', [], False)
+        systematics['syst_muon_id_down'] = ('syst_muon_id_down', '_syst_muon_idDown', f'{weight}*(({down_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))', [], False)
+    elif args.channel == "em":
+        systematics['syst_muon_id_up'] = ('syst_muon_id_up', '_syst_muon_idUp', f'{weight}*(({up_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+        systematics['syst_muon_id_down'] = ('syst_muon_id_down', '_syst_muon_idDown', f'{weight}*(({down_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
 # ------------------------------------------------------------------------------------------------------------------------
 
 
