@@ -443,6 +443,23 @@ if systematics_config['channel'][args.channel][0]['MuonID']:
     elif args.channel == "em":
         systematics['syst_muon_id_up'] = ('syst_muon_id_up', '_syst_muon_idUp', f'{weight}*(({up_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
         systematics['syst_muon_id_down'] = ('syst_muon_id_down', '_syst_muon_idDown', f'{weight}*(({down_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+
+# Add syst_muon_iso systematics if activated in the YAML file
+
+if systematics_config['channel'][args.channel][0]['MuonIso']:
+    up_var = 'w_Muon_Isolation_Up'
+    down_var = 'w_Muon_Isolation_Down'
+    if args.channel == "mm":
+        systematics['syst_muon_iso_up'] = ('syst_muon_iso_up', '_syst_muon_isoUp', f'{weight}*(({up_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))*(({up_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+        systematics['syst_muon_iso_down'] = ('syst_muon_iso_down', '_syst_muon_isoDown', f'{weight}*(({down_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))*(({down_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+    elif args.channel == "mt":
+        systematics['syst_muon_iso_up'] = ('syst_muon_iso_up', '_syst_muon_isoUp', f'{weight}*(({up_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))', [], False)
+        systematics['syst_muon_iso_down'] = ('syst_muon_iso_down', '_syst_muon_isoDown', f'{weight}*(({down_var})*(genPartFlav_1==1 || genPartFlav_1==15) + (!(genPartFlav_1==1 || genPartFlav_1==15)))', [], False)
+    elif args.channel == "em":
+        systematics['syst_muon_iso_up'] = ('syst_muon_iso_up', '_syst_muon_isoUp', f'{weight}*(({up_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+        systematics['syst_muon_iso_down'] = ('syst_muon_iso_down', '_syst_muon_isoDown', f'{weight}*(({down_var})*(genPartFlav_2==1 || genPartFlav_2==15) + (!(genPartFlav_2==1 || genPartFlav_2==15)))', [], False)
+
+
 # ------------------------------------------------------------------------------------------------------------------------
 
 

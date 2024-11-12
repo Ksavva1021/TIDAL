@@ -1,13 +1,19 @@
 channel:
   ee:
     -MuonID: False
+    -MuonIso: False
   mm:
     -MuonID: False
+    -MuonIso: False
   em:
     -MuonID: False
+    -MuonIso: False
   et:
     -MuonID: False
+    -MuonIso: False
   mt:
     -MuonID: False
+    -MuonIso: False
   tt:
     -MuonID: False
+    -MuonIso: False
