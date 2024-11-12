@@ -9,7 +9,15 @@ from alive_progress import alive_bar
 import pyarrow.parquet as pq
 
 
-def fastmtt(input_file: str, output_dir_name: str, channel_: str, chunk_number: int, start_idx: int, end_idx: int, delta=1/1.15, reg_order=6, constrain=False, constraint_window=np.array([124, 126])):
+def fastmtt(input_file: str, channel_: str, chunk_number: int, start_idx: int, end_idx: int, delta=1/1.15, reg_order=6, constrain=True, constrain_setting="Window", constrain_window=np.array([123, 127])):
+
+    if constrain and constrain_setting == "Window":
+        output_dir_name = f"fastmtt_{constrain_setting}_{constrain_window[0]}_{constrain_window[1]}"
+    elif constrain and constrain_setting == "BreitWigner":
+        output_dir_name = f"fastmtt_{constrain_setting}"
+    else:
+        output_dir_name = "fastmtt"
+
     if channel_ == "mt" or channel_ == "et":
         columns = [
             "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
@@ -39,7 +47,7 @@ def fastmtt(input_file: str, output_dir_name: str, channel_: str, chunk_number: 
         decay_type_1 = np.ones(nevents, dtype=np.uint8) * 2
         decay_type_2 = np.ones(nevents, dtype=np.uint8) * 2
 
-    # Create a directory for svfit outputs if it doesn't exist
+    # Create a directory for fastmtt outputs if it doesn't exist
     output_dir = os.path.join(os.path.dirname(input_file), output_dir_name)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -70,7 +78,7 @@ def fastmtt(input_file: str, output_dir_name: str, channel_: str, chunk_number: 
     met_x = met_pt * np.cos(met_phi)
     met_y = met_pt * np.sin(met_phi)
 
-    fastmttMass_values, fastmttPt1_values, fastmttPt2_values = compute_fastmtt(
+    fastmttMass_values, fastmttPt_values, fastmttPt1_values, fastmttPt2_values = compute_fastmtt(
         N,
         pt_1,
         eta_1,
@@ -95,13 +103,15 @@ def fastmtt(input_file: str, output_dir_name: str, channel_: str, chunk_number: 
         delta,
         reg_order,
         constrain,
-        constraint_window
+        constrain_setting,
+        constrain_window
     )
 
     # save the results to a parquet file
     columns_to_store = ["event", "run", "lumi"]
     chunk_events = ak.from_parquet(input_file, columns=columns_to_store)[start_idx:end_idx]
     chunk_events = ak.with_field(chunk_events, fastmttMass_values, "FastMTT_mass")
+    chunk_events = ak.with_field(chunk_events, fastmttPt_values, "FastMTT_pt")
     chunk_events = ak.with_field(chunk_events, fastmttPt1_values, "FastMTT_pt_1")
     chunk_events = ak.with_field(chunk_events, fastmttPt2_values, "FastMTT_pt_2")
 
@@ -136,9 +146,11 @@ def compute_fastmtt(
     delta,
     reg_order,
     constrain,
-    constraint_window
+    constrain_setting,
+    constrain_window
 ):
     fastmttMass_values = np.zeros(N, dtype=np.float32)
+    fastmttPt_values = np.zeros(N, dtype=np.float32)
     fastmttPt1_values = np.zeros(N, dtype=np.float32)
     fastmttPt2_values = np.zeros(N, dtype=np.float32)
 
@@ -237,10 +249,12 @@ def compute_fastmtt(
                                   pz=ditau_test.pz-leg1.pz-leg2.pz,
                                   E=ditau_test.E-leg1.E-leg2.E)
                 test_mass = ditau_test.mass
-                if (((test_mass < constraint_window[0]) or
-                     (test_mass > constraint_window[1])) and
-                    constrain):
-                    continue
+
+                if constrain_setting == "Window":
+                    if (((test_mass < constrain_window[0]) or
+                        (test_mass > constrain_window[1])) and
+                        constrain):
+                        continue
 
                 # calculate mass likelihood integral
                 m_shift = test_mass * delta
@@ -275,6 +289,15 @@ def compute_fastmtt(
 
                 # calculate final likelihood, store if minimum
                 likelihood = -met_transfer * mass_likelihood
+
+                if constrain and constrain_setting == "BreitWigner":
+                    mH = 125.0
+                    GammaH = 0.004
+                    deltaM = test_mass*test_mass - mH*mH
+                    mG = test_mass*GammaH
+                    BreitWigner_likelihood = 1/(deltaM*deltaM + mG*mG)
+                    likelihood = likelihood*BreitWigner_likelihood
+
                 if initialise:
                     min_likelihood = likelihood
                     x1_opt, x2_opt = x1, x2
@@ -291,18 +314,22 @@ def compute_fastmtt(
                                E=leg1_x1.E+leg2_x2.E)
 
         mass_opt = p4_ditau_opt.mass
+        pt_opt = p4_ditau_opt.pt
         pt1_opt = pt_1[i]/x1_opt
         pt2_opt = pt_2[i]/x2_opt
 
         fastmttMass_values[i] = mass_opt
+        fastmttPt_values[i] = pt_opt
         fastmttPt1_values[i] = pt1_opt
         fastmttPt2_values[i] = pt2_opt
 
-    return fastmttMass_values, fastmttPt1_values, fastmttPt2_values
+    return fastmttMass_values, fastmttPt_values, fastmttPt1_values, fastmttPt2_values
 
 
-def run_processes(base_dir, output_dir_name, use_condor=False, chunk_size=10000):
+def run_processes(base_dir, constrain, constrain_setting, constrain_window, use_condor=False, chunk_size=10000):
     for channel in os.listdir(base_dir):
+        if channel not in ["mt","et","tt"]:
+           continue
         channel_dir = os.path.join(base_dir, channel)
         if os.path.isdir(channel_dir):
             for process in os.listdir(channel_dir):
@@ -312,10 +339,10 @@ def run_processes(base_dir, output_dir_name, use_condor=False, chunk_size=10000)
                     if os.path.isdir(variation_dir):
                         parquet_file = os.path.join(variation_dir, 'merged.parquet')
                         if os.path.exists(parquet_file):
-                            run_process(parquet_file, output_dir_name, channel, use_condor, chunk_size)
+                            run_process(parquet_file, constrain, constrain_setting, constrain_window, channel, use_condor, chunk_size)
 
 
-def run_process(parquet_file, output_dir_name, channel, use_condor, chunk_size):
+def run_process(parquet_file, constrain, constrain_setting, constrain_window, channel, use_condor, chunk_size):
     events = ak.from_parquet(parquet_file, columns=["event"])  # Load only the event column to determine size
     nevents = len(events)
     del events
@@ -324,9 +351,9 @@ def run_process(parquet_file, output_dir_name, channel, use_condor, chunk_size):
         end_idx = min(start_idx + chunk_size, nevents)
 
         if not use_condor:
-            fastmtt(parquet_file, output_dir_name, channel, chunk_number, start_idx, end_idx)
+            fastmtt(parquet_file, channel, chunk_number, start_idx, end_idx, constrain=constrain, constrain_setting=constrain_setting, constrain_window=constrain_window)
         else:
-            shell_script_path = create_shell_script(parquet_file, output_dir_name, channel, chunk_number, start_idx, end_idx)
+            shell_script_path = create_shell_script(parquet_file, constrain, constrain_setting, constrain_window, channel, chunk_number, start_idx, end_idx)
             submission_file_path = create_condor_submission_file(shell_script_path, chunk_number)
             submit_condor_job(submission_file_path)
 
@@ -338,7 +365,7 @@ executable = {shell_script_path}
 output = {directory}/fastmtt_chunk{chunk_number}_$(CLUSTER).out
 error = {directory}/fastmtt_chunk{chunk_number}_$(CLUSTER).err
 log = {directory}/fastmtt_chunk{chunk_number}_$(CLUSTER).log
-request_memory = 8G
+request_memory = 8000
 getenv = True
 +MaxRuntime = 10800
 queue
@@ -350,7 +377,13 @@ queue
     return submission_file_path
 
 
-def create_shell_script(input_file: str, output_dir_name:str, channel: str, chunk_number: int, start_idx: int, end_idx: int):
+def create_shell_script(input_file: str, constrain, constrain_setting, constrain_window, channel: str, chunk_number: int, start_idx: int, end_idx: int):
+    if constrain and constrain_setting == "Window":
+        output_dir_name = f"fastmtt_{constrain_setting}_{constrain_window[0]}_{constrain_window[1]}"
+    elif constrain and constrain_setting == "BreitWigner":
+        output_dir_name = f"fastmtt_{constrain_setting}"
+    else:
+        output_dir_name = "fastmtt"
     shell_script = f"""
 #!/bin/bash
 python3 Tools/FastMTT/fastmtt.py \\
@@ -419,6 +452,10 @@ def check_logs(directory, output_dir_name, channel):
             variation_dir = os.path.join(process_dir, "nominal")
             if os.path.isdir(variation_dir):
                 log_dir = os.path.join(variation_dir, output_dir_name, "condor")
+                # remove log_dir
+                #if os.path.exists(log_dir):
+                #    os.system(f"rm -r {log_dir}")
+                #continue
                 if not os.path.exists(os.path.join(variation_dir, output_dir_name, "resubmit")):
                     os.makedirs(os.path.join(variation_dir, output_dir_name, "resubmit"))
                 for log_file in os.listdir(log_dir):
@@ -487,6 +524,10 @@ def main():
     parser = argparse.ArgumentParser(description="Run SVFit")
     parser.add_argument("--source_dir", type=str, help="Source directory with parquet files e.g. /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/production_v3110/Run3_2022/")
     parser.add_argument("--output_dir_name", type=str, help="Output directory name")
+    parser.add_argument("--constrain", action="store_true", help="Constrain the mass")
+    parser.add_argument("--constrain_setting", type=str, default="Window", help="Constrain setting (Window or BreitWigner)")
+    parser.add_argument("--constrain_window", type=str, default="123,127", help="Constrain window (used by condor submission)")
+
     parser.add_argument("--chunk_size", type=int, default=10000, help="Number of events per chunk")
     parser.add_argument("--use_condor", action="store_true", help="Use condor for parallel processing")
     parser.add_argument("--input_file", type=str, help="Input file (used by condor submission)")
@@ -506,9 +547,9 @@ def main():
         merge_fastmtt_chunks(args.source_dir, args.output_dir_name, args.channel)
     else:
         if not args.running_dir:
-            run_processes(args.source_dir, args.output_dir_name, args.use_condor, args.chunk_size)
+            run_processes(args.source_dir, args.constrain, args.constrain_setting, args.constrain_window, args.use_condor, args.chunk_size)
         else:
-            fastmtt(args.input_file, args.output_dir_name, args.channel, args.chunk_number, args.start_idx, args.end_idx)
+            fastmtt(args.input_file, args.constrain, args.constrain_setting, args.constrain_window, args.channel, args.chunk_number, args.start_idx, args.end_idx)
 
 if __name__ == "__main__":
     main()
