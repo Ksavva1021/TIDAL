@@ -151,9 +151,11 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
 
     # MC Samples
     ztt_samples = ['DYto2L_M_50_madgraphMLM','DYto2L_M_50_madgraphMLM_ext1','DYto2L_M_50_1J_madgraphMLM','DYto2L_M_50_2J_madgraphMLM','DYto2L_M_50_3J_madgraphMLM','DYto2L_M_50_4J_madgraphMLM']
+    #ztt_samples = ['DYto2L_M-50_madgraphMLM','DYto2L_M-50_madgraphMLM_ext1']
     #ztt_samples = ['DYto2L_M-50_0J_amcatnloFXFX', 'DYto2L_M-50_1J_amcatnloFXFX', 'DYto2L_M-50_2J_amcatnloFXFX']
     top_samples = ['TTto2L2Nu','TTto2L2Nu_ext1','TTtoLNu2Q','TTtoLNu2Q_ext1','TTto4Q','TTto4Q_ext1']
     vv_samples = ['WW','WZ','ZZ','ST_t_channel_top_4f_InclusiveDecays','ST_t_channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
+    #vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
 
     if args.era in ["Run3_2023", "Run3_2023BPix"]:
@@ -387,7 +389,8 @@ if args.datacard_name:
     output_name = f'{args.output_folder}/datacard_{args.datacard_name}_{category_name}_{args.channel}_{args.era}.root'
 else:
     output_name = f'{args.output_folder}/datacard_{var_name}_{category_name}_{args.channel}_{args.era}.root'
-if args.do_ss: output_name = output_name.replace('.root','_ss.root')
+if args.do_ss:
+    output_name = output_name.replace('.root','_ss.root')
 outfile = ROOT.TFile(output_name, 'RECREATE')
 # ------------------------------------------------------------------------------------------------------------------------
 
@@ -544,4 +547,5 @@ Plotting.HTTPlot(
   lumi=f"{args.era}",
   #lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
   blind=args.blind,
+  log_y=True,
 )
