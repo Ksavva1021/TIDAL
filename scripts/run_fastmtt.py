@@ -42,20 +42,34 @@ def process_event(lep1, lep2, mode, metx, mety, covMatrix,
         tau1_p4 = fastMTTAlgo.getTau1P4()
         tau2_p4 = fastMTTAlgo.getTau2P4()
 
+        tau1_pt = tau1_p4.Pt()
+        tau2_pt = tau2_p4.Pt()
+
         ditau_mass = (tau1_p4 + tau2_p4).M()
-        return ditau_mass
+        return ditau_mass, tau1_pt, tau2_pt
     else:
         return -1
 
 
 def run_FastMTT(input_file: str, channel_: str):
-    columns = [
-        "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
-        "pt_1", "eta_1", "phi_1", "mass_1", "decayMode_1",
-        "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
-        "event", "run", "lumi"
-    ]
+
+    if channel_ == "mt" or channel_ == "et":
+        columns = [
+            "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
+            "pt_1", "eta_1", "phi_1", "mass_1",
+            "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
+            "event", "run", "lumi"
+        ]
+    elif channel_ == "tt":
+        columns = [
+            "met_pt", "met_phi", "met_covXX", "met_covXY", "met_covYY",
+            "pt_1", "eta_1", "phi_1", "mass_1", "decayMode_1",
+            "pt_2", "eta_2", "phi_2", "mass_2", "decayMode_2",
+            "event", "run", "lumi"
+        ]
+
     events = ak.from_parquet(input_file, columns=columns)
+    events = ak.fill_none(events, -9999)
     nevents = len(events)
 
     channel = ak.Array([channel_] * nevents)
@@ -102,9 +116,15 @@ def run_FastMTT(input_file: str, channel_: str):
     lep_1 = calculate_p4(events.pt_1, events.eta_1, events.phi_1, events.mass_1)
     lep_2 = calculate_p4(events.pt_2, events.eta_2, events.phi_2, events.mass_2)
 
-    leps1_MeasuredTauLepton = np.array(
-        [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, events.decayMode_1)]
-    )
+    if channel_ == "tt":
+        leps1_MeasuredTauLepton = np.array(
+            [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, events.decayMode_1)]
+        )
+    elif channel_ == "et" or channel_ == "mt":
+        dummy_decayMode = ak.Array([-1] * nevents)
+        leps1_MeasuredTauLepton = np.array(
+            [MeasuredTauLepton(*args) for args in zip(mode, lep_1.pt, lep_1.eta, lep_1.phi, lep_1.mass, dummy_decayMode)]
+        )
 
     leps2_MeasuredTauLepton = np.array(
         [MeasuredTauLepton(*args) for args in zip(mode, lep_2.pt, lep_2.eta, lep_2.phi, lep_2.mass, events.decayMode_2)]
@@ -113,25 +133,33 @@ def run_FastMTT(input_file: str, channel_: str):
     del events
 
     mass_values = [0] * nevents
+    tau1_pt_values = [0] * nevents
+    tau2_pt_values = [0] * nevents
 
     with alive_bar(nevents) as bar:
         for index in range(nevents):
             try:
-                mass = process_event(
+                mass, tau1_pt, tau2_pt = process_event(
                     lep_1[index], lep_2[index], mode[index],
                     metx[index], mety[index], rootMETMatrices[index],
                     leps1_MeasuredTauLepton[index], leps2_MeasuredTauLepton[index]
                 )
                 mass_values[index] = mass
+                tau1_pt_values[index] = tau1_pt
+                tau2_pt_values[index] = tau2_pt
             except Exception as exc:
                 print(f"Event {index} generated an exception: {exc}")
                 mass_values[index] = -1
+                tau1_pt_values[index] = -1
+                tau2_pt_values[index] = -1
 
             bar()
 
     columns_to_store = ["event", "run", "lumi"]
     events = ak.from_parquet(input_file, columns=columns_to_store)
     events = ak.with_field(events, mass_values, "FastMTT_Mass")
+    events = ak.with_field(events, tau1_pt_values, "FastMTT_Tau1Pt")
+    events = ak.with_field(events, tau2_pt_values, "FastMTT_Tau2Pt")
 
     output_file = input_file.replace("merged", "fastmtt")
     ak.to_parquet(events, output_file)
@@ -140,8 +168,6 @@ def run_FastMTT(input_file: str, channel_: str):
 def run_processes(base_dir, use_condor=False):
     for channel in os.listdir(base_dir):
         channel_dir = os.path.join(base_dir, channel)
-        if channel != "tt" :
-            continue
         if os.path.isdir(channel_dir):
             for process in os.listdir(channel_dir):
                 process_dir = os.path.join(channel_dir, process)

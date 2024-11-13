@@ -42,11 +42,11 @@ def SetAxisTitles(plot, channel):
         chan_label = "#tau#tau"
         lep1_label = "#tau_{1}"
         lep2_label = "#tau_{2}"
-    elif channel == "zee":
+    elif channel == "zee" or channel == "ee":
         chan_label = "ee"
         lep1_label = "e_{1}"
         lep2_label = "e_{2}"
-    elif channel == "zmm":
+    elif channel == "zmm" or channel == "mm":
         chan_label = "#mu#mu"
         lep1_label = "#mu_{1}"
         lep2_label = "#mu_{2}"
@@ -306,7 +306,15 @@ def SetAxisTitles2D(plot, channel):
         chan_label = "ee"
         lep1_label = "e_{1}"
         lep2_label = "e_{2}"
+    elif channel == "ee":
+        chan_label = "ee"
+        lep1_label = "e_{1}"
+        lep2_label = "e_{2}"
     elif channel == "zmm":
+        chan_label = "#mu#mu"
+        lep1_label = "#mu_{1}"
+        lep2_label = "#mu_{2}"
+    elif channel == "mm":
         chan_label = "#mu#mu"
         lep1_label = "#mu_{1}"
         lep2_label = "#mu_{2}"
@@ -2939,6 +2947,20 @@ def HTTPlot(
                     R.TColor.GetColor(100, 192, 232),
                 ),
             ],
+            "ee": [
+                backgroundComp("QCD", ["QCD"], R.TColor.GetColor(250, 202, 255)),
+                backgroundComp(
+                    "t#bar{t}", ["TTT", "TTJ"], R.TColor.GetColor(155, 152, 204)
+                ),
+                backgroundComp(
+                    "Electroweak", ["VVT", "VVJ", "W"], R.TColor.GetColor(222, 90, 106)
+                ),
+                backgroundComp(
+                    "Z#rightarrow ee",
+                    ["ZL", "ZJ", "ZTT", "EWKZ"],
+                    R.TColor.GetColor(100, 192, 232),
+                ),
+            ],
             "w": [backgroundComp("W", ["W"], R.TColor.GetColor(222, 90, 106))],
             "w_shape": [
                 backgroundComp(
@@ -3086,7 +3108,7 @@ def HTTPlot(
                 ),
             ],
         }
-    if channel == "zee" or channel == "zmm":
+    if channel == "zee" or channel == "zmm" or channel == "mm" or channel == "ee":
         background_schemes["dy"] = [
             backgroundComp("DY", ["ZLL"], R.TColor.GetColor(100, 192, 232))
         ]
