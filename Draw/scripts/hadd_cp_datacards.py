@@ -119,6 +119,18 @@ if __name__ == "__main__":
         'tt_higgs_pia1': ['tt_higgs_a1pi', 'tt_higgs_pia1'],
         'tt_higgs_pia11pr': ['tt_higgs_pia11pr', 'tt_higgs_a11prpi'],
         'tt_higgs_a11pra1': ['tt_higgs_a11pra1', 'tt_higgs_a1a11pr'],
+
+        'tt_fake_pirho': ['tt_fake_pirho', 'tt_fake_rhopi'],
+        'tt_fake_rhoa1': ['tt_fake_a1rho', 'tt_fake_rhoa1'],
+        'tt_fake_pia1': ['tt_fake_a1pi', 'tt_fake_pia1'],
+        'tt_fake_pia11pr': ['tt_fake_pia11pr', 'tt_fake_a11prpi'],
+        'tt_fake_a11pra1': ['tt_fake_a11pra1', 'tt_fake_a1a11pr'],       
+
+        'tt_tau_pirho': ['tt_tau_pirho', 'tt_tau_rhopi'],
+        'tt_tau_rhoa1': ['tt_tau_a1rho', 'tt_tau_rhoa1'],
+        'tt_tau_pia1': ['tt_tau_a1pi', 'tt_tau_pia1'],
+        'tt_tau_pia11pr': ['tt_tau_pia11pr', 'tt_tau_a11prpi'],
+        'tt_tau_a11pra1': ['tt_tau_a11pra1', 'tt_tau_a1a11pr'],
     }
 
     # Call the hadd function with the provided arguments

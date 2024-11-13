@@ -1,7 +1,7 @@
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/output/production_new_v2
-output_path: /vols/cms/dw515/Run3_CP_workareas/TIDAL/Draw/Run2bins_datacards_newA1
+input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/output/production_fixPU
+output_path: /vols/cms/dw515/Run3_CP_workareas/TIDAL/Draw/Run3_Oct16_oldA1_unoptimised
 channels: [tt]
-eras: [Run3_2022]
+eras: [Run3_2022,Run3_2022EE]
 parameter_path: /vols/cms/dw515/Run3_CP_workareas/HiggsDNA/scripts/ditau/config/
 schemes: [cpdecay]
 
@@ -37,31 +37,31 @@ variables:
 
 
     tt:
-        - ['3', 'higgs_rhorho', MVA_vs_aco_rho_rho, True]
-        - ['3', 'higgs_pipi', MVA_vs_aco_pi_pi, True]
-        - ['3', 'higgs_a1a1', MVA_vs_aco_a1_a1, True]
-        - ['3', 'higgs_pirho', MVA_vs_aco_pi_rho, True]
-        - ['3', 'higgs_rhopi', MVA_vs_aco_rho_pi, True]
-        - ['3', 'higgs_pia11pr', MVA_vs_aco_pi_a11pr, True]
-        - ['3', 'higgs_a11prpi', MVA_vs_aco_a11pr_pi, True]
-        - ['3', 'higgs_rhoa11pr', MVA_vs_aco_rho_a11pr, True]
-
-          #   - ['3', 'higgs_a1a11pr', MVA_vs_aco_a1_a11pr, True]
-          #   - ['3', 'higgs_a11pra1', MVA_vs_aco_a11pr_a1, True]
-          #   - ['3', 'higgs_a1rho', MVA_vs_aco_a1_rho, True]
-          #   - ['3', 'higgs_rhoa1', MVA_vs_aco_rho_a1, True]
-          #   - ['3', 'higgs_a1pi', MVA_vs_aco_a1_pi, True]
-          #   - ['3', 'higgs_pia1', MVA_vs_aco_pi_a1, True]
-
-        - ['3', 'higgs_a1a11pr', MVA_vs_aco_a1_a11pr_SVFIT, True]
-        - ['3', 'higgs_a11pra1', MVA_vs_aco_a11pr_a1_SVFIT, True]
-        - ['3', 'higgs_a1rho', MVA_vs_aco_a1_rho_SVFIT, True]
-        - ['3', 'higgs_rhoa1', MVA_vs_aco_rho_a1_SVFIT, True]
-        - ['3', 'higgs_a1pi', MVA_vs_aco_a1_pi_SVFIT, True]
-        - ['3', 'higgs_pia1', MVA_vs_aco_pi_a1_SVFIT, True]
-
-        - ['3', 'mva_higgs', MVA_score, True]
-        - ['3', 'mva_tau', MVA_score]
-        - ['3', 'mva_fake', MVA_score]
+             - ['3', 'higgs_rhorho', MVA_vs_aco_rho_rho, True]
+             - ['3', 'higgs_pipi', MVA_vs_aco_pi_pi, True]
+             - ['3', 'higgs_a1a1', MVA_vs_aco_a1_a1, True]
+             - ['3', 'higgs_pirho', MVA_vs_aco_pi_rho, True]
+             - ['3', 'higgs_rhopi', MVA_vs_aco_rho_pi, True]
+             - ['3', 'higgs_pia11pr', MVA_vs_aco_pi_a11pr, True]
+             - ['3', 'higgs_a11prpi', MVA_vs_aco_a11pr_pi, True]
+             - ['3', 'higgs_rhoa11pr', MVA_vs_aco_rho_a11pr, True]
+      
+             - ['3', 'higgs_a1a11pr', MVA_vs_aco_a1_a11pr, True]
+             - ['3', 'higgs_a11pra1', MVA_vs_aco_a11pr_a1, True]
+             - ['3', 'higgs_a1rho', MVA_vs_aco_a1_rho, True]
+             - ['3', 'higgs_rhoa1', MVA_vs_aco_rho_a1, True]
+             - ['3', 'higgs_a1pi', MVA_vs_aco_a1_pi, True]
+             - ['3', 'higgs_pia1', MVA_vs_aco_pi_a1, True]
+      
+               #- ['3', 'higgs_a1a11pr', MVA_vs_aco_a1_a11pr_SVFIT, True]
+               #- ['3', 'higgs_a11pra1', MVA_vs_aco_a11pr_a1_SVFIT, True]
+               #- ['3', 'higgs_a1rho', MVA_vs_aco_a1_rho_SVFIT, True]
+               #- ['3', 'higgs_rhoa1', MVA_vs_aco_rho_a1_SVFIT, True]
+               #- ['3', 'higgs_a1pi', MVA_vs_aco_a1_pi_SVFIT, True]
+               #- ['3', 'higgs_pia1', MVA_vs_aco_pi_a1_SVFIT, True]
+      
+             - ['3', 'mva_higgs', MVA_score, True]
+             - ['3', 'mva_tau', MVA_score]
+             - ['3', 'mva_fake', MVA_score]
 
 

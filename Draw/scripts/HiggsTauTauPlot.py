@@ -86,6 +86,8 @@ categories['aminus_high'] = '(alphaAngle_mu_pi_1 > {} && svfit_Mass < 100 && mt_
 
 
 if args.channel == 'tt':
+
+
     categories["inclusive_pipi"]     = "(decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==0 && ip_LengthSig_2>=1.5)"
     categories["inclusive_pirho"]       = "((decayMode_1==1 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1))"
     categories["inclusive_rhorho"]       = "(decayMode_1==1 && decayMode_2==1)"
@@ -93,30 +95,60 @@ if args.channel == 'tt':
     categories["inclusive_a1rho"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10 && hasRefitSV_2))"
     categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10 && hasRefitSV_1 && hasRefitSV_2)"
 
+    sel_pi = 'decayModePNet_X==0 && ip_LengthSig_X>=1.5'
+    sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
+    sel_a1 = 'decayModePNet_X==10'
+    sel_a11pr = 'decayMode_X==1 && decayModePNet_X==2 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
 
-    categories["inclusive_PNet_rhorho"]       = "(decayMode_1==1 && decayModePNet_1==1 && decayMode_2==1 && decayModePNet_2==1)"
-    categories["inclusive_PNet_pipi"]     = "(decayModePNet_1==0 && ip_LengthSig_1>=1.5 && ip_LengthSig_2>=1.5 && decayModePNet_2==0)"
-    categories["inclusive_PNet_a1a1"]     = "(decayModePNet_1==10 && decayModePNet_2==10)"
-    categories["inclusive_PNet_rhoa11pr"]     = "(decayMode_1==1 && decayMode_2==1 && ((decayModePNet_1==1&&decayModePNet_2==2) || (decayModePNet_1==2&&decayModePNet_2==1) || (decayModePNet_1==2&&decayModePNet_2==2)))"
+    sel_pi_1 = sel_pi.replace('X','1')
+    sel_pi_2 = sel_pi.replace('X','2')
+    sel_rho_1 = sel_rho.replace('X','1')
+    sel_rho_2 = sel_rho.replace('X','2')
+    sel_a1_1 = sel_a1.replace('X','1')
+    sel_a1_2 = sel_a1.replace('X','2')
+    sel_a11pr_1 = sel_a11pr.replace('X','1')
+    sel_a11pr_2 = sel_a11pr.replace('X','2')
 
-# comments this version for now where decay modes are merged independent of the order of the lead or sub leading tau 
-#    categories["inclusive_PNet_pirho"]       = "((decayMode_1==1 && decayModePNet_1==1 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayMode_2==1 && decayModePNet_2==1))"
-#    categories["inclusive_PNet_a1rho"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==1) || (decayMode_1==1 && decayModePNet_1==1 && decayModePNet_2==10))"
-#    categories["inclusive_PNet_a1pi"]     = "((decayModePNet_1==10 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayModePNet_2==10))"
-#    categories["inclusive_PNet_pia11pr"]     = "((decayModePNet_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==0 && ip_LengthSig_2>=1.5))"
-#    categories["inclusive_PNet_a1a11pr"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==10))"
+    categories["inclusive_PNet_rhorho"] = '(%(sel_rho_1)s && %(sel_rho_2)s)' % vars() 
+    categories["inclusive_PNet_pipi"] = '(%(sel_pi_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_a1a1"] = '(%(sel_a1_1)s && %(sel_a1_2)s)' % vars()
+    categories["inclusive_PNet_rhoa11pr"] = '((%(sel_rho_1)s && %(sel_a11pr_2)s) || (%(sel_a11pr_1)s && %(sel_rho_2)s) || (%(sel_a11pr_1)s && %(sel_a11pr_2)s))' % vars()
 
-    categories["inclusive_PNet_pirho"]       = "(ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayMode_2==1 && decayModePNet_2==1)"
-    categories["inclusive_PNet_a1rho"]     = "(decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==1)"
-    categories["inclusive_PNet_a1pi"]     = "(decayModePNet_1==10 && ip_LengthSig_2>=1.5 && decayModePNet_2==0)"
-    categories["inclusive_PNet_pia11pr"]     = "(decayModePNet_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1 && decayModePNet_2==2)"
-    categories["inclusive_PNet_a1a11pr"]     = "(decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==2)"
+    categories["inclusive_PNet_pirho"]     = '(%(sel_pi_1)s && %(sel_rho_2)s)' % vars()
+    categories["inclusive_PNet_a1rho"]     = '(%(sel_a1_1)s && %(sel_rho_2)s)' % vars()
+    categories["inclusive_PNet_a1pi"]      = '(%(sel_a1_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_pia11pr"]   = '(%(sel_pi_1)s && %(sel_a11pr_2)s)' % vars()
+    categories["inclusive_PNet_a1a11pr"]   = '(%(sel_a1_1)s && %(sel_a11pr_2)s)' % vars()
 
-    categories["inclusive_PNet_rhopi"]       = "(ip_LengthSig_2>=1.5 && decayModePNet_2==0 && decayMode_1==1 && decayModePNet_1==1)"
-    categories["inclusive_PNet_rhoa1"]     = "(decayModePNet_2==10 && decayMode_1==1 && decayModePNet_1==1)"
-    categories["inclusive_PNet_pia1"]     = "(decayModePNet_2==10 && ip_LengthSig_1>=1.5 && decayModePNet_1==0)"
-    categories["inclusive_PNet_a11prpi"]     = "(decayModePNet_2==0 && ip_LengthSig_2>=1.5 && decayMode_1==1 && decayModePNet_1==2)"
-    categories["inclusive_PNet_a11pra1"]     = "(decayModePNet_2==10 && decayMode_1==1 && decayModePNet_1==2)"
+    categories["inclusive_PNet_rhopi"]     = '(%(sel_rho_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_rhoa1"]     = '(%(sel_rho_1)s && %(sel_a1_2)s)' % vars()
+    categories["inclusive_PNet_pia1"]      = '(%(sel_pi_1)s && %(sel_a1_2)s)' % vars()
+    categories["inclusive_PNet_a11prpi"]   = '(%(sel_a11pr_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_a11pra1"]   = '(%(sel_a11pr_1)s && %(sel_a1_2)s)' % vars()
+
+#    categories["inclusive_PNet_rhorho"]       = "(decayMode_1==1 && decayModePNet_1==1 && decayMode_2==1 && decayModePNet_2==1)"
+#    categories["inclusive_PNet_pipi"]     = "(decayModePNet_1==0 && ip_LengthSig_1>=1.5 && ip_LengthSig_2>=1.5 && decayModePNet_2==0)"
+#    categories["inclusive_PNet_a1a1"]     = "(decayModePNet_1==10 && decayModePNet_2==10)"
+#    categories["inclusive_PNet_rhoa11pr"]     = "(decayMode_1==1 && decayMode_2==1 && ((decayModePNet_1==1&&decayModePNet_2==2) || (decayModePNet_1==2&&decayModePNet_2==1) || (decayModePNet_1==2&&decayModePNet_2==2)))"
+#
+## comments this version for now where decay modes are merged independent of the order of the lead or sub leading tau 
+##    categories["inclusive_PNet_pirho"]       = "((decayMode_1==1 && decayModePNet_1==1 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayMode_2==1 && decayModePNet_2==1))"
+##    categories["inclusive_PNet_a1rho"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==1) || (decayMode_1==1 && decayModePNet_1==1 && decayModePNet_2==10))"
+##    categories["inclusive_PNet_a1pi"]     = "((decayModePNet_1==10 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayModePNet_2==10))"
+##    categories["inclusive_PNet_pia11pr"]     = "((decayModePNet_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==0 && ip_LengthSig_2>=1.5))"
+##    categories["inclusive_PNet_a1a11pr"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==10))"
+#
+#    categories["inclusive_PNet_pirho"]       = "(ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayMode_2==1 && decayModePNet_2==1)"
+#    categories["inclusive_PNet_a1rho"]     = "(decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==1)"
+#    categories["inclusive_PNet_a1pi"]     = "(decayModePNet_1==10 && ip_LengthSig_2>=1.5 && decayModePNet_2==0)"
+#    categories["inclusive_PNet_pia11pr"]     = "(decayModePNet_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1 && decayModePNet_2==2)"
+#    categories["inclusive_PNet_a1a11pr"]     = "(decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==2)"
+#
+#    categories["inclusive_PNet_rhopi"]       = "(ip_LengthSig_2>=1.5 && decayModePNet_2==0 && decayMode_1==1 && decayModePNet_1==1)"
+#    categories["inclusive_PNet_rhoa1"]     = "(decayModePNet_2==10 && decayMode_1==1 && decayModePNet_1==1)"
+#    categories["inclusive_PNet_pia1"]     = "(decayModePNet_2==10 && ip_LengthSig_1>=1.5 && decayModePNet_1==0)"
+#    categories["inclusive_PNet_a11prpi"]     = "(decayModePNet_2==0 && ip_LengthSig_2>=1.5 && decayMode_1==1 && decayModePNet_1==2)"
+#    categories["inclusive_PNet_a11pra1"]     = "(decayModePNet_2==10 && decayMode_1==1 && decayModePNet_1==2)"
 
     categories['mva_higgs'] = '(BDT_pred_class==1)'
     categories['mva_fake']  = '(BDT_pred_class==2)'
@@ -164,7 +196,10 @@ if args.era in ["Run3_2022", "Run3_2022EE"]:
             "qqH_sm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_ps_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_mm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
-            "ggH_sm_unfiltered_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay'],
+            "Higgs_flat_htt*": ['VBFHToTauTau_UncorrelatedDecay_Filtered', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            "qqH_flat_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
+            "ggH_flat_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_sm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
             "ggH_sm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
             "ggH_sm_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
             "ggH_sm_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
