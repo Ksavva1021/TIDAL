@@ -154,7 +154,6 @@ if args.channel == 'tt':
     categories['mva_fake']  = '(BDT_pred_class==2)'
     categories['mva_tau']   = '(BDT_pred_class==0)'
 
-    #tt_channels = ['rhorho','pirho','a1rho','a1pi','a1a1','pipi','pia11pr','rhoa11pr','a1a11pr']
     tt_channels = ['rhorho','pirho','rhopi','a1rho','rhoa1','a1pi','pia1','a1a1','pipi','pia11pr','a11prpi','rhoa11pr','a1a11pr','a11pra1']
     for c in tt_channels:
         categories["higgs_{}".format(c)] = '({} && {})'.format(categories['mva_higgs'], categories["inclusive_PNet_{}".format(c)])
