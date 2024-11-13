@@ -4,6 +4,7 @@ import re
 import logging
 from prettytable import PrettyTable
 from collections import defaultdict
+import os
 
 # Setup logger
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -50,6 +51,8 @@ def process_files(directory, variables, eta_boundaries, channel, year, merge_map
 
     input_directory = f"{directory}/{channel}"
     output_directory = f"{directory}/histograms"
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
 
     # Define the process names needed
     all_processes = ["ZL", "data_obs", "ZTT", "ZJ", "TTT", "TTJ", "VVT", "VVJ", "W", "QCD"]
@@ -178,7 +181,7 @@ variables = [
     "ip_z_1_Err", "ip_z_2_Err",
 ]
 
-channel = "ee"
+channel = "mm"
 
 if channel == "mm":
     eta_boundaries = [0.0, 0.9, 1.2, 2.1, 2.4]
@@ -189,7 +192,7 @@ else:
     exit(1)
 
 year = "Run3_2022"  # Specify the year
-directory = "/vols/cms/ks1021/TIDAL/Draw/plots/production_11_11_2024/Run3_2022/ip_calculation"
+directory = "/vols/cms/ks1021/TIDAL/Draw/plots/production_13_11_2024/Run3_2022/ip_calculation"
 
 # Define the merge mapping
 merge_mapping = {

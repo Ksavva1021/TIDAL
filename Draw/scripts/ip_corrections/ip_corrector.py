@@ -197,6 +197,18 @@ def applyQuantileMapping_numpy(hist_MC_counts, hist_MC_edges, hist_data_counts, 
     return varcorr
 
 
+def corrected_IPSig(ipx, ipy, ipz, ip_cov):
+
+    ip_vectors = np.vstack((ipx, ipy, ipz)).T
+    ip_magnitudes = np.linalg.norm(ip_vectors, axis=1)
+    ip_normalized = ip_vectors / ip_magnitudes[:, np.newaxis]
+
+    error_ip = np.sqrt(np.einsum('ni,nij,nj->n', ip_normalized, ip_cov, ip_normalized))
+
+    ip_significance = ip_magnitudes / error_ip
+
+    return ip_significance
+
 # Usage example:
 path = "/vols/cms/ks1021/TIDAL/Draw/scripts/ip_corrections/ip_2018_pvbs.root"
 path_2 = "/vols/cms/ks1021/TIDAL/Draw/plots/production_11_11_2024/Run3_2022/ip_calculation/histograms/combined_histograms_mm_Run3_2022.root"
@@ -228,6 +240,8 @@ ip_x_corr, ip_y_corr, ip_z_corr = correct_IP(hist_data, ip_x, ip_y, ip_z, gen_ip
 
 ip_cov = correct_ip_cov(hist_data, ip_cov_xx, ip_cov_yy, ip_cov_zz, eta)
 
+ip_sig = corrected_IPSig(ip_x_corr, ip_y_corr, ip_z_corr, ip_cov)
+
 # Print the corrected IP values
 print("Corrected ip_x:", ip_x_corr)
 print("Corrected ip_y:", ip_y_corr)
@@ -237,3 +251,4 @@ print("Corrected ip_z:", ip_z_corr)
 print("Corrected covariance matrices:")
 print(ip_cov)
 
+print("Corrected IP significance:", ip_sig)
