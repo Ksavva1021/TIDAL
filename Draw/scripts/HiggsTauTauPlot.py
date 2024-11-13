@@ -97,7 +97,6 @@ if args.channel == 'tt':
     categories["inclusive_a1rho"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10 && hasRefitSV_2))"
     categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10 && hasRefitSV_1 && hasRefitSV_2)"
 
-<<<<<<< HEAD
     sel_pi = 'decayModePNet_X==0 && ip_LengthSig_X>=1.5'
     sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
     sel_a1 = 'decayModePNet_X==10'
