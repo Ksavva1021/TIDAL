@@ -33,7 +33,14 @@ parser.add_argument('--do_ss', action='store_true', help='Do SS')
 parser.add_argument('--blind', action='store_true', help='Blind the plot (remove data)')
 parser.add_argument('--masses', default='125', help='Mass points to process, seperated by commas')
 parser.add_argument('--datacard_name', help='Override the datacard name')
+parser.add_argument('--vsjet', type=int, help='VSjet cut to use', required=True)
+parser.add_argument('--IPcut', type=float, help='IP sig cut to use', default=1.50)
+parser.add_argument('--Ecut', type=float, help='E split cut to use', default=0.0)
 args = parser.parse_args()
+
+print("*"*140)
+print(f"\n\nPROCESSING FOR VSJET CUT: {args.vsjet} \nIP SIGNIFICANCE CUT: {args.IPcut} \nENERGY SPLITTING CUT: {args.Ecut} \n\n\n")
+print("*"*140)
 
 masses = args.masses.split(',')
 
@@ -67,17 +74,17 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.1))'
     if args.channel == "mt":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 >= 25  && abs(eta_1) < 2.1))'
+        categories['baseline'] = f'(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= {args.vsjet} && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 >= 25  && abs(eta_1) < 2.1))'
     if args.channel == "et":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_singleelectron && pt_1 >= 25))'
+        categories['baseline'] = f'(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= {args.vsjet} && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_singleelectron && pt_1 >= 25))'
     if args.channel == "tt":
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
         #TODO: add option to change triggers
         trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
         #trg_full = '(%s)' % (doubletau_only_trg)
-        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 3 && idDeepTau2018v2p5VSmu_2 >= 3 && %s)' % trg_full
-        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3') 
+        categories['baseline'] = f'(idDeepTau2018v2p5VSjet_1 >= {args.vsjet} && idDeepTau2018v2p5VSjet_2 >= {args.vsjet}  && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 1 && idDeepTau2018v2p5VSmu_2 >= 1 && %s)' % trg_full
+        categories['tt_qcd_norm'] = categories['baseline'].replace(f'idDeepTau2018v2p5VSjet_1 >= {args.vsjet}', f'idDeepTau2018v2p5VSjet_1 <= {args.vsjet}  && idDeepTau2018v2p5VSjet_1 >= 3')
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
@@ -97,10 +104,10 @@ if args.channel == 'tt':
     categories["inclusive_a1rho"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10 && hasRefitSV_2))"
     categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10 && hasRefitSV_1 && hasRefitSV_2)"
 
-    sel_pi = 'decayModePNet_X==0 && ip_LengthSig_X>=1.5'
-    sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
+    sel_pi = f'decayModePNet_X==0 && ip_LengthSig_X>={args.IPcut}'
+    sel_rho = f'decayMode_X==1 && decayModePNet_X==1 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>{args.Ecut}'
     sel_a1 = 'decayModePNet_X==10'
-    sel_a11pr = 'decayMode_X==1 && decayModePNet_X==2 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
+    sel_a11pr = f'decayMode_X==1 && decayModePNet_X==2 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>{args.Ecut}'
 
     sel_pi_1 = sel_pi.replace('X','1')
     sel_pi_2 = sel_pi.replace('X','2')
@@ -128,9 +135,18 @@ if args.channel == 'tt':
     categories["inclusive_PNet_a11prpi"]   = '(%(sel_a11pr_1)s && %(sel_pi_2)s)' % vars()
     categories["inclusive_PNet_a11pra1"]   = '(%(sel_a11pr_1)s && %(sel_a1_2)s)' % vars()
 
-    categories['mva_higgs'] = '(BDT_pred_class==1)'
-    categories['mva_fake']  = '(BDT_pred_class==2)'
-    categories['mva_tau']   = '(BDT_pred_class==0)'
+    if args.vsjet == 5:
+        vsjet_name = 'medium'
+    elif args.vsjet == 6:
+        vsjet_name = 'tight'
+    elif args.vsjet == 7:
+        vsjet_name = 'vtight'
+    else:
+        raise ValueError(f"Invalid VSjet cut: {args.vsjet} of type: {type(args.vsjet)}")
+
+    categories['mva_higgs'] = f'(BDT_{vsjet_name}_pred_class==1)'
+    categories['mva_fake']  = f'(BDT_{vsjet_name}_pred_class==2)'
+    categories['mva_tau']   = f'(BDT_{vsjet_name}_pred_class==0)'
 
     tt_channels = ['rhorho','pirho','rhopi','a1rho','rhoa1','a1pi','pia1','a1a1','pipi','pia11pr','a11prpi','rhoa11pr','a1a11pr','a11pra1']
     for c in tt_channels:
@@ -171,13 +187,12 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             data_samples = ['Tau_Run2023D_v1', 'Tau_Run2023D_v2']
 
     samples_dict['data_samples'] = data_samples
-
     # MC Samples
-    ztt_samples = ['DYto2L_M_50_madgraphMLM','DYto2L_M_50_madgraphMLM_ext1','DYto2L_M_50_1J_madgraphMLM','DYto2L_M_50_2J_madgraphMLM','DYto2L_M_50_3J_madgraphMLM','DYto2L_M_50_4J_madgraphMLM']
+    ztt_samples = ['DYto2L_M-50_madgraphMLM','DYto2L_M-50_madgraphMLM_ext1','DYto2L_M-50_1J_madgraphMLM','DYto2L_M-50_2J_madgraphMLM','DYto2L_M-50_3J_madgraphMLM','DYto2L_M-50_4J_madgraphMLM']
     #ztt_samples = ['DYto2L_M-50_madgraphMLM','DYto2L_M-50_madgraphMLM_ext1']
     #ztt_samples = ['DYto2L_M-50_0J_amcatnloFXFX', 'DYto2L_M-50_1J_amcatnloFXFX', 'DYto2L_M-50_2J_amcatnloFXFX']
     top_samples = ['TTto2L2Nu','TTto2L2Nu_ext1','TTtoLNu2Q','TTtoLNu2Q_ext1','TTto4Q','TTto4Q_ext1']
-    vv_samples = ['WW','WZ','ZZ','ST_t_channel_top_4f_InclusiveDecays','ST_t_channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
+    vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     #vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
 

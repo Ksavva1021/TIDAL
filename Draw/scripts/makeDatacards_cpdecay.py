@@ -65,6 +65,10 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--config', type=str, help='Configuration file')
 parser.add_argument('--batch', action='store_true', help='Run in batch mode')
+parser.add_argument('--name', type=str, help='name of the run (eg IP, E)', required=True)
+parser.add_argument('--vsjet', type=int, help='VSjet cut to use', required=True)
+parser.add_argument('--IPcut', type=float, help='IP sig cut to use', default=1.50)
+parser.add_argument('--Ecut', type=float, help='E split cut to use', default=0.0)
 
 args = parser.parse_args()
 
@@ -75,7 +79,7 @@ with open(config_file) as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
 
 input_folder = config['input_folder']
-output_path = config['output_path']
+output_path = os.path.join(config['output_path'], args.name)
 channels = config['channels']
 eras = config['eras']
 parameter_path = config['parameter_path']
@@ -139,6 +143,9 @@ for era in eras:
                         "--method", method,
                         "--category", category,
                         "--var", variable,
+                        "--vsjet", str(args.vsjet),
+                        "--IPcut", str(args.IPcut),
+                        "--Ecut", str(args.Ecut)
                     #    "--do_ss"
                     ]
                     if blind: process.append("--blind")
