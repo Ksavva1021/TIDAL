@@ -2,13 +2,13 @@ import ROOT
 import math
 from scipy.stats import f as f_pval_func
 import time
-ROOT.gROOT.SetBatch(0)
+ROOT.gROOT.SetBatch(1)
 
 f = ROOT.TFile("smoothing_2022_v2.root")
-chan = 'pirho'
-h_mc = f.Get('tt_higgs_%(chan)s/Higgs_flat_htt125' % vars())
+chan = 'rhorho'
+#h_mc = f.Get('tt_higgs_%(chan)s/Higgs_flat_htt125' % vars())
+h_mc = f.Get('tt_higgs_%(chan)s/qqH_ps_htt125' % vars())
 
-h_mc.Rebin(4)
 h_mc_clone = h_mc.Clone()
 
 def GetFitStats(fit_result):
@@ -22,8 +22,9 @@ def FTest(chi2_1, ndf_1, chi2_2, ndf_2):
     # need to check this test is implemented correctly
     delta_chi2 = chi2_1 - chi2_2
     delta_ndf = ndf_1 - ndf_2
-    F = (delta_chi2/delta_ndf) / (chi2_2/ndf_2)
-    p_val = 1 - f_pval_func.cdf(F, delta_ndf, ndf_2)
+
+    p_val = ROOT.TMath.Prob(delta_chi2, delta_ndf)
+    
 
     return(p_val)
 
@@ -62,6 +63,7 @@ def FindBestFuncs(data, N=5):
         chi2_1, ndf_1, _ = GetFitStats(fits[i-1])
         p_val = FTest(chi2_1, ndf_1, chi2_2, ndf_2)
 
+        print(i, p_val)
     return (funcs)
 
 #h_mc.Scale(1./h_mc.Integral())
@@ -78,3 +80,4 @@ for i, f in enumerate(funcs):
     f.Write()
 
 fout.Close()
+
