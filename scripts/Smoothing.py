@@ -5,12 +5,9 @@ import time
 ROOT.gROOT.SetBatch(1)
 ROOT.TH1.AddDirectory(False)
 
-#f = ROOT.TFile("smoothing_2022_v2.root")
-f = ROOT.TFile("datacard_id_tight_Ecut_0p1_IPcut_1p0.root")
 chan = 'rhorho'
+f = ROOT.TFile("datacard_id_tight_Ecut_0p1_IPcut_1p0.root")
 h_mc = f.Get('tt_higgs_%(chan)s/Higgs_flat_htt125_2D' % vars())
-#h_mc = f.Get('tt_higgs_%(chan)s/ggH_sm_prod_sm_htt125' % vars())
-h_mc_clone = h_mc.Clone()
 
 def SplitHistogramInto1DSlices(hist):
     
@@ -84,6 +81,7 @@ def FindBestFuncs(data, N=5):
 hists = SplitHistogramInto1DSlices(h_mc)
 
 h_total = hists[0].Clone()
+h_total.SetName(str(h_total.GetName()).replace('slice1','total'))
 for hist in hists[:1]:
     h_total.Add(hist)
 
@@ -93,7 +91,7 @@ funcs_total = FindBestFuncs(h_total)
 
 fout = ROOT.TFile('smoothing_func_output_%(chan)s_v2.root' % vars(),'RECREATE')
 fout.cd()
-h_total_clone.Write('hist_%(chan)s' % vars())
+h_total_clone.Write()
 
 colours = [2,4,6,1,3]
 

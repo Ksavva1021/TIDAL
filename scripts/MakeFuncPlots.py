@@ -8,13 +8,13 @@ file_name = 'smoothing_func_output_%(chan)s_v2.root' % vars()
 
 f = ROOT.TFile(file_name)
 
-h = f.Get('hist_%(chan)s' % vars())
+h = f.Get('Higgs_flat_htt125_total' % vars())
 
-func0 = f.Get('func0')
-func1 = f.Get('func1')
-func2 = f.Get('func2')
-func3 = f.Get('func3')
-func4 = f.Get('func4')
+func0 = f.Get('Higgs_flat_htt125_total_func0')
+func1 = f.Get('Higgs_flat_htt125_total_func1')
+func2 = f.Get('Higgs_flat_htt125_total_func2')
+func3 = f.Get('Higgs_flat_htt125_total_func3')
+func4 = f.Get('Higgs_flat_htt125_total_func4')
 
 
 c1 = ROOT.TCanvas('c1','',800,600)
