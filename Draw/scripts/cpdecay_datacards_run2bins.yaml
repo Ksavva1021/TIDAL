@@ -1,8 +1,8 @@
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/output/production_fixPU
-output_path: /vols/cms/dw515/Run3_CP_workareas/TIDAL/Draw/Run3_Oct16_oldA1_unoptimised
+input_folder: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/output/production
+output_path: /vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Sensitivity/
 channels: [tt]
-eras: [Run3_2022,Run3_2022EE]
-parameter_path: /vols/cms/dw515/Run3_CP_workareas/HiggsDNA/scripts/ditau/config/
+eras: [Run3_2022 ,Run3_2022EE, Run3_2023, Run3_2023BPix]
+parameter_path: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/scripts/ditau/config/
 schemes: [cpdecay]
 
 variables:
@@ -11,29 +11,29 @@ variables:
       m_vis: "m_vis(50,0,400)"
       decayModePNet_2: "decayModePNet_2[0,1,2,3,4,5,6,7,8,9,10,11,12]"
       aco_rho_rho: "aco_rho_rho(10,0,2pi)"
-      MVA_score: "BDT_pred_score[0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]"  
-      MVA_vs_aco_rho_rho: "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],(10,0,2pi)"  
-      MVA_vs_aco_pi_pi: "BDT_pred_score,aco_pi_pi[0.,0.7,0.8,1.0],(4,0,2pi)"  
-      MVA_vs_aco_a1_a1: "BDT_pred_score,aco_a1_a1[0.,0.7,0.8,1.0],(4,0,2pi)"  
-      MVA_vs_aco_pi_rho: "BDT_pred_score,aco_pi_rho[0.,0.7,0.8,0.9,1.0],(10,0,2pi)"  
-      MVA_vs_aco_rho_pi: "BDT_pred_score,aco_rho_pi[0.,0.7,0.8,0.9,1.0],(10,0,2pi)"  
-      MVA_vs_aco_pi_a11pr: "BDT_pred_score,aco_pi_rho[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"  
-      MVA_vs_aco_a11pr_pi: "BDT_pred_score,aco_rho_pi[0.,0.7,0.8,0.9,1.0],(4,0,2pi)" 
-      MVA_vs_aco_rho_a11pr: "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"  
+      MVA_score: "BDT_medium_pred_score[0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]"
+      MVA_vs_aco_rho_rho: "BDT_medium_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],(10,0,2pi)"
+      MVA_vs_aco_pi_pi: "BDT_medium_pred_score,aco_pi_pi[0.,0.7,0.8,1.0],(4,0,2pi)"
+      MVA_vs_aco_a1_a1: "BDT_medium_pred_score,aco_a1_a1[0.,0.7,0.8,1.0],(4,0,2pi)"
+      MVA_vs_aco_pi_rho: "BDT_medium_pred_score,aco_pi_rho[0.,0.7,0.8,0.9,1.0],(10,0,2pi)"
+      MVA_vs_aco_rho_pi: "BDT_medium_pred_score,aco_rho_pi[0.,0.7,0.8,0.9,1.0],(10,0,2pi)"
+      MVA_vs_aco_pi_a11pr: "BDT_medium_pred_score,aco_pi_rho[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_a11pr_pi: "BDT_medium_pred_score,aco_rho_pi[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_rho_a11pr: "BDT_medium_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
 
-      MVA_vs_aco_a1_a11pr: "BDT_pred_score,aco_a1_rho[0.,0.7,0.8,1.0],(4,0,2pi)"  
-      MVA_vs_aco_a11pr_a1: "BDT_pred_score,aco_rho_a1[0.,0.7,0.8,1.0],(4,0,2pi)"  
-      MVA_vs_aco_a1_rho: "BDT_pred_score,aco_a1_rho[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"  
-      MVA_vs_aco_rho_a1: "BDT_pred_score,aco_rho_a1[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"  
-      MVA_vs_aco_a1_pi: "BDT_pred_score,aco_a1_pi[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"  
-      MVA_vs_aco_pi_a1: "BDT_pred_score,aco_pi_a1[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"  
+      MVA_vs_aco_a1_a11pr: "BDT_medium_pred_score,aco_a1_rho[0.,0.7,0.8,1.0],(4,0,2pi)"
+      MVA_vs_aco_a11pr_a1: "BDT_medium_pred_score,aco_rho_a1[0.,0.7,0.8,1.0],(4,0,2pi)"
+      MVA_vs_aco_a1_rho: "BDT_medium_pred_score,aco_a1_rho[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_rho_a1: "BDT_medium_pred_score,aco_rho_a1[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_a1_pi: "BDT_medium_pred_score,aco_a1_pi[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_pi_a1: "BDT_medium_pred_score,aco_pi_a1[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
 
-      MVA_vs_aco_a1_a11pr_SVFIT: "BDT_pred_score,aco_a1_rho_SVFIT[0.,0.7,0.8,1.0],(4,0,2pi)"
-      MVA_vs_aco_a11pr_a1_SVFIT: "BDT_pred_score,aco_rho_a1_SVFIT[0.,0.7,0.8,1.0],(4,0,2pi)"
-      MVA_vs_aco_a1_rho_SVFIT: "BDT_pred_score,aco_a1_rho_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"    
-      MVA_vs_aco_rho_a1_SVFIT: "BDT_pred_score,aco_rho_a1_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"             
-      MVA_vs_aco_a1_pi_SVFIT: "BDT_pred_score,aco_a1_pi_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"              
-      MVA_vs_aco_pi_a1_SVFIT: "BDT_pred_score,aco_pi_a1_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)" 
+      MVA_vs_aco_a1_a11pr_SVFIT: "BDT_medium_pred_score,aco_a1_rho_SVFIT[0.,0.7,0.8,1.0],(4,0,2pi)"
+      MVA_vs_aco_a11pr_a1_SVFIT: "BDT_medium_pred_score,aco_rho_a1_SVFIT[0.,0.7,0.8,1.0],(4,0,2pi)"
+      MVA_vs_aco_a1_rho_SVFIT: "BDT_medium_pred_score,aco_a1_rho_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_rho_a1_SVFIT: "BDT_medium_pred_score,aco_rho_a1_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_a1_pi_SVFIT: "BDT_medium_pred_score,aco_a1_pi_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
+      MVA_vs_aco_pi_a1_SVFIT: "BDT_medium_pred_score,aco_pi_a1_SVFIT[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
 
 
     tt:
