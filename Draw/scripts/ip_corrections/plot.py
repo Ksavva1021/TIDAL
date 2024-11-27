@@ -1,4 +1,3 @@
-from calendar import c
 import os
 import uproot
 import numpy as np
@@ -9,12 +8,11 @@ from matplotlib.gridspec import GridSpec
 
 hep.style.use("CMS")
 
-input_dir = "/vols/cms/ks1021/TIDAL/Draw/plots/production_11_11_2024/Run3_2022/ip_calculation/histograms"
-channel = "ee"
-year = "Run3_2022"
-when = "Before"
+channel = "mm"
+year = "Run3_2023"
+input_dir = f"/vols/cms/ks1021/TIDAL/Draw/plots/ip_corrections_before/{year}/ip_calculation/histograms"
 
-output_dir = os.path.join(input_dir, channel, year, when)
+output_dir = os.path.join(input_dir, channel, year)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -27,9 +25,22 @@ variable_mapping = {
     "ip_y": "Impact parameter y [cm]",
     "ip_z": "Impact parameter z [cm]",
     "ip_LengthSig": "Impact parameter significance",
+    "ip_alt_LengthSig": "Impact parameter significance (alternative)",
     "ip_x_Err": "Impact parameter x error [cm]",
     "ip_y_Err": "Impact parameter y error [cm]",
     "ip_z_Err": "Impact parameter z error [cm]",
+    "ip_x_Err_ratio": "Impact parameter x error ratio",
+    "ip_y_Err_ratio": "Impact parameter y error ratio",
+#    "ip_z_Err_ratio": "Impact parameter z error ratio",
+#    "ip_x_log_Err": "Impact parameter x error log scale",
+#    "ip_y_log_Err": "Impact parameter y error log scale",
+#    "ip_z_log_Err": "Impact parameter z error log scale",
+#    "ip_cov00": "Covariance 00",
+#    "ip_cov11": "Covariance 11",
+#    "ip_cov22": "Covariance 22",
+#    "ip_cov10": "Covariance 10",
+#    "ip_cov20": "Covariance 20",
+#    "ip_cov21": "Covariance 21",
 }
 
 sorted_keys = sorted(variable_mapping.keys(), key=len, reverse=True)
@@ -85,10 +96,18 @@ for clean_hist_name in cleaned_names:
             hep.histplot(mc_vals, mc_edges, color="royalblue", alpha=0.8, histtype="fill", linewidth=1.5, label="ZLL", ax=ax_main)
 
             # Check if "Err" is in the base_name and set y-axis to log scale if true
-            if "Err" in base_name:
+            if "Err" in base_name or "cov" in base_name:
                 ax_main.set_yscale("log")
 
-            hep.cms.label(ax=ax_main, label="", data=False, lumi=7.98, com=13.6, fontsize=14)
+            if year == "Run3_2022":
+                lumi = 7.98
+            elif year == "Run3_2022EE":
+                lumi = 26.67
+            elif year == "Run3_2023":
+                lumi = 17.79
+            elif year == "Run3_2023BPIX":
+                lumi = 9.45
+            hep.cms.label(ax=ax_main, label="", data=False, lumi=lumi, com=13.6, fontsize=14)
 
             # Adding labels and customizations for main plot
             ax_main.legend(fontsize=13, loc="upper right")
