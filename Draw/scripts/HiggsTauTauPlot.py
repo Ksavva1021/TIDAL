@@ -67,9 +67,9 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.1))'
     if args.channel == "mt":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 >= 25  && abs(eta_1) < 2.1))'
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.1))'
     if args.channel == "et":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_singleelectron && pt_1 >= 25))'
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_singleelectron && pt_1 > 31))'
     if args.channel == "tt":
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
@@ -86,6 +86,12 @@ categories['w_sdb'] = 'mt_1>70.'
 categories['w_shape'] = ''
 categories['aminus_low'] = '(alphaAngle_mu_pi_1 < {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
 categories['aminus_high'] = '(alphaAngle_mu_pi_1 > {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)'.format(np.pi/4)
+categories['ip_control'] = '(m_vis > 40 && m_vis < 90 && mt_1 < 40)'
+
+categories['xt_dM0'] = '(decayMode_2 == 0)'
+categories['xt_dM1'] = '(decayMode_2 == 1)'
+categories['xt_dM10'] = '(decayMode_2 == 10)'
+categories['xt_dM11'] = '(decayMode_2 == 11)'
 
 if args.channel == 'tt':
     categories["inclusive_pipi"]     = "(decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==0 && ip_LengthSig_2>=1.5)"
@@ -130,14 +136,16 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         elif args.channel == "tt":
             data_samples = ['Tau_Run2022C','Tau_Run2022D']
     elif args.era in ["Run3_2022EE"]:
-        if args.channel == "et":
+        if args.channel in ["ee","et"]:
             data_samples = ['EGamma_Run2022E', 'EGamma_Run2022F', 'EGamma_Run2022G']
         elif args.channel in ["mm","mt"]:
             data_samples = ['Muon_Run2022E','Muon_Run2022F','Muon_Run2022G']
         elif args.channel == "tt":
             data_samples = ['Tau_Run2022E','Tau_Run2022F','Tau_Run2022G']
     elif args.era in ["Run3_2023"]:
-        if args.channel in ["mm","mt"]:
+        if args.channel in ["ee","et"]:
+            data_samples = ['EGamma0_Run2023C_v1', 'EGamma0_Run2023C_v2', 'EGamma0_Run2023C_v3', 'EGamma0_Run2023C_v4', 'EGamma1_Run2023C_v1', 'EGamma1_Run2023C_v2', 'EGamma1_Run2023C_v3', 'EGamma1_Run2023C_v4']
+        elif args.channel in ["mm","mt"]:
             data_samples = ['Muon0_Run2023C_v1', 'Muon0_Run2023C_v2', 'Muon0_Run2023C_v3', 'Muon0_Run2023C_v4', 'Muon1_Run2023C_v1', 'Muon1_Run2023C_v2', 'Muon1_Run2023C_v3', 'Muon1_Run2023C_v4']
         elif args.channel == "tt":
             data_samples = ['Tau_Run2023C_v1', 'Tau_Run2023C_v2', 'Tau_Run2023C_v3', 'Tau_Run2023C_v4']
@@ -159,12 +167,10 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
 
     if args.era in ["Run3_2023", "Run3_2023BPix"]:
-        ztt_samples.remove('DYto2L_M-50_madgraphMLM_ext1')
+        ztt_samples.remove('DYto2L_M_50_madgraphMLM_ext1')
         top_samples.remove('TTto2L2Nu_ext1')
         top_samples.remove('TTtoLNu2Q_ext1')
         top_samples.remove('TTto4Q_ext1')
-        vv_samples.remove('ST_t-channel_top_4f_InclusiveDecays')
-        vv_samples.remove('ST_t-channel_antitop_4f_InclusiveDecays')
         vv_samples.remove('ST_tW_top_2L2Nu_ext1')
         vv_samples.remove('ST_tW_antitop_2L2Nu_ext1')
         vv_samples.remove('ST_tW_top_LNu2Q_ext1')
@@ -547,5 +553,5 @@ Plotting.HTTPlot(
   lumi=f"{args.era}",
   #lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
   blind=args.blind,
-  log_y=True,
+  log_y=False,
 )
