@@ -53,7 +53,10 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
 --era {era} \\
 --method {method} \\
 --category {category} \\
---var {variable}"""
+--var {variable} \\
+--vsjet {str(args.vsjet)} \\
+--IPcut {str(args.IPcut)} \\
+--Ecut {str(args.Ecut)}"""
 
     if blind: shell_script+=' \\\n--blind'
 
