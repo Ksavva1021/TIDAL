@@ -1,7 +1,7 @@
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/ip_corrections_before
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots/ip_corrections_before/
+input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/prod_28_11_2024_v2
+output_path: /vols/cms/ks1021/TIDAL/Draw/plots/prod_28_11_2024_v2/
 channels: [ee,mm]
-eras: [Run3_2023]
+eras: [Run3_2022, Run3_2022EE, Run3_2023]
 parameter_path: /vols/cms/ks1021/offline/HiggsDNA/IC/scripts/ditau/config/
 schemes: [ip_calculation]
 
@@ -16,8 +16,8 @@ variables:
       ip_z_2: "ip_z_2(200,-0.01,0.01)"
       ip_LengthSig_1: "ip_LengthSig_1(100,0,10)"
       ip_LengthSig_2: "ip_LengthSig_2(100,0,10)"
-      ip_alt_LengthSig_1: "ip_alt_LengthSig_1(100,0,10)"
-      ip_alt_LengthSig_2: "ip_alt_LengthSig_2(100,0,10)"
+      ip_alt_LengthSig_1: "ip_alt_LengthSig_1(200,0,10)"
+      ip_alt_LengthSig_2: "ip_alt_LengthSig_2(200,0,10)"
       ip_x_1_Err: "ip_x_1_Err(1000,0,0.1)"
       ip_x_2_Err: "ip_y_1_Err(1000,0,0.1)"
       ip_y_1_Err: "ip_z_1_Err(1000,0,0.1)"
