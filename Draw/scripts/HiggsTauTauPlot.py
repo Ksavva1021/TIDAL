@@ -74,8 +74,8 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
         #TODO: add option to change triggers
-        #trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
-        trg_full = '(%s)' % (doubletau_only_trg)
+        trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
+        #trg_full = '(%s)' % (doubletau_only_trg)
         categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 3 && idDeepTau2018v2p5VSmu_2 >= 3 && %s)' % trg_full
         categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3') 
 
@@ -94,6 +94,8 @@ categories['xt_dM10'] = '(decayMode_2 == 10)'
 categories['xt_dM11'] = '(decayMode_2 == 11)'
 
 if args.channel == 'tt':
+
+
     categories["inclusive_pipi"]     = "(decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==0 && ip_LengthSig_2>=1.5)"
     categories["inclusive_pirho"]       = "((decayMode_1==1 && decayMode_2==0 && ip_LengthSig_2>=1.5) || (decayMode_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1))"
     categories["inclusive_rhorho"]       = "(decayMode_1==1 && decayMode_2==1)"
@@ -101,21 +103,42 @@ if args.channel == 'tt':
     categories["inclusive_a1rho"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10 && hasRefitSV_2))"
     categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10 && hasRefitSV_1 && hasRefitSV_2)"
 
-    categories["inclusive_PNet_rhorho"]       = "(decayMode_1==1 && decayModePNet_1==1 && decayMode_2==1 && decayModePNet_2==1)"
-    categories["inclusive_PNet_pirho"]       = "((decayMode_1==1 && decayModePNet_1==1 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayMode_2==1 && decayModePNet_2==1))"
-    categories["inclusive_PNet_a1rho"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==1) || (decayMode_1==1 && decayModePNet_1==1 && decayModePNet_2==10))"
-    categories["inclusive_PNet_a1pi"]     = "((decayModePNet_1==10 && ip_LengthSig_2>=1.5 && decayModePNet_2==0) || (ip_LengthSig_1>=1.5 && decayModePNet_1==0 && decayModePNet_2==10))"
-    categories["inclusive_PNet_a1a1"]     = "(decayModePNet_1==10 && decayModePNet_2==10)"
-    categories["inclusive_PNet_pipi"]     = "(decayModePNet_1==0 && ip_LengthSig_1>=1.5 && ip_LengthSig_2>=1.5 && decayModePNet_2==0)"
-    categories["inclusive_PNet_pia11pr"]     = "((decayModePNet_1==0 && ip_LengthSig_1>=1.5 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==0 && ip_LengthSig_2>=1.5))"
-    categories["inclusive_PNet_rhoa11pr"]     = "(decayMode_1==1 && decayMode_2==1 && ((decayModePNet_1==1&&decayModePNet_2==2) || (decayModePNet_1==2&&decayModePNet_2==1) || (decayModePNet_1==2&&decayModePNet_2==2)))"
-    categories["inclusive_PNet_a1a11pr"]     = "((decayModePNet_1==10 && decayMode_2==1 && decayModePNet_2==2) || (decayMode_1==1 && decayModePNet_1==2 && decayModePNet_2==10))"
+    sel_pi = 'decayModePNet_X==0 && ip_LengthSig_X>=1.5'
+    sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
+    sel_a1 = 'decayModePNet_X==10'
+    sel_a11pr = 'decayMode_X==1 && decayModePNet_X==2 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
+
+    sel_pi_1 = sel_pi.replace('X','1')
+    sel_pi_2 = sel_pi.replace('X','2')
+    sel_rho_1 = sel_rho.replace('X','1')
+    sel_rho_2 = sel_rho.replace('X','2')
+    sel_a1_1 = sel_a1.replace('X','1')
+    sel_a1_2 = sel_a1.replace('X','2')
+    sel_a11pr_1 = sel_a11pr.replace('X','1')
+    sel_a11pr_2 = sel_a11pr.replace('X','2')
+
+    categories["inclusive_PNet_rhorho"] = '(%(sel_rho_1)s && %(sel_rho_2)s)' % vars() 
+    categories["inclusive_PNet_pipi"] = '(%(sel_pi_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_a1a1"] = '(%(sel_a1_1)s && %(sel_a1_2)s)' % vars()
+    categories["inclusive_PNet_rhoa11pr"] = '((%(sel_rho_1)s && %(sel_a11pr_2)s) || (%(sel_a11pr_1)s && %(sel_rho_2)s) || (%(sel_a11pr_1)s && %(sel_a11pr_2)s))' % vars()
+
+    categories["inclusive_PNet_pirho"]     = '(%(sel_pi_1)s && %(sel_rho_2)s)' % vars()
+    categories["inclusive_PNet_a1rho"]     = '(%(sel_a1_1)s && %(sel_rho_2)s)' % vars()
+    categories["inclusive_PNet_a1pi"]      = '(%(sel_a1_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_pia11pr"]   = '(%(sel_pi_1)s && %(sel_a11pr_2)s)' % vars()
+    categories["inclusive_PNet_a1a11pr"]   = '(%(sel_a1_1)s && %(sel_a11pr_2)s)' % vars()
+
+    categories["inclusive_PNet_rhopi"]     = '(%(sel_rho_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_rhoa1"]     = '(%(sel_rho_1)s && %(sel_a1_2)s)' % vars()
+    categories["inclusive_PNet_pia1"]      = '(%(sel_pi_1)s && %(sel_a1_2)s)' % vars()
+    categories["inclusive_PNet_a11prpi"]   = '(%(sel_a11pr_1)s && %(sel_pi_2)s)' % vars()
+    categories["inclusive_PNet_a11pra1"]   = '(%(sel_a11pr_1)s && %(sel_a1_2)s)' % vars()
 
     categories['mva_higgs'] = '(BDT_pred_class==1)'
     categories['mva_fake']  = '(BDT_pred_class==2)'
     categories['mva_tau']   = '(BDT_pred_class==0)'
 
-    tt_channels = ['rhorho','pirho','a1rho','a1pi','a1a1','pipi','pia11pr','rhoa11pr','a1a11pr']
+    tt_channels = ['rhorho','pirho','rhopi','a1rho','rhoa1','a1pi','pia1','a1a1','pipi','pia11pr','a11prpi','rhoa11pr','a1a11pr','a11pra1']
     for c in tt_channels:
         categories["higgs_{}".format(c)] = '({} && {})'.format(categories['mva_higgs'], categories["inclusive_PNet_{}".format(c)])
         categories["tau_{}".format(c)] = '({} && {})'.format(categories['mva_tau'], categories["inclusive_PNet_{}".format(c)])
@@ -185,7 +208,10 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             "qqH_sm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_ps_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
             "qqH_mm_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
-            "ggH_sm_unfiltered_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay'],
+            "Higgs_flat_htt*": ['VBFHToTauTau_UncorrelatedDecay_Filtered', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
+            "qqH_flat_htt*": 'VBFHToTauTau_UncorrelatedDecay_Filtered',
+            "ggH_flat_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
+            "ggH_sm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
             "ggH_sm_prod_sm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
             "ggH_sm_prod_ps_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay'],
             "ggH_sm_prod_mm_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay'],
@@ -314,7 +340,8 @@ def UnrollHist2D(h2d,inc_y_of=True):
     if inc_y_of: n = 1
     else: n = 0
     Nbins = (h2d.GetNbinsY()+n)*(h2d.GetNbinsX())
-    h1d = ROOT.TH1D(h2d.GetName(), '', Nbins, 0, Nbins)
+    if isinstance(h2d, ROOT.TH2D): h1d = ROOT.TH1D(h2d.GetName(), '', Nbins, 0, Nbins)
+    else: h1d = ROOT.TH1F(h2d.GetName(), '', Nbins, 0, Nbins)
     for i in range(1,h2d.GetNbinsX()+1):
       for j in range(1,h2d.GetNbinsY()+1+n):
         glob_bin = Get1DBinNumFrom2D(h2d,i,j)
