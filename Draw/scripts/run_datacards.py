@@ -34,7 +34,7 @@ def run_command(command):
         raise
 
 def run_scan(vsjet, name, IPcut, Ecut, batch, stack):
-    config_path = f"Draw/scripts/cpdecay_datacards_run2bins.yaml"
+    config_path = f"Draw/scripts/cpdecay_{vsjet}.yaml"
     with open(config_path, 'r') as file:
         cfg = yaml.safe_load(file)
     # path to use for stacking input
