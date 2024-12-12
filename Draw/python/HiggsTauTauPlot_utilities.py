@@ -1,5 +1,7 @@
 from uncertainties import ufloat
 import ROOT
+import fnmatch as fn
+
 ROOT.TH1.SetDefaultSumw2(True)
 
 
@@ -19,11 +21,7 @@ def PrintSummary(analysis, nodename='', data_strings=['data_obs'], add_names='',
         print(node.name.ljust(10) , ("%.2f" % node.shape.rate.n).ljust(10), '+/-'.ljust(5), ("%.2f" % node.shape.rate.s).ljust(7), "(%.4f)" % per_err)
         if True in [node.name.find(add_name) != -1 and add_name != '' for add_name in add_names]:
             continue
-        if len(samples_dict['signal_samples']) != 0:
-            sig_samp_cond = [node.name.find(sig) != -1 for sig in samples_dict['signal_samples'].keys()]
-        else:
-            sig_samp_cond = []
-        if True in sig_samp_cond:
+        if any(fn.fnmatch(node.name, sig) for sig in list(samples_dict['signal_samples'])):
             sig_total += node.shape.rate
         elif node.name not in data_strings:
             bkg_total += node.shape.rate
@@ -50,7 +48,8 @@ def GetTotals(ana, nodename="", add_name="", samples_dict={},outfile='outfile.ro
     for node in nodes:
       if add_name not in node.name:
          continue
-      if node.name in list(chain.from_iterable(samples_dict['signal_samples'])):
+     # check not signal (by matching to wildcard format from * that is replaced by mass)
+      if any(fn.fnmatch(node.name, sig) for sig in list(samples_dict['signal_samples'])):
          continue
       # if node.name == "data_obs": continue
       if node.name.endswith("Up"):
