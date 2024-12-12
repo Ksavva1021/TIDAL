@@ -1,100 +1,53 @@
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/production_11_11_2024
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots/production_11_11_2024/
+input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/prod_28_11_2024_v2
+output_path: /vols/cms/ks1021/TIDAL/Draw/plots/prod_28_11_2024_v2/
 channels: [ee,mm]
-eras: [Run3_2022]
+eras: [Run3_2022, Run3_2022EE, Run3_2023]
 parameter_path: /vols/cms/ks1021/offline/HiggsDNA/IC/scripts/ditau/config/
-schemes: [ip_control,ip_calculation]
+schemes: [ip_calculation]
 
 variables:
-  ip_control:
-    definitions:
-      m_vis: "m_vis(40,0,200)"
-      pt_vis: "pt_vis[0,10,20,30,40,60,80,100,120,160,200,280,320,400,600]"
-      eta_1: "eta_1(30,-3,3)"
-      eta_2: "eta_2(30,-3,3)"
-      pt_1: "pt_1(40,0,200)"
-      pt_2: "pt_2(40,0,200)"
-      met_phi: "met_phi(20,-3.14,3.14)"
-      met_pt: "met_pt(40,0,200)"
-
-      ip_x_1: "ip_x_1(100,-0.01,0.01)"
-      ip_x_2: "ip_x_2(100,-0.01,0.01)"
-      ip_y_1: "ip_y_1(100,-0.01,0.01)"
-      ip_y_2: "ip_y_2(100,-0.01,0.01)"
-      ip_z_1: "ip_z_1(100,-0.01,0.01)"
-      ip_z_2: "ip_z_2(100,-0.01,0.01)"
-      ip_LengthSig_1: "ip_LengthSig_1(100,0,10)"
-      ip_LengthSig_2: "ip_LengthSig_2(100,0,10)"
-      ip_x_1_Err: "ip_x_1_Err(100,0,0.1)"
-      ip_x_2_Err: "ip_y_1_Err(100,0,0.1)"
-      ip_y_1_Err: "ip_z_1_Err(100,0,0.1)"
-      ip_y_2_Err: "ip_x_2_Err(100,0,0.1)"
-      ip_z_1_Err: "ip_y_2_Err(100,0,0.1)"
-      ip_z_2_Err: "ip_z_2_Err(100,0,0.1)"
-
-    mm:
-      - ["1", inclusive, m_vis]
-      - ["1", inclusive, pt_vis]
-      - ["1", inclusive, eta_1]
-      - ["1", inclusive, eta_2]
-      - ["1", inclusive, pt_1]
-      - ["1", inclusive, pt_2]
-      - ["1", inclusive, met_phi]
-      - ["1", inclusive, met_pt]
-      - ["1", inclusive, ip_x_1]
-      - ["1", inclusive, ip_x_2]
-      - ["1", inclusive, ip_y_1]
-      - ["1", inclusive, ip_y_2]
-      - ["1", inclusive, ip_z_1]
-      - ["1", inclusive, ip_z_2]
-      - ["1", inclusive, ip_LengthSig_1]
-      - ["1", inclusive, ip_LengthSig_2]
-      - ["1", inclusive, ip_x_1_Err]
-      - ["1", inclusive, ip_x_2_Err]
-      - ["1", inclusive, ip_y_1_Err]
-      - ["1", inclusive, ip_y_2_Err]
-      - ["1", inclusive, ip_z_1_Err]
-      - ["1", inclusive, ip_z_2_Err]
-    ee:
-      - ["1", inclusive, m_vis]
-      - ["1", inclusive, pt_vis]
-      - ["1", inclusive, eta_1]
-      - ["1", inclusive, eta_2]
-      - ["1", inclusive, pt_1]
-      - ["1", inclusive, pt_2]
-      - ["1", inclusive, met_phi]
-      - ["1", inclusive, met_pt]
-      - ["1", inclusive, ip_x_1]
-      - ["1", inclusive, ip_x_2]
-      - ["1", inclusive, ip_y_1]
-      - ["1", inclusive, ip_y_2]
-      - ["1", inclusive, ip_z_1]
-      - ["1", inclusive, ip_z_2]
-      - ["1", inclusive, ip_LengthSig_1]
-      - ["1", inclusive, ip_LengthSig_2]
-      - ["1", inclusive, ip_x_1_Err]
-      - ["1", inclusive, ip_x_2_Err]
-      - ["1", inclusive, ip_y_1_Err]
-      - ["1", inclusive, ip_y_2_Err]
-      - ["1", inclusive, ip_z_1_Err]
-      - ["1", inclusive, ip_z_2_Err]
-
   ip_calculation:
     definitions:
-      ip_x_1: "ip_x_1(100,-0.01,0.01)"
-      ip_x_2: "ip_x_2(100,-0.01,0.01)"
-      ip_y_1: "ip_y_1(100,-0.01,0.01)"
-      ip_y_2: "ip_y_2(100,-0.01,0.01)"
-      ip_z_1: "ip_z_1(100,-0.01,0.01)"
-      ip_z_2: "ip_z_2(100,-0.01,0.01)"
+      ip_x_1: "ip_x_1(200,-0.01,0.01)"
+      ip_x_2: "ip_x_2(200,-0.01,0.01)"
+      ip_y_1: "ip_y_1(200,-0.01,0.01)"
+      ip_y_2: "ip_y_2(200,-0.01,0.01)"
+      ip_z_1: "ip_z_1(200,-0.01,0.01)"
+      ip_z_2: "ip_z_2(200,-0.01,0.01)"
       ip_LengthSig_1: "ip_LengthSig_1(100,0,10)"
       ip_LengthSig_2: "ip_LengthSig_2(100,0,10)"
-      ip_x_1_Err: "ip_x_1_Err(100,0,0.1)"
-      ip_x_2_Err: "ip_y_1_Err(100,0,0.1)"
-      ip_y_1_Err: "ip_z_1_Err(100,0,0.1)"
-      ip_y_2_Err: "ip_x_2_Err(100,0,0.1)"
-      ip_z_1_Err: "ip_y_2_Err(100,0,0.1)"
-      ip_z_2_Err: "ip_z_2_Err(100,0,0.1)"
+      ip_alt_LengthSig_1: "ip_alt_LengthSig_1(200,0,10)"
+      ip_alt_LengthSig_2: "ip_alt_LengthSig_2(200,0,10)"
+      ip_x_1_Err: "ip_x_1_Err(1000,0,0.1)"
+      ip_x_2_Err: "ip_y_1_Err(1000,0,0.1)"
+      ip_y_1_Err: "ip_z_1_Err(1000,0,0.1)"
+      ip_y_2_Err: "ip_x_2_Err(1000,0,0.1)"
+      ip_z_1_Err: "ip_y_2_Err(1000,0,0.1)"
+      ip_z_2_Err: "ip_z_2_Err(1000,0,0.1)"
+      ip_x_1_log_Err: "ip_x_1_log_Err(120, -4, -1)"
+      ip_x_2_log_Err: "ip_x_2_log_Err(120, -4, -1)"
+      ip_y_1_log_Err: "ip_y_1_log_Err(120, -4, -1)"
+      ip_y_2_log_Err: "ip_y_2_log_Err(120, -4, -1)"
+      ip_z_1_log_Err: "ip_z_1_log_Err(120, -4, -1)"
+      ip_z_2_log_Err: "ip_z_2_log_Err(120, -4, -1)"
+      ip_x_1_Err_ratio: "ip_x_1_Err_ratio(200, -10, 10)"
+      ip_x_2_Err_ratio: "ip_x_2_Err_ratio(200, -10, 10)"
+      ip_y_1_Err_ratio: "ip_y_1_Err_ratio(200, -10, 10)"
+      ip_y_2_Err_ratio: "ip_y_2_Err_ratio(200, -10, 10)"
+      ip_z_1_Err_ratio: "ip_z_1_Err_ratio(200, -10, 10)"
+      ip_z_2_Err_ratio: "ip_z_2_Err_ratio(200, -10, 10)"
+      ip_cov00_1: "ip_cov00_1(100,0.0,0.001)"
+      ip_cov00_2: "ip_cov00_2(100,0.0,0.001)"
+      ip_cov11_1: "ip_cov11_1(100,0.0,0.001)"
+      ip_cov11_2: "ip_cov11_2(100,0.0,0.001)"
+      ip_cov22_1: "ip_cov22_1(100,0.0,0.001)"
+      ip_cov22_2: "ip_cov22_2(100,0.0,0.001)"
+      ip_cov10_1: "ip_cov10_1(100,-0.001,0.001)"
+      ip_cov10_2: "ip_cov10_2(100,-0.001,0.001)"
+      ip_cov20_1: "ip_cov20_1(100,-0.001,0.001)"
+      ip_cov20_2: "ip_cov20_2(100,-0.001,0.001)"
+      ip_cov21_1: "ip_cov21_1(100,-0.001,0.001)"
+      ip_cov21_2: "ip_cov21_2(100,-0.001,0.001)"
 
     additional_selections:
       mm:
@@ -131,6 +84,32 @@ variables:
       - ["1", inclusive, ip_y_2_Err]
       - ["1", inclusive, ip_z_1_Err]
       - ["1", inclusive, ip_z_2_Err]
+      - ["1", inclusive, ip_x_1_log_Err]
+      - ["1", inclusive, ip_x_2_log_Err]
+      - ["1", inclusive, ip_y_1_log_Err]
+      - ["1", inclusive, ip_y_2_log_Err]
+      - ["1", inclusive, ip_z_1_log_Err]
+      - ["1", inclusive, ip_z_2_log_Err]
+      - ["1", inclusive, ip_cov00_1]
+      - ["1", inclusive, ip_cov00_2]
+      - ["1", inclusive, ip_cov11_1]
+      - ["1", inclusive, ip_cov11_2]
+      - ["1", inclusive, ip_cov22_1]
+      - ["1", inclusive, ip_cov22_2]
+      - ["1", inclusive, ip_cov10_1]
+      - ["1", inclusive, ip_cov10_2]
+      - ["1", inclusive, ip_cov20_1]
+      - ["1", inclusive, ip_cov20_2]
+      - ["1", inclusive, ip_cov21_1]
+      - ["1", inclusive, ip_cov21_2]
+      - ["1", inclusive, ip_x_1_Err_ratio]
+      - ["1", inclusive, ip_x_2_Err_ratio]
+      - ["1", inclusive, ip_y_1_Err_ratio]
+      - ["1", inclusive, ip_y_2_Err_ratio]
+      - ["1", inclusive, ip_z_1_Err_ratio]
+      - ["1", inclusive, ip_z_2_Err_ratio]
+      - ["1", inclusive, ip_alt_LengthSig_1]
+      - ["1", inclusive, ip_alt_LengthSig_2]
     ee:
       - ["1", inclusive, ip_x_1]
       - ["1", inclusive, ip_x_2]
@@ -146,3 +125,29 @@ variables:
       - ["1", inclusive, ip_y_2_Err]
       - ["1", inclusive, ip_z_1_Err]
       - ["1", inclusive, ip_z_2_Err]
+      - ["1", inclusive, ip_x_1_log_Err]
+      - ["1", inclusive, ip_x_2_log_Err]
+      - ["1", inclusive, ip_y_1_log_Err]
+      - ["1", inclusive, ip_y_2_log_Err]
+      - ["1", inclusive, ip_z_1_log_Err]
+      - ["1", inclusive, ip_z_2_log_Err]
+      - ["1", inclusive, ip_cov00_1]
+      - ["1", inclusive, ip_cov00_2]
+      - ["1", inclusive, ip_cov11_1]
+      - ["1", inclusive, ip_cov11_2]
+      - ["1", inclusive, ip_cov22_1]
+      - ["1", inclusive, ip_cov22_2]
+      - ["1", inclusive, ip_cov10_1]
+      - ["1", inclusive, ip_cov10_2]
+      - ["1", inclusive, ip_cov20_1]
+      - ["1", inclusive, ip_cov20_2]
+      - ["1", inclusive, ip_cov21_1]
+      - ["1", inclusive, ip_cov21_2]
+      - ["1", inclusive, ip_x_1_Err_ratio]
+      - ["1", inclusive, ip_x_2_Err_ratio]
+      - ["1", inclusive, ip_y_1_Err_ratio]
+      - ["1", inclusive, ip_y_2_Err_ratio]
+      - ["1", inclusive, ip_z_1_Err_ratio]
+      - ["1", inclusive, ip_z_2_Err_ratio]
+      - ["1", inclusive, ip_alt_LengthSig_1]
+      - ["1", inclusive, ip_alt_LengthSig_2]

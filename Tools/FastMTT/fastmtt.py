@@ -336,6 +336,7 @@ def run_processes(base_dir, constrain, constrain_setting, constrain_window, use_
                 process_dir = os.path.join(channel_dir, process)
                 if os.path.isdir(process_dir):
                     variation_dir = os.path.join(process_dir, "nominal")
+                    print(variation_dir)
                     if os.path.isdir(variation_dir):
                         parquet_file = os.path.join(variation_dir, 'merged.parquet')
                         if os.path.exists(parquet_file):
@@ -388,12 +389,15 @@ def create_shell_script(input_file: str, constrain, constrain_setting, constrain
 #!/bin/bash
 python3 Tools/FastMTT/fastmtt.py \\
 --input_file {input_file} \\
---output_dir_name {output_dir_name} \\
 --channel {channel} \\
 --chunk_number {chunk_number} \\
 --start_idx {start_idx} \\
 --end_idx {end_idx} \\
 --running_dir """
+
+    if constrain:
+        shell_script += f"--constrain --constrain_setting {constrain_setting} --constrain_window {constrain_window[0]},{constrain_window[1]}"
+
     shell_script_path = os.path.join(os.path.dirname(input_file), output_dir_name, 'condor', f'fast_chunk{chunk_number}.sh')
     if not os.path.exists(os.path.dirname(shell_script_path)):
         os.makedirs(os.path.dirname(shell_script_path))
@@ -408,116 +412,125 @@ def submit_condor_job(submission_file_path):
     os.system(f"condor_submit {submission_file_path}")
 
 
-def merge_fastmtt_chunks(directory, output_dir_name, channel):
-    directory = os.path.join(directory, channel)
-    for process in os.listdir(directory):
-        process_dir = os.path.join(directory, process)
-        if os.path.isdir(process_dir):
-            variation_dir = os.path.join(process_dir, "nominal")
-            if os.path.isdir(variation_dir):
-                fastmtt_dir = os.path.join(variation_dir, output_dir_name)
-                parquet_files = [os.path.join(fastmtt_dir, file) for file in os.listdir(fastmtt_dir) if file.endswith(".parquet")]
-                if len(parquet_files) == 1:
-                    print(f"Copying single file for {process} and renaming to {output_dir_name}.parquet")
-                    os.system(f"cp {parquet_files[0]} {variation_dir}/{output_dir_name}.parquet")
-                if len(parquet_files) > 1:
-                    print(f"Merging fastmtt chunks for {process}")
-                    schema = None
-                    writer = None
-                    with alive_bar(len(parquet_files)) as bar:
-                        for f in parquet_files:
-                            dataset = pq.ParquetDataset(f)
-                            table = dataset.read()
-                            if schema is None:
-                                schema = table.schema
-                                writer = pq.ParquetWriter(os.path.join(variation_dir, f"{output_dir_name}.parquet"), schema)
-                            else:
-                                table = table.cast(schema)
-                            writer.write_table(table)
-                            bar()
-                    if writer is not None:
-                        writer.close()
+def merge_fastmtt_chunks(dir, output_dir_name, channels):
+    for channel in channels.split(","):
+        print("-"*50)
+        print("Processing channel:", channel)
+        directory = os.path.join(dir, channel)
+        for process in os.listdir(directory):
+            process_dir = os.path.join(directory, process)
+            if os.path.isdir(process_dir):
+                variation_dir = os.path.join(process_dir, "nominal")
+                if os.path.isdir(variation_dir):
+                    fastmtt_dir = os.path.join(variation_dir, output_dir_name)
+                    parquet_files = [os.path.join(fastmtt_dir, file) for file in os.listdir(fastmtt_dir) if file.endswith(".parquet")]
+                    if len(parquet_files) == 1:
+                        print("-"*50)
+                        print(f"Copying single file for {process} and renaming to {output_dir_name}.parquet")
+                        os.system(f"cp {parquet_files[0]} {variation_dir}/{output_dir_name}.parquet")
+                    if len(parquet_files) > 1:
+                        print("-"*50)
+                        print(f"Merging fastmtt chunks for {process}")
+                        schema = None
+                        writer = None
+                        with alive_bar(len(parquet_files)) as bar:
+                            for f in parquet_files:
+                                dataset = pq.ParquetDataset(f)
+                                table = dataset.read()
+                                if schema is None:
+                                    schema = table.schema
+                                    writer = pq.ParquetWriter(os.path.join(variation_dir, f"{output_dir_name}.parquet"), schema)
+                                else:
+                                    table = table.cast(schema)
+                                writer.write_table(table)
+                                bar()
+                        if writer is not None:
+                            writer.close()
 
 
-def check_logs(directory, output_dir_name, channel):
-    count_failed_jobs = 0
-    count_running_jobs = 0
-    count_done = 0
-    count_sub_files = 0
+def check_logs(dir, output_dir_name, channels):
+    for channel in channels.split(","):
+        print("-"*50)
+        print("Processing channel:", channel)
 
-    directory = os.path.join(directory, channel)
-    for process in os.listdir(directory):
-        process_dir = os.path.join(directory, process)
-        if os.path.isdir(process_dir):
-            variation_dir = os.path.join(process_dir, "nominal")
-            if os.path.isdir(variation_dir):
-                log_dir = os.path.join(variation_dir, output_dir_name, "condor")
-                # remove log_dir
-                #if os.path.exists(log_dir):
-                #    os.system(f"rm -r {log_dir}")
-                #continue
-                if not os.path.exists(os.path.join(variation_dir, output_dir_name, "resubmit")):
-                    os.makedirs(os.path.join(variation_dir, output_dir_name, "resubmit"))
-                for log_file in os.listdir(log_dir):
-                    job_status_running = "Total for query: 1 jobs; 0 completed, 0 removed, 0 idle, 1 running, 0 held, 0 suspended"
-                    job_status_idle = "Total for query: 1 jobs; 0 completed, 0 removed, 1 idle, 0 running, 0 held, 0 suspended"
-                    job_status_held = "Total for query: 1 jobs; 0 completed, 0 removed, 0 idle, 0 running, 1 held, 0 suspended"
-                    if log_file.endswith(".sub"):
-                        count_sub_files += 1
-                    if log_file.endswith(".log"):
-                        chunk_number = log_file.split("_")[-2].replace("chunk", "")
-                        sub_file = f"condor_submit_chunk{chunk_number}.sub"
-                        out_file = log_file.replace(".log", ".out")
-                        clusterID = log_file.split("_")[-1].replace(".log", "")
-                        condor_q = os.popen(f"condor_q {clusterID}").read()
+        count_failed_jobs = 0
+        count_running_jobs = 0
+        count_done = 0
+        count_sub_files = 0
 
-                        if os.path.exists(os.path.join(log_dir, out_file)):
-                            with open(os.path.join(log_dir, out_file), 'r') as f:
-                                lines = f.readlines()
-                                if len(lines) > 0:
-                                    last_line = lines[-1]
+        directory = os.path.join(dir, channel)
+        for process in os.listdir(directory):
+            process_dir = os.path.join(directory, process)
+            if os.path.isdir(process_dir):
+                variation_dir = os.path.join(process_dir, "nominal")
+                if os.path.isdir(variation_dir):
+                    log_dir = os.path.join(variation_dir, output_dir_name, "condor")
+                    # remove log_dir
+                    #if os.path.exists(log_dir):
+                    #    os.system(f"rm -r {log_dir}")
+                    #continue
+                    if not os.path.exists(os.path.join(variation_dir, output_dir_name, "resubmit")):
+                        os.makedirs(os.path.join(variation_dir, output_dir_name, "resubmit"))
+                    for log_file in os.listdir(log_dir):
+                        job_status_running = "Total for query: 1 jobs; 0 completed, 0 removed, 0 idle, 1 running, 0 held, 0 suspended"
+                        job_status_idle = "Total for query: 1 jobs; 0 completed, 0 removed, 1 idle, 0 running, 0 held, 0 suspended"
+                        job_status_held = "Total for query: 1 jobs; 0 completed, 0 removed, 0 idle, 0 running, 1 held, 0 suspended"
+                        if log_file.endswith(".sub"):
+                            count_sub_files += 1
+                        if log_file.endswith(".log"):
+                            chunk_number = log_file.split("_")[-2].replace("chunk", "")
+                            sub_file = f"condor_submit_chunk{chunk_number}.sub"
+                            out_file = log_file.replace(".log", ".out")
+                            clusterID = log_file.split("_")[-1].replace(".log", "")
+                            condor_q = os.popen(f"condor_q {clusterID}").read()
 
-                                    if "Job is done" not in last_line:
-                                        if job_status_running not in condor_q and job_status_idle not in condor_q:
+                            if os.path.exists(os.path.join(log_dir, out_file)):
+                                with open(os.path.join(log_dir, out_file), 'r') as f:
+                                    lines = f.readlines()
+                                    if len(lines) > 0:
+                                        last_line = lines[-1]
+
+                                        if "Job is done" not in last_line:
+                                            if job_status_running not in condor_q and job_status_idle not in condor_q:
+                                                count_failed_jobs += 1
+
+                                                if job_status_held not in condor_q:
+                                                    os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
+                                                    os.system(f"mv {os.path.join(log_dir, log_file.replace('.log', '.err'))} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
+                                                    os.system(f"mv {os.path.join(log_dir, out_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
+                                                    os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
+
+                                            elif job_status_running in condor_q:
+                                                count_running_jobs += 1
+
+                                        elif "Job is done" in last_line:
+                                            if job_status_running in condor_q:
+                                                os.popen(f"condor_rm {clusterID}")
+                                                print(f"Job {clusterID} is done but still running. Removing the job")
+                                            count_done += 1
+                                    else:
+                                        if job_status_running in condor_q or job_status_idle in condor_q:
+                                            count_running_jobs += 1
+                                        else:
                                             count_failed_jobs += 1
-
                                             if job_status_held not in condor_q:
                                                 os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
                                                 os.system(f"mv {os.path.join(log_dir, log_file.replace('.log', '.err'))} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
                                                 os.system(f"mv {os.path.join(log_dir, out_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
                                                 os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
-
-                                        elif job_status_running in condor_q:
-                                            count_running_jobs += 1
-
-                                    elif "Job is done" in last_line:
-                                        if job_status_running in condor_q:
-                                            os.popen(f"condor_rm {clusterID}")
-                                            print(f"Job {clusterID} is done but still running. Removing the job")
-                                        count_done += 1
-                                else:
-                                    if job_status_running in condor_q or job_status_idle in condor_q:
-                                        count_running_jobs += 1
-                                    else:
-                                        count_failed_jobs += 1
-                                        if job_status_held not in condor_q:
-                                            os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
-                                            os.system(f"mv {os.path.join(log_dir, log_file.replace('.log', '.err'))} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
-                                            os.system(f"mv {os.path.join(log_dir, out_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
-                                            os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
-                        else:
-                            if job_status_running in condor_q or job_status_idle in condor_q:
-                                count_running_jobs += 1
                             else:
-                                count_failed_jobs += 1
-                                if job_status_held not in condor_q:
-                                    os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
-                                    os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
+                                if job_status_running in condor_q or job_status_idle in condor_q:
+                                    count_running_jobs += 1
+                                else:
+                                    count_failed_jobs += 1
+                                    if job_status_held not in condor_q:
+                                        os.system(f"mv {os.path.join(log_dir, log_file)} {os.path.join(variation_dir, output_dir_name, 'resubmit')}")
+                                        os.system(f"condor_submit {os.path.join(log_dir, sub_file)}")
 
-    print(f"Number of jobs currently running: {count_running_jobs}")
-    print(f"Number of finished jobs: {count_done}")
-    print(f"Total number of jobs: {count_sub_files}")
-    print(f"Number of failed jobs: {count_failed_jobs}")
+        print(f"Number of jobs currently running: {count_running_jobs}")
+        print(f"Number of finished jobs: {count_done}")
+        print(f"Total number of jobs: {count_sub_files}")
+        print(f"Number of failed jobs: {count_failed_jobs}")
 
 
 def main():
@@ -528,7 +541,7 @@ def main():
     parser.add_argument("--constrain_setting", type=str, default="Window", help="Constrain setting (Window or BreitWigner)")
     parser.add_argument("--constrain_window", type=str, default="123,127", help="Constrain window (used by condor submission)")
 
-    parser.add_argument("--chunk_size", type=int, default=10000, help="Number of events per chunk")
+    parser.add_argument("--chunk_size", type=int, default=500000, help="Number of events per chunk")
     parser.add_argument("--use_condor", action="store_true", help="Use condor for parallel processing")
     parser.add_argument("--input_file", type=str, help="Input file (used by condor submission)")
     parser.add_argument("--channel", type=str, help="Channel (used by condor submission)")
@@ -539,17 +552,21 @@ def main():
 
     parser.add_argument("--check_logs", action="store_true", help="Check logs for failed jobs")
     parser.add_argument("--merge_chunks", action="store_true", help="Merge svfit chunks")
+    parser.add_argument("--channels", type=str, help="Channels to check/merge e.g. mt,et,tt")
 
     args = parser.parse_args()
+
+    constrain_window = np.array([float(x) for x in args.constrain_window.split(",")])
+
     if args.check_logs:
-        check_logs(args.source_dir, args.output_dir_name, args.channel)
+        check_logs(args.source_dir, args.output_dir_name, args.channels)
     elif args.merge_chunks:
-        merge_fastmtt_chunks(args.source_dir, args.output_dir_name, args.channel)
+        merge_fastmtt_chunks(args.source_dir, args.output_dir_name, args.channels)
     else:
         if not args.running_dir:
-            run_processes(args.source_dir, args.constrain, args.constrain_setting, args.constrain_window, args.use_condor, args.chunk_size)
+            run_processes(args.source_dir, args.constrain, args.constrain_setting, constrain_window, args.use_condor, args.chunk_size)
         else:
-            fastmtt(args.input_file, args.constrain, args.constrain_setting, args.constrain_window, args.channel, args.chunk_number, args.start_idx, args.end_idx)
+            fastmtt(args.input_file, args.channel, args.chunk_number, args.start_idx, args.end_idx, constrain=args.constrain, constrain_setting=args.constrain_setting, constrain_window=constrain_window)
 
 if __name__ == "__main__":
     main()
