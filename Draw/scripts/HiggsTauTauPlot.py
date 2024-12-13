@@ -77,7 +77,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         #TODO: add option to change triggers
         trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
         #trg_full = '(%s)' % (doubletau_only_trg)
-        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 6 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % doubletau_only_trg
+        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 6 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
         categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3')
 
 categories['inclusive'] = '(1)'
