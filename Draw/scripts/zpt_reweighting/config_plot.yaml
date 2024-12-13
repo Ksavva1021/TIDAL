@@ -1,6 +1,6 @@
 #input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/output/archive/production_new
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/test_NLO
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots/test_NLO
+input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/productions/before/
+output_path: /vols/cms/ks1021/TIDAL/Draw/plots/productions/before/
 channels: [mm]
 eras: [Run3_2022]
 parameter_path: /vols/cms/ks1021/offline/HiggsDNA/IC/scripts/ditau/config/

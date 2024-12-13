@@ -14,7 +14,7 @@ import ROOT
 from Draw.python import Analysis
 from Draw.python import Plotting
 from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD, GenerateReweightedCPSignal
-from Draw.python.HiggsTauTauPlot_utilities import PrintSummary, GetTotals, FixBins
+from Draw.python.HiggsTauTauPlot_utilities import PrintSummary, GetTotals, FixBins, FindRebinning, RebinHist
 
 ROOT.TH1.SetDefaultSumw2(True)
 
@@ -33,6 +33,7 @@ parser.add_argument('--do_ss', action='store_true', help='Do SS')
 parser.add_argument('--blind', action='store_true', help='Blind the plot (remove data)')
 parser.add_argument('--masses', default='125', help='Mass points to process, seperated by commas')
 parser.add_argument('--datacard_name', help='Override the datacard name')
+parser.add_argument('--auto_rebin', action='store_true', help='Automatically rebin histograms')
 args = parser.parse_args()
 
 masses = args.masses.split(',')
@@ -67,17 +68,17 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.1))'
     if args.channel == "mt":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.1))'
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.1))'
     if args.channel == "et":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 1 && (trg_singleelectron && pt_1 > 31))'
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singleelectron && pt_1 > 31))'
     if args.channel == "tt":
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
         #TODO: add option to change triggers
         trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
         #trg_full = '(%s)' % (doubletau_only_trg)
-        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 3 && idDeepTau2018v2p5VSmu_2 >= 3 && %s)' % trg_full
-        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3') 
+        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 6 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % doubletau_only_trg
+        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3')
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
@@ -564,6 +565,25 @@ if is_2d:
 
 outfile.Close()
 plot_file = ROOT.TFile(output_name, 'READ')
+
+if args.auto_rebin:
+    outfile_rebin = ROOT.TFile(output_name.replace(".root","_rebinned.root"), 'RECREATE')
+    outfile_rebin.mkdir(nodename)
+    outfile_rebin.cd(nodename)
+    total_bkghist = plot_file.Get(nodename+'/total_bkg').Clone()
+    binning = FindRebinning(total_bkghist,BinThreshold=100,BinUncertFraction=0.5)
+
+    print("New binning:", binning)
+    hists_done = []
+    for i in  plot_file.Get(nodename).GetListOfKeys():
+        if i.GetName() not in hists_done:
+            if ".subnodes" not in i.GetName():
+                RebinHist(plot_file.Get(nodename+'/'+i.GetName()).Clone(),binning).Write()
+                hists_done.append(i.GetName())
+
+    outfile_rebin.Close()
+    plot_file = ROOT.TFile(output_name.replace(".root","_rebinned.root"))
+
 titles = Plotting.SetAxisTitles(args.var,args.channel)
 x_title = titles[0]
 y_title = titles[1]
@@ -573,7 +593,7 @@ Plotting.HTTPlot(
   infile=plot_file,
   channel=args.channel,
   scheme=args.channel,
-  ratio_range="0.7,1.3",
+  ratio_range="0.5,1.5",
   x_title=x_title,
   y_title=y_title,
   plot_name=output_name.replace('.root',''),

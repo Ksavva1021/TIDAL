@@ -8,18 +8,25 @@ def create_bins(variable: str) -> str:
     if '(' in variable:
         variable_name = variable.split('(')[0]
         number_of_bins = variable.split('(')[1].split(',')[0]
-        lower_bound = variable.split('(')[1].split(',')[1]
+        lower_bound = variable.split('(')[1].split(',')[1].strip()
+        upper_bound = variable.split('(')[1].split(',')[2].split(')')[0].strip()
 
-        if "pi" in lower_bound:
-            lower_bound = lower_bound.split('pi')
-            lower_bound = str(float(lower_bound[0]) * numpy.pi)
+        # Function to handle pi expressions
+        def evaluate_bound(bound: str) -> float:
+            if "pi" in bound:
+                bound = bound.replace("pi", "*numpy.pi")
+                if bound.startswith('*'):
+                    bound = bound[1:]  # Remove leading '*' for valid syntax
+                if bound.startswith('-*'):
+                    bound = '-' + bound[2:]  # Fix '-*' syntax
+            return eval(bound)  # Safely evaluate
 
-        upper_bound = variable.split('(')[1].split(',')[2].split(')')[0]
-        if "pi" in upper_bound:
-            upper_bound = upper_bound.split('pi')
-            upper_bound = str(float(upper_bound[0]) * numpy.pi)
+        # Evaluate bounds
+        lower_bound = str(evaluate_bound(lower_bound))
+        upper_bound = str(evaluate_bound(upper_bound))
 
-        binning = numpy.linspace(float(lower_bound), float(upper_bound), int(number_of_bins)+1)
+        # Create the binning array
+        binning = numpy.linspace(float(lower_bound), float(upper_bound), int(number_of_bins) + 1)
         binning = ','.join([str(i) for i in binning])
         variable = f"{variable_name}[{binning}]"
 

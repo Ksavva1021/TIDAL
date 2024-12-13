@@ -9,28 +9,39 @@ from matplotlib.gridspec import GridSpec
 hep.style.use("CMS")
 
 channel = "mm"
-year = "Run3_2023"
-input_dir = f"/vols/cms/ks1021/TIDAL/Draw/plots/ip_corrections_before/{year}/ip_calculation/histograms"
+year = "Run3_2022"
+input_dir = f"/vols/cms/ks1021/TIDAL/Draw/plots/IP_corrections/before_2/{year}/ip_calculation/histograms"
 
 output_dir = os.path.join(input_dir, channel, year)
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 # Load the ROOT file
-file_path = f"{input_dir}/combined_histograms_{channel}_{year}.root"  # Replace with your actual file path
+file_path = f"{input_dir}/combined_histograms_{channel}_{year}_rebin.root"  # Replace with your actual file path
 root_file = uproot.open(file_path)
 
 variable_mapping = {
     "ip_x": "Impact parameter x [cm]",
     "ip_y": "Impact parameter y [cm]",
     "ip_z": "Impact parameter z [cm]",
+    "log_err00": "Log error 00",
+    "log_err11": "Log error 11",
+    "log_err22": "Log error 22",
     "ip_LengthSig": "Impact parameter significance",
-    "ip_alt_LengthSig": "Impact parameter significance (alternative)",
-    "ip_x_Err": "Impact parameter x error [cm]",
-    "ip_y_Err": "Impact parameter y error [cm]",
-    "ip_z_Err": "Impact parameter z error [cm]",
-    "ip_x_Err_ratio": "Impact parameter x error ratio",
-    "ip_y_Err_ratio": "Impact parameter y error ratio",
+    "ip_LengthTotal": "Impact parameter total length [cm]",
+    "ip_ErrorTotal": "Impact parameter total error [cm]",
+    # "PCA_ip_cov00": "PCA covariance 00",
+    # "PCA_ip_cov11": "PCA covariance 11",
+    # "PCA_ip_cov22": "PCA covariance 22",
+    # "PCA_ip_cov10": "PCA covariance 10",
+    # "PCA_ip_cov20": "PCA covariance 20",
+    # "PCA_ip_cov21": "PCA covariance 21",
+#    "ip_alt_LengthSig": "Impact parameter significance (alternative)",
+#    "ip_x_Err": "Impact parameter x error [cm]",
+#    "ip_y_Err": "Impact parameter y error [cm]",
+#    "ip_z_Err": "Impact parameter z error [cm]",
+#    "ip_x_Err_ratio": "Impact parameter x error ratio",
+#    "ip_y_Err_ratio": "Impact parameter y error ratio",
 #    "ip_z_Err_ratio": "Impact parameter z error ratio",
 #    "ip_x_log_Err": "Impact parameter x error log scale",
 #    "ip_y_log_Err": "Impact parameter y error log scale",
@@ -96,7 +107,7 @@ for clean_hist_name in cleaned_names:
             hep.histplot(mc_vals, mc_edges, color="royalblue", alpha=0.8, histtype="fill", linewidth=1.5, label="ZLL", ax=ax_main)
 
             # Check if "Err" is in the base_name and set y-axis to log scale if true
-            if "Err" in base_name or "cov" in base_name:
+            if "log" in base_name or "cov" in base_name:
                 ax_main.set_yscale("log")
 
             if year == "Run3_2022":
