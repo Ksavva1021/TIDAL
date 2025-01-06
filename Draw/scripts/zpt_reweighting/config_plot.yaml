@@ -1,10 +1,10 @@
 #input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/output/archive/production_new
-input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/productions/before/
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots/productions/before/
+input_folder: /vols/cms/ks1021/offline/HiggsDNA/IC/outputs/testingSFs
+output_path: /vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs
 channels: [mm]
-eras: [Run3_2022]
+eras: [Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix]
 parameter_path: /vols/cms/ks1021/offline/HiggsDNA/IC/scripts/ditau/config/
-schemes: [zpt_control]
+schemes: [zpt_calculation]
 
 variables:
   zpt_control:
@@ -25,8 +25,8 @@ variables:
       #- ["1", inclusive, eta_1]
       #- ["1", inclusive, eta_2]
       #- ["1", inclusive, n_jets]
-      - ["1", inclusive, pt_1]
-      - ["1", inclusive, pt_2]
+      #- ["1", inclusive, pt_1]
+      #- ["1", inclusive, pt_2]
       #- ["1", inclusive, mt_1]
       #- ["1", inclusive, mt_2]
 
