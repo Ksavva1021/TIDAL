@@ -1,0 +1,26 @@
+systematics:
+  - Muon_ID
+  - Muon_Isolation
+  - Electron_ID
+  - Electron_Isolation
+  - Tau_ID
+
+ee:
+  Muon_ID: False
+  Muon_Isolation: False
+mm:
+  Muon_ID: False
+  Muon_Isolation: False
+em:
+  Muon_ID: False
+  Muon_Isolation: False
+et:
+  Muon_ID: False
+  Muon_Isolation: False
+mt:
+  Muon_ID: True
+  Muon_Isolation: False
+  Tau_ID: False
+tt:
+  Muon_ID: False
+  Muon_Isolation: False
