@@ -314,4 +314,17 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt'):
 
     # ----------------------------------------------------------------------------------------------------
 
+    # Electron Energy Scale + Smearing systematics
+    # ----------------------------------------------------------------------------------------------------
+    for kind in ['Scale', 'Smearing']:
+        for updown in ['up', 'down']:
+            systematic_name = 'syst_electron_' + kind.lower() + '_' + updown
+            folder_name = 'Electron_' + kind + '_' + updown
+            histogram_name = '_' +'syst_electron_' + kind.lower() + updown.capitalize()
+
+            if specific_channel in ["ee","et"]:
+                systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', [], False)
+
+    # ----------------------------------------------------------------------------------------------------
+
     return systematics
