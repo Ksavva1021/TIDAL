@@ -62,24 +62,29 @@ method = int(args.method)
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define baseline selections and different categories
+#TODO: add option to change triggers
 categories = {}
 if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "ee":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singleelectron && pt_1 > 31))'
     if args.channel == "mm":
-        categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.1))'
+        categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.4))'
     if args.channel == "mt":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.1))'
+        mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 21 && pt_2 <= 26 && abs(eta_2) < 2.1)'
+        single_muon_only = '(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)'
+        trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "et":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singleelectron && pt_1 > 31))'
+        et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 <= 31 && pt_2 > 25 && pt_2 <= 31 && abs(eta_2) < 2.1)'
+        single_electron_only = '(trg_singleelectron && pt_1 > 31 && abs(eta_1) < 2.1 )'
+        trg_full = '(%s || %s)' % (et_cross_only, single_electron_only)
+        categories['baseline'] = '(iso_1 < 0.15&& idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "tt":
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
-        #TODO: add option to change triggers
         trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
-        #trg_full = '(%s)' % (doubletau_only_trg)
-        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
-        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 <= 7 && idDeepTau2018v2p5VSjet_1 >= 3')
+        categories['baseline'] = '(abs(eta_1) < 2.1 && abs(eta_2) < 2.1 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
+        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 3')
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
