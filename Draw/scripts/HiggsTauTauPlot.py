@@ -34,6 +34,7 @@ parser.add_argument('--blind', action='store_true', help='Blind the plot (remove
 parser.add_argument('--masses', default='125', help='Mass points to process, seperated by commas')
 parser.add_argument('--datacard_name', help='Override the datacard name')
 parser.add_argument('--auto_rebin', action='store_true', help='Automatically rebin histograms')
+parser.add_argument('--LO_DY', action='store_true', help='Use LO instead of NLO DY')
 args = parser.parse_args()
 
 masses = args.masses.split(',')
@@ -68,17 +69,17 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.1))'
     if args.channel == "mt":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.1))'
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.1))'
     if args.channel == "et":
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singleelectron && pt_1 > 31))'
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singleelectron && pt_1 > 31))'
     if args.channel == "tt":
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
         #TODO: add option to change triggers
         trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
         #trg_full = '(%s)' % (doubletau_only_trg)
-        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 6 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
-        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 5', 'idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3')
+        categories['baseline'] = '(idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
+        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 <= 7 && idDeepTau2018v2p5VSjet_1 >= 3')
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
@@ -104,10 +105,10 @@ if args.channel == 'tt':
     categories["inclusive_a1rho"]     = "((decayMode_1==10 && hasRefitSV_1 && decayMode_2==1) || (decayMode_1==1 && decayMode_2==10 && hasRefitSV_2))"
     categories["inclusive_a1a1"]     = "(decayMode_1==10 && decayMode_2==10 && hasRefitSV_1 && hasRefitSV_2)"
 
-    sel_pi = 'decayModePNet_X==0 && ip_LengthSig_X>=1.5'
-    sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
+    sel_pi = 'decayModePNet_X==0 && ip_LengthSig_X>=1.25'
+    sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && pion_E_split_X>0.2'
     sel_a1 = 'decayModePNet_X==10'
-    sel_a11pr = 'decayMode_X==1 && decayModePNet_X==2 && fabs(pi0_pt_X-pi_pt_X)/(pi0_pt_X+pi_pt_X)>0.0'
+    sel_a11pr = 'decayMode_X==1 && decayModePNet_X==2 && pion_E_split_X>0.2'
 
     sel_pi_1 = sel_pi.replace('X','1')
     sel_pi_2 = sel_pi.replace('X','2')
@@ -182,16 +183,23 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     samples_dict['data_samples'] = data_samples
 
     # MC Samples
-    ztt_samples = ['DYto2L_M_50_madgraphMLM','DYto2L_M_50_madgraphMLM_ext1','DYto2L_M_50_1J_madgraphMLM','DYto2L_M_50_2J_madgraphMLM','DYto2L_M_50_3J_madgraphMLM','DYto2L_M_50_4J_madgraphMLM']
-    #ztt_samples = ['DYto2L_M-50_madgraphMLM','DYto2L_M-50_madgraphMLM_ext1']
-    #ztt_samples = ['DYto2L_M-50_0J_amcatnloFXFX', 'DYto2L_M-50_1J_amcatnloFXFX', 'DYto2L_M-50_2J_amcatnloFXFX']
+    if args.LO_DY:
+        print('WARNING: Using LO DY samples')
+        ztt_samples = ['DYto2L_M_50_madgraphMLM','DYto2L_M_50_madgraphMLM_ext1','DYto2L_M_50_1J_madgraphMLM','DYto2L_M_50_2J_madgraphMLM','DYto2L_M_50_3J_madgraphMLM','DYto2L_M_50_4J_madgraphMLM']
+        if args.era in ["Run3_2023", "Run3_2023BPix"]:
+            ztt_samples.remove('DYto2L_M_50_madgraphMLM_ext1')
+    else:
+        ztt_samples = ['DYto2L_M_50_amcatnloFXFX', 'DYto2L_M_50_amcatnloFXFX_ext1', 'DYto2L_M_50_0J_amcatnloFXFX', 'DYto2L_M_50_1J_amcatnloFXFX',
+                    'DYto2L_M_50_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_40to100_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_100to200_1J_amcatnloFXFX',
+                    'DYto2L_M_50_PTLL_200to400_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_400to600_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_600_1J_amcatnloFXFX',
+                    'DYto2L_M_50_PTLL_40to100_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_100to200_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_200to400_2J_amcatnloFXFX',
+                    'DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_600_2J_amcatnloFXFX'] # use NLO samples
     top_samples = ['TTto2L2Nu','TTto2L2Nu_ext1','TTtoLNu2Q','TTtoLNu2Q_ext1','TTto4Q','TTto4Q_ext1']
     vv_samples = ['WW','WZ','ZZ','ST_t_channel_top_4f_InclusiveDecays','ST_t_channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     #vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
 
     if args.era in ["Run3_2023", "Run3_2023BPix"]:
-        ztt_samples.remove('DYto2L_M_50_madgraphMLM_ext1')
         top_samples.remove('TTto2L2Nu_ext1')
         top_samples.remove('TTtoLNu2Q_ext1')
         top_samples.remove('TTto4Q_ext1')

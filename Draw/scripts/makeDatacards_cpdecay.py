@@ -48,7 +48,7 @@ queue
         f.write(condor_template)
     os.system(f"chmod +x {submit_file}")
 
-def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=False):
+def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=False, LO_DY=False):
     shell_script = f"""
 #!/bin/bash
 source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin/thisroot.sh
@@ -64,6 +64,8 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
 
     if blind: shell_script+=' \\\n--blind'
 
+    if LO_DY: shell_script+=' \\\n--LO_DY'
+
     with open(script_path, "w") as script_file:
         script_file.write(shell_script)
     os.system(f"chmod +x {script_path}")
@@ -72,6 +74,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--config', type=str, help='Configuration file')
 parser.add_argument('--batch', action='store_true', help='Run in batch mode')
+parser.add_argument('--LO_DY', action='store_true', help='Use LO instead of NLO DY')
 
 args = parser.parse_args()
 
@@ -128,7 +131,7 @@ for era in eras:
                     logs = f"{output_folder}/logs"
                     subprocess.run(["mkdir", "-p", logs])
                     script_path = os.path.join(logs, f"{variable_name}_{category}.sh")
-                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=blind)
+                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=blind, LO_DY=args.LO_DY)
 
                     submit_file = os.path.join(logs, f"submit_{variable_name}_{category}.sub")
                     create_condor_submit_file(logs, variable_name, submit_file, script_path)
@@ -149,5 +152,6 @@ for era in eras:
                     #    "--do_ss"
                     ]
                     if blind: process.append("--blind")
+                    if args.LO_DY: process.append("--LO_DY")
                     print(" ".join(process))
                     subprocess.run(process)
