@@ -70,12 +70,12 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.4))'
     if args.channel == "mt":
-        mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.5)'
+        mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.1)'
         single_muon_only = '(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)'
         trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
         categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "et":
-        et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 <= 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.5)'
+        et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 <= 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)'
         single_electron_only = '(trg_singleelectron && pt_1 > 31 && abs(eta_1) < 2.1 )'
         trg_full = '(%s || %s)' % (et_cross_only, single_electron_only)
         categories['baseline'] = '(iso_1 < 0.15&& idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
@@ -180,6 +180,8 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         elif args.channel == "tt":
             data_samples = ['Tau_Run2023C_v1', 'Tau_Run2023C_v2', 'Tau_Run2023C_v3', 'Tau_Run2023C_v4']
     elif args.era in ["Run3_2023BPix"]:
+        if args.channel in ["ee","et"]:
+            data_samples = ['EGamma0_Run2023D_v1', 'EGamma0_Run2023D_v2', 'EGamma1_Run2023D_v1', 'EGamma1_Run2023D_v2']
         if args.channel in ["mm","mt"]:
             data_samples = ['Muon0_Run2023D_v1', 'Muon0_Run2023D_v2', 'Muon1_Run2023D_v1', 'Muon1_Run2023D_v2']
         elif args.channel == "tt":
@@ -199,6 +201,8 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
                     'DYto2L_M_50_PTLL_200to400_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_400to600_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_600_1J_amcatnloFXFX',
                     'DYto2L_M_50_PTLL_40to100_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_100to200_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_200to400_2J_amcatnloFXFX',
                     'DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_600_2J_amcatnloFXFX'] # use NLO samples
+        if args.era in ["Run3_2023", "Run3_2023BPix"]:
+            ztt_samples.remove('DYto2L_M_50_amcatnloFXFX_ext1')
     top_samples = ['TTto2L2Nu','TTto2L2Nu_ext1','TTtoLNu2Q','TTtoLNu2Q_ext1','TTto4Q','TTto4Q_ext1']
     vv_samples = ['WW','WZ','ZZ','ST_t_channel_top_4f_InclusiveDecays','ST_t_channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
     #vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
