@@ -134,7 +134,7 @@ def GetWNode(ana, name='W', samples_dict={}, gen_sels_dict={}, plot='',plot_unmo
     else:
         shape_cat = cat
     shape_selection = BuildCutString(wt, sel, shape_cat, OSSS, '')
-    if method in [1,3]:
+    if method in [1,3,4]:
         w_node = ana.SummedFactory(name, samples_dict['wjets_samples'], plot, full_selection)
     elif method == 2:
         full_selection = BuildCutString(wt, sel, cat, OSSS)
@@ -282,6 +282,29 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             shape_node,
             num_node,
             den_node))
+
+    elif method == 4:  # FAKE FACTOR METHOD
+        print("\n\nKlitos Savva big boy\n\n")
+        ff_weight = '(weight) * (w_FakeFactor)' # apply the fake factor weight
+
+        # application region
+        categories['qcd_ff_estimate'] = categories[cat_name]+'&&'+categories['tt_ff_AR']
+        categories_unmodified['qcd_ff_estimate'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_ff_AR']
+        # cut for application region category with fake factor weight added
+        ff_selection = BuildCutString(ff_weight, sel, categories['qcd_ff_estimate'], 'os')
+
+        # Get MC background and data yields
+        mc_bkg_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, 'qcd_ff_estimate', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
+        data_node = ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, ff_selection)
+        print(f"\n\nMC BKG: {mc_bkg_node}\n\n")
+        print(f"\n\nDATA: {data_node}\n\n")
+        # Data - MC background yield
+        qcd_estimate = Analysis.SubtractNode('QCD'+add_name,
+                       data_node,
+                       mc_bkg_node)
+        # Store QCD yield
+        ana.nodes[nodename].AddNode(qcd_estimate)
+
 
 def GenerateReweightedCPSignal(ana, nodename='', add_name='', samples={}, masses=[], plot='', wt='', sel='', cat='', get_os=True):
     #TODO: we probably want to reweight pT distributions to NNLOPS to take into account quark mass effects (or use similar tool)

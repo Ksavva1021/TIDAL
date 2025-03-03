@@ -43,7 +43,7 @@ available_channels = ['ee', 'mm', 'em', 'mt', 'et', 'tt']
 
 if args.channel not in available_channels:
     raise ValueError("Invalid channel. Please choose from: {}".format(available_channels))
-available_methods = ["1","2","3"]
+available_methods = ["1","2","3", "4"]
 if args.method not in available_methods:
     raise ValueError("Invalid method. Please choose from: {}".format(available_methods))
 
@@ -75,16 +75,17 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
         categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "et":
-        et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 <= 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)'
-        single_electron_only = '(trg_singleelectron && pt_1 > 31 && abs(eta_1) < 2.1 )'
+        et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 < 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)'
+        single_electron_only = '(trg_singleelectron && pt_1 >= 31 && abs(eta_1) < 2.1 )'
         trg_full = '(%s || %s)' % (et_cross_only, single_electron_only)
         categories['baseline'] = '(iso_1 < 0.15&& idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "tt":
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
         trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
-        categories['baseline'] = '(abs(eta_1) < 2.1 && abs(eta_2) < 2.1 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
+        categories['baseline'] = '(m_vis > 40 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
         categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 3')
+        categories['tt_ff_AR'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_2 >= 7', 'idDeepTau2018v2p5VSjet_2 < 7 && idDeepTau2018v2p5VSjet_2 >= 2')
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
