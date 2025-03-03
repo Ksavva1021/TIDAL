@@ -284,7 +284,7 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             den_node))
 
     elif method == 4:  # FAKE FACTOR METHOD
-        print("\n\nKlitos Savva big boy\n\n")
+        print("\n\n [DEV] Applying Fake Factors\n\n")
         ff_weight = '(weight) * (w_FakeFactor)' # apply the fake factor weight
 
         # application region
@@ -292,12 +292,9 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
         categories_unmodified['qcd_ff_estimate'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_ff_AR']
         # cut for application region category with fake factor weight added
         ff_selection = BuildCutString(ff_weight, sel, categories['qcd_ff_estimate'], 'os')
-
         # Get MC background and data yields
         mc_bkg_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, 'qcd_ff_estimate', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
         data_node = ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, ff_selection)
-        print(f"\n\nMC BKG: {mc_bkg_node}\n\n")
-        print(f"\n\nDATA: {data_node}\n\n")
         # Data - MC background yield
         qcd_estimate = Analysis.SubtractNode('QCD'+add_name,
                        data_node,
