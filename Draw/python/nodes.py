@@ -251,7 +251,7 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
           qcd_ratio,
           shape_node))
 
-    elif method == 3:
+    elif method == 3: # Flat fake factor method
         # TODO: Weight for data
         #HERE
         data_weight = '(weight)'
@@ -283,17 +283,15 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             num_node,
             den_node))
 
-    elif method == 4:  # FAKE FACTOR METHOD
+    elif method == 4:  # Full Fake Factor Method
         print("\n\n [DEV] Applying Fake Factors\n\n")
         ff_weight = '(weight) * (w_FakeFactor)' # apply the fake factor weight
-
         # application region
         categories['qcd_ff_estimate'] = categories[cat_name]+'&&'+categories['tt_ff_AR']
         categories_unmodified['qcd_ff_estimate'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_ff_AR']
-        # cut for application region category with fake factor weight added
-        ff_selection = BuildCutString(ff_weight, sel, categories['qcd_ff_estimate'], 'os')
+        ff_selection = BuildCutString(ff_weight, sel, categories['qcd_ff_estimate'], OSSS)
         # Get MC background and data yields
-        mc_bkg_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, 'qcd_ff_estimate', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
+        mc_bkg_node = GetSubtractNode(ana, '', plot, plot_unmodified, ff_weight, sel, 'qcd_ff_estimate', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
         data_node = ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, ff_selection)
         # Data - MC background yield
         qcd_estimate = Analysis.SubtractNode('QCD'+add_name,
