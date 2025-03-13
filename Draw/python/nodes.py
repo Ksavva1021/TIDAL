@@ -284,7 +284,6 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             den_node))
 
     elif method == 4:  # Full Fake Factor Method
-        print("\n\n [DEV] Applying Fake Factors\n\n")
         ff_weight = '(weight) * (w_FakeFactor)' # apply the fake factor weight
         # application region
         categories['qcd_ff_estimate'] = categories[cat_name]+'&&'+categories['tt_ff_AR']
