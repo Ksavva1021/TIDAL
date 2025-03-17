@@ -15,7 +15,7 @@ from Draw.python import Analysis
 from Draw.python import Plotting
 from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD, GenerateReweightedCPSignal
 from Draw.python.HiggsTauTauPlot_utilities import PrintSummary, GetTotals, FixBins, FindRebinning, RebinHist
-
+from Draw.python.PlotHistograms import HTT_Histogram
 ROOT.TH1.SetDefaultSumw2(True)
 
 parser = argparse.ArgumentParser()
@@ -615,17 +615,28 @@ titles = Plotting.SetAxisTitles(args.var,args.channel)
 x_title = titles[0]
 y_title = titles[1]
 
-Plotting.HTTPlot(
-  nodename=nodename,
-  infile=plot_file,
-  channel=args.channel,
-  scheme=args.channel,
-  ratio_range="0.5,1.5",
-  x_title=x_title,
-  y_title=y_title,
-  plot_name=output_name.replace('.root',''),
-  lumi=f"{args.era}",
-  #lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
-  blind=args.blind,
-  log_y=False,
-)
+
+
+# Plotting.HTTPlot(
+#   nodename=nodename,
+#   infile=plot_file,
+#   channel=args.channel,
+#   scheme=args.channel,
+#   ratio_range="0.5,1.5",
+#   x_title=x_title,
+#   y_title=y_title,
+#   plot_name=output_name.replace('.root',''),
+#   lumi=f"{args.era}",
+#   #lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
+#   blind=args.blind,
+#   log_y=False,
+#   is2Dunrolled=is_2d,
+# )
+
+HTT_Histogram(output_name,
+              nodename,
+              args.channel,
+              args.era,
+              args.var.split("[")[0],
+              blind = args.blind
+              ).plot_1D_histo()
