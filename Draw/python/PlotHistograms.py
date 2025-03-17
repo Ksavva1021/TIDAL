@@ -10,16 +10,16 @@ plt.rcParams.update({"font.size": 16})
 
 class HTT_Histogram:
 
-    def __init__(self, file, category, channel, era, variable, variable_label=None, cp_channel=None, blind=False):
+    def __init__(self, file, category, channel, era, variable,blind=False, log_y=False):
         self.file = uproot.open(file)
         self.file_name = file
         self.directory = os.path.dirname(file)
         self.category = category
         self.channel = channel
-        self.cp_channel = cp_channel # specific decay
         self.era = era
         self.blind = blind
         self.variable = variable
+        self.log_y = log_y
 
         self.initialize_plotting()
         self.initialize_nodes()
@@ -66,9 +66,31 @@ class HTT_Histogram:
         cp_label_map = {
                 "rhorho": "$\\rho^0\\rho^0$",
             }
-        if self.cp_channel is not None:
-            self.channel_label = cp_label_map[self.cp_channel]
 
+        if "higgs" in self.category:
+            # find cp specific label
+            if "pipi" in self.category:
+                self.channel_label = r"$\pi\pi$"
+            elif "pirho" in self.category:
+                self.channel_label = r"$\pi\rho$"
+            elif "rhopi" in self.category:
+                self.channel_label = r"$\rho\pi$"
+            elif "rhorho" in self.category:
+                self.channel_label = r"$\rho\rho$"
+            elif "pia11pr" in self.category:
+                self.channel_label = r"$\pi a_1^{1pr}$"
+            elif "a11prpi" in self.category:
+                self.channel_label = r"$a_1^{1pr}\pi$"
+            elif "rhoa11pr" in self.category:
+                self.channel_label = r"$\rho a_1^{1pr} / a_1^{1pr}\rho / a_1^{1pr}a_1^{1pr}$"
+            elif "rhoa1" in self.category:
+                self.channel_label = r"$\rho a_1^{3pr}$"
+            elif "a1rho" in self.category:
+                self.channel_label = r"$a_1^{3pr}\rho$"
+            elif "a11pra1" in self.category:
+                self.channel_label = r"$a_1^{1pr}a_1^{3pr}$"
+            elif "a1a11pr" in self.category:
+                self.channel_label = r"$a_1^{3pr}a_1^{1pr}$"
 
 
     def initialize_nodes(self):
@@ -271,7 +293,7 @@ class HTT_Histogram:
         # legends and labels
         hep.cms.label(ax=self.ax, label="Preliminary", data=True, lumi=self.lumi, com=13.6, fontsize=16)
         handles, labels = self.ax.get_legend_handles_labels()
-        self.ax.text(0.035, 0.925, self.channel_label, fontsize=18, fontweight="bold", transform=self.ax.transAxes)
+        self.ax.text(0.035, 0.915, self.channel_label, fontsize=18, fontweight="bold", transform=self.ax.transAxes)
         self.ax.legend(handles[::-1], labels[::-1], loc='upper right', frameon=1, framealpha=1, bbox_to_anchor=(0.98, 0.98))
 
         # main plot
@@ -279,9 +301,12 @@ class HTT_Histogram:
             self.ax.set_ylabel(f"Events / {self.bin_widths[0]} GeV")
         else:
             self.ax.set_ylabel(f"Events / {self.bin_widths[0]}")
-        self.ax.set_ylim(0, 1.5*np.max(self.stacked_block))
+        if self.log_y:
+            self.ax.set_yscale('log')
+            self.ax.set_ylim(0.1, 10*np.max(self.stacked_block))
+        else:
+            self.ax.set_ylim(0, 1.5*np.max(self.stacked_block))
         self.ax.set_xlim(self.bin_edges[0], self.bin_edges[-1])
-
         # ratio plot
         self.ax_ratio.set_ylabel("Obs/Exp")
         self.ax_ratio.set_xlabel(self.variable_label)
@@ -301,7 +326,7 @@ class HTT_Histogram:
 
 if __name__ == "__main__":
 
-    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Tests1303/IPHC_FF_VVVLoose/Run3_2022/control/tt/datacard_m_vis_cp_inclusive_tt_Run3_2022.root", "tt_cp_inclusive", "tt", "Run3_2022", "m_vis", variable_label = r"m$_{vis}$ (GeV)")
+    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Tests1303/IPHC_FF_VVVLoose/Run3_2022/control/tt/datacard_m_vis_cp_inclusive_tt_Run3_2022.root", "tt_cp_inclusive", "tt", "Run3_2022", "m_vis", log_y=True, blind=False)
 
     histo.plot_1D_histo()
 
