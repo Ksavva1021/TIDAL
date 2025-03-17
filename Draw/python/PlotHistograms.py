@@ -20,10 +20,11 @@ class HTT_Histogram:
         self.era = era
         self.blind = blind
         self.variable = variable
-        self.variable_label = variable_label
 
         self.initialize_plotting()
         self.initialize_nodes()
+        self.get_labels()
+
 
         # get yields
         self.get_backgrounds()
@@ -69,10 +70,6 @@ class HTT_Histogram:
             self.channel_label = cp_label_map[self.cp_channel]
 
 
-        if self.variable_label is None:
-            # set variable label to variable name if not specified
-            self.variable_label = self.variable
-
 
     def initialize_nodes(self):
         # get total background nodes
@@ -83,6 +80,8 @@ class HTT_Histogram:
                                 "Electroweak": {"nodes": ["VVT", "VVJ", "W", "ZL", "ZJ"], "color": "red"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
+            self.lep1 = "\\tau_1"
+            self.lep2 = "\\tau_2"
         elif self.channel == "mt":
             self.backgrounds = {
                                 "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
@@ -91,6 +90,8 @@ class HTT_Histogram:
                                 "Z$\\to\\mu\\mu$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
+            self.lep1 = "\\mu"
+            self.lep2 = "\\tau"
         elif self.channel == "et":
             self.backgrounds = {
                                 "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
@@ -99,6 +100,8 @@ class HTT_Histogram:
                                 "Z$\\to ee": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
+            self.lep1 = "e"
+            self.lep2 = "\\tau"
         elif self.channel == "em":
             self.backgrounds = {
                                 "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
@@ -107,6 +110,8 @@ class HTT_Histogram:
                                 "Z$\\to\\ell\\ell": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
+            self.lep1 = "e"
+            self.lep2 = "\\mu"
         elif self.channel == "ee":
             self.backgrounds = {
                                 "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
@@ -115,6 +120,8 @@ class HTT_Histogram:
                                 "Z$\\to ee": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
+            self.lep1 = "e_1"
+            self.lep2 = "e_2"
         elif self.channel == "mm":
             self.backgrounds = {
                                 "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
@@ -123,6 +130,8 @@ class HTT_Histogram:
                                 "Z$\\to\\mu\\mu$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
+            self.lep1 = "\\mu_1"
+            self.lep2 = "\\mu_2"
         # get luminosity
         if self.era == "Run3_2022":
             self.lumi = 7.98
@@ -135,6 +144,42 @@ class HTT_Histogram:
         # get color for each background
         for bkg, info in self.backgrounds.items():
             info['color'] = self.colors[info["color"]]  # replace color name with hex code
+
+    def get_labels(self):
+        label_map = {
+            "m_vis": r"m$_{vis}$ (GeV)",
+            "eta_1": rf"$\eta^{{{self.lep1}}}$",
+            "eta_2": rf"$\eta^{{{self.lep2}}}$",
+            "phi_1": rf"$\phi^{{{self.lep1}}}$",
+            "phi_2": rf"$\phi^{{{self.lep2}}}$",
+            "pt_1": rf"$p_T^{{{self.lep1}}}$ (GeV)",
+            "pt_2": rf"$p_T^{{{self.lep2}}}$ (GeV)",
+            "met_pt": r"$p_T^{miss}$ (GeV)",
+            "met_phi": r"$\phi^{miss}$",
+            "met_dphi_1": rf"$\Delta\phi({self.lep1},$" + r"$p_T^{miss})$",
+            "met_dphi_2": rf"$\Delta\phi({self.lep2},$" + r"$p_T^{miss})$",
+            "dR": rf"$\Delta R({self.lep1}, {self.lep2})$",
+            "dphi": rf"$\Delta\phi({self.lep1}, {self.lep2})$",
+            "pt_tt": r"$p_T$" + rf"$^{{{self.lep1}}}$" +rf"$^{{{self.lep2}}}$ (GeV)",
+            "pt_vis": r"$p_T^{vis}$ (GeV)",
+            "FastMTT_mass": r"$m_{FastMTT}$ (GeV)",
+            "FastMTT_mass_constraint": r"$m_{FastMTT}^{constr.}$ (GeV)",
+            "mt_1": rf"$m_T({self.lep1},$" + r"$p_T^{miss})$",
+            "mt_2": rf"$m_T({self.lep2},$" + r"$p_T^{miss})$",
+            "mt_lep": rf"$m_T({self.lep1}, {self.lep2})$",
+            "mt_tot": r"$m_T^{tot}$ (GeV)",
+            "jpt_1": r"$p_T^{j_1}$ (GeV)",
+            "jpt_2": r"$p_T^{j_2}$ (GeV)",
+            "jeta_1": r"$\eta^{j_1}$",
+            "jeta_2": r"$\eta^{j_2}$",
+            "mjj": r"$m_{jj}$ (GeV)",
+            "jdeta": r"$\Delta\eta_{jj}$",
+            "dijetpt": r"$p_T^{jj}$ (GeV)",
+            "n_jets": r"$N_{jets}$",
+            "n_bjets": r"$N_{bjets}$",
+
+        }
+        self.variable_label = label_map.get(self.variable, self.variable)
 
     def get_counts_errors(self, node):
         # get count and error for a given node
@@ -212,6 +257,8 @@ class HTT_Histogram:
             self.ax.errorbar(self.bin_centers, self.data['counts'],xerr=self.bin_widths/2, fmt='o', color = 'black', markersize=3, linewidth=0.6) # add width marker
 
         ## RATIO PLOT
+        self.ax_ratio.axhline(1, color='black', linestyle=':')
+        self.fig.subplots_adjust(hspace=0.05)
         # add data/MC ratio as points
         if not self.blind:
             self.ax_ratio.errorbar(self.bin_centers, self.data_MC_ratio['counts'], yerr=self.data_MC_ratio['error_data'], xerr=self.bin_widths/2, fmt='o', color = 'black', markersize=3, linewidth=0.6)
@@ -220,19 +267,25 @@ class HTT_Histogram:
             1 - np.insert(self.data_MC_ratio['error_MC'], len(self.data_MC_ratio['error_MC']), 0),
             1 + np.insert(self.data_MC_ratio['error_MC'], len(self.data_MC_ratio['error_MC']), 0),
             step="post", facecolor='none', hatch='////////', edgecolor='grey', linewidth=0)
-        self.ax_ratio.axhline(1, color='black', linestyle=':')
-        self.ax_ratio.set_ylabel("Obs/Exp")
+
         # legends and labels
-        self.fig.subplots_adjust(hspace=0.05)
         hep.cms.label(ax=self.ax, label="Preliminary", data=True, lumi=self.lumi, com=13.6, fontsize=16)
         handles, labels = self.ax.get_legend_handles_labels()
+        self.ax.text(0.035, 0.925, self.channel_label, fontsize=18, fontweight="bold", transform=self.ax.transAxes)
         self.ax.legend(handles[::-1], labels[::-1], loc='upper right', frameon=1, framealpha=1, bbox_to_anchor=(0.98, 0.98))
-        self.ax.set_ylabel(f"Events/bin")
+
+        # main plot
+        if "(GeV)" in self.variable_label:
+            self.ax.set_ylabel(f"Events / {self.bin_widths[0]} GeV")
+        else:
+            self.ax.set_ylabel(f"Events / {self.bin_widths[0]}")
+        self.ax.set_ylim(0, 1.5*np.max(self.stacked_block))
+        self.ax.set_xlim(self.bin_edges[0], self.bin_edges[-1])
+
+        # ratio plot
+        self.ax_ratio.set_ylabel("Obs/Exp")
         self.ax_ratio.set_xlabel(self.variable_label)
         self.ax_ratio.set_ylim(ratio_min, ratio_max)
-        self.ax.set_ylim(0, 1.4*np.max(self.stacked_block))
-        self.ax.set_xlim(self.bin_edges[0], self.bin_edges[-1])
-        self.ax.text(0.035, 0.925, self.channel_label, fontsize=18, fontweight="bold", transform=self.ax.transAxes)
 
         # Save to pdf and root
         plt.savefig(self.file_name.replace(".root", ".pdf"))
