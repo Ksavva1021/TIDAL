@@ -10,7 +10,7 @@ plt.rcParams.update({"font.size": 16})
 
 class HTT_Histogram:
 
-    def __init__(self, file, category, channel, era, variable,blind=False, log_y=False):
+    def __init__(self, file, category, channel, era, variable,blind=False, log_y=False, is2Dunrolled=False):
         self.file = uproot.open(file)
         self.file_name = file
         self.directory = os.path.dirname(file)
@@ -18,14 +18,17 @@ class HTT_Histogram:
         self.channel = channel
         self.era = era
         self.blind = blind
-        self.variable = variable
+        self.variable = variable.split("[")[0]
         self.log_y = log_y
+        self.is2Dunrolled = is2Dunrolled
 
         self.initialize_plotting()
         self.initialize_nodes()
         self.get_labels()
 
-
+        if self.is2Dunrolled:
+            self.var_dim_1 = np.fromstring(variable.split('[')[1][:-2], sep=',', dtype=float)
+            self.var_dim_2 = np.fromstring(variable.split('[')[2][:-1], sep=',', dtype=float)
         # get yields
         self.get_backgrounds()
         self.get_data()
@@ -52,6 +55,9 @@ class HTT_Histogram:
                 "grey": "#94a4a2",
                 "ash": "#717581",
             }
+        # channel label height:
+        self.ch_label_height = 0.915
+
         # define channel label (inclusive)
         label_map = {
                 "tt": "$\\tau_h\\tau_h$",
@@ -62,13 +68,9 @@ class HTT_Histogram:
                 "mm": "$\\mu\\mu$",
             }
         self.channel_label = label_map[self.channel]
-        # define CP channel label
-        cp_label_map = {
-                "rhorho": "$\\rho^0\\rho^0$",
-            }
 
-        if "higgs" in self.category:
-            # find cp specific label
+        # define CP channel label
+        if ("higgs_" in self.category) or ("inclusive_PNet_" in self.category):
             if "pipi" in self.category:
                 self.channel_label = r"$\pi\pi$"
             elif "pirho" in self.category:
@@ -79,10 +81,16 @@ class HTT_Histogram:
                 self.channel_label = r"$\rho\rho$"
             elif "pia11pr" in self.category:
                 self.channel_label = r"$\pi a_1^{1pr}$"
+            elif "pia1" in self.category:
+                self.channel_label = r"$\pi a_1^{3pr}$"
             elif "a11prpi" in self.category:
                 self.channel_label = r"$a_1^{1pr}\pi$"
+            elif "a1pi" in self.category:
+                self.channel_label = r"$a_1^{3pr} \pi$"
             elif "rhoa11pr" in self.category:
-                self.channel_label = r"$\rho a_1^{1pr} / a_1^{1pr}\rho / a_1^{1pr}a_1^{1pr}$"
+                self.channel_label = r"""$\rho a_1^{1pr}$ / $a_1^{1pr}\rho$
+$a_1^{1pr}a_1^{1pr}$"""
+                self.ch_label_height = 0.825
             elif "rhoa1" in self.category:
                 self.channel_label = r"$\rho a_1^{3pr}$"
             elif "a1rho" in self.category:
@@ -91,6 +99,33 @@ class HTT_Histogram:
                 self.channel_label = r"$a_1^{1pr}a_1^{3pr}$"
             elif "a1a11pr" in self.category:
                 self.channel_label = r"$a_1^{3pr}a_1^{1pr}$"
+            elif "a1a1" in self.category:
+                self.channel_label = r"$a_1^{3pr}a_1^{3pr}$"
+        
+        # labels for leading/subleading tau category
+        if "subleading_" in self.category:
+            if "pi" in self.category:
+                self.channel_label = r"$X \pi$"
+            elif "rhoprime" in self.category:
+                self.channel_label = r"$X \rho^{,}$"
+            elif "rho" in self.category:
+                self.channel_label = r"$X \rho$"
+            elif "a11pr" in self.category:
+                self.channel_label = r"$X a_1^{1pr}$"
+            elif "a1" in self.category:
+                self.channel_label = r"$X a_1^{3pr}$"
+        elif "leading_" in self.category:
+            if "pi" in self.category:
+                self.channel_label = r"$\pi X$"
+            elif "rhoprime" in self.category:
+                self.channel_label = r"$\rho^{,} X$"
+            elif "rho" in self.category:
+                self.channel_label = r"$\rho X$"
+            elif "a11pr" in self.category:
+                self.channel_label = r"$a_1^{1pr} X$"
+            elif "a1" in self.category:
+                self.channel_label = r"$a_1^{3pr} X$"
+
 
 
     def initialize_nodes(self):
@@ -202,6 +237,10 @@ class HTT_Histogram:
 
         }
         self.variable_label = label_map.get(self.variable, self.variable)
+        if self.is2Dunrolled:
+            if "BDT_pred_score,aco" in self.variable:
+                self.variable_label = "Acoplanarity Bin Number"
+
 
     def get_counts_errors(self, node):
         # get count and error for a given node
@@ -292,15 +331,35 @@ class HTT_Histogram:
 
         # legends and labels
         hep.cms.label(ax=self.ax, label="Preliminary", data=True, lumi=self.lumi, com=13.6, fontsize=16)
+        self.ax.text(0.035, self.ch_label_height, self.channel_label, fontsize=18, fontweight="bold", transform=self.ax.transAxes)
         handles, labels = self.ax.get_legend_handles_labels()
-        self.ax.text(0.035, 0.915, self.channel_label, fontsize=18, fontweight="bold", transform=self.ax.transAxes)
-        self.ax.legend(handles[::-1], labels[::-1], loc='upper right', frameon=1, framealpha=1, bbox_to_anchor=(0.98, 0.98))
+
+        # add vertical lines if 2D unrolled:
+        if self.is2Dunrolled:
+            n_bins = len(self.bin_centers)
+            nrows = len(self.var_dim_1)-1
+            ncols = len(self.var_dim_2)-1
+            # draw boundaries
+            boundaries = np.arange(0, (nrows + 1) * ncols, ncols)
+            for b in boundaries:
+                self.ax_ratio.axvline(b, color='black', linestyle='--', linewidth=2)
+                self.ax.axvline(b, color='black', linestyle='--', linewidth=2)
+            if "BDT_pred_score," in self.variable:
+                # add text for binning of variable 1
+                label_loc = (np.arange(nrows)/nrows) + 0.03
+                for i, l in zip(range(nrows), label_loc):
+                    # print(self.var_dim_1[i], self.var_dim_1[i+1])
+                    self.ax.text(l, 0.84, f"BDT ({self.var_dim_1[i]}, {self.var_dim_1[i+1]})", fontsize=16, transform=self.ax.transAxes)
+            # place legend outside of plot
+            plt.legend(handles[::-1], labels[::-1], loc='upper left', frameon=1, framealpha=1, bbox_to_anchor=(1.005, 5.2))
+        else:
+            self.ax.legend(handles[::-1], labels[::-1], loc='upper right', frameon=1, framealpha=1, bbox_to_anchor=(0.98, 0.98))
 
         # main plot
         if "(GeV)" in self.variable_label:
-            self.ax.set_ylabel(f"Events / {self.bin_widths[0]} GeV")
+            self.ax.set_ylabel(f"Events / {round(self.bin_widths[0],1)} GeV")
         else:
-            self.ax.set_ylabel(f"Events / {self.bin_widths[0]}")
+            self.ax.set_ylabel(f"Events / {round(self.bin_widths[0],1)}")
         if self.log_y:
             self.ax.set_yscale('log')
             self.ax.set_ylim(0.1, 10*np.max(self.stacked_block))
@@ -313,9 +372,9 @@ class HTT_Histogram:
         self.ax_ratio.set_ylim(ratio_min, ratio_max)
 
         # Save to pdf and root
-        plt.savefig(self.file_name.replace(".root", ".pdf"))
+        plt.savefig(self.file_name.replace(".root", ".pdf"), bbox_inches='tight')
         print(f'Saved histogram to {self.file_name.replace(".root", ".pdf")}')
-        plt.savefig(self.file_name.replace(".root", ".png"))
+        plt.savefig(self.file_name.replace(".root", ".png"), bbox_inches='tight')
         print(f'Saved histogram to {self.file_name.replace(".root", ".png")}')
 
 
@@ -326,8 +385,9 @@ class HTT_Histogram:
 
 if __name__ == "__main__":
 
-    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Tests1303/IPHC_FF_VVVLoose/Run3_2022/control/tt/datacard_m_vis_cp_inclusive_tt_Run3_2022.root", "tt_cp_inclusive", "tt", "Run3_2022", "m_vis", log_y=True, blind=False)
+    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Tests1303/IPHC_FF_VVVLoose/Run3_2022/control/tt/datacard_m_vis_cp_inclusive_tt_Run3_2022.root", "tt_cp_inclusive", "tt", "Run3_2022", "m_vis", log_y=False, blind=False)
 
+    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/1303/TestPlotting/Run3_2022/cpdecay/tt/datacard_BDT_pred_score_vs_aco_rho_rho_higgs_rhorho_tt_Run3_2022.root", "tt_higgs_rhorho", "tt", "Run3_2022", "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],[0.0,0.6283185307179586,1.2566370614359172,1.8849555921538759,2.5132741228718345,3.141592653589793,3.7699111843077517,4.39822971502571,5.026548245743669,5.654866776461628,6.283185307179586]", blind=True, is2Dunrolled=True)
     histo.plot_1D_histo()
 
 
