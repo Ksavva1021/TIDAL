@@ -51,7 +51,7 @@ class HTT_Histogram:
                 "violet": "#882ebd",
                 "purple": "#964a8b",
                 "brown": "#a96b59",
-                "green": "#b9ac70",
+                "green": "#a0c172", # #b1cf86
                 "grey": "#94a4a2",
                 "ash": "#717581",
             }
@@ -69,71 +69,63 @@ class HTT_Histogram:
             }
         self.channel_label = label_map[self.channel]
 
-        # define CP channel label
-        if ("higgs_" in self.category) or ("inclusive_PNet_" in self.category):
-            if "pipi" in self.category:
-                self.channel_label = r"$\pi\pi$"
-            elif "pirho" in self.category:
-                self.channel_label = r"$\pi\rho$"
-            elif "rhopi" in self.category:
-                self.channel_label = r"$\rho\pi$"
-            elif "rhorho" in self.category:
-                self.channel_label = r"$\rho\rho$"
-            elif "pia11pr" in self.category:
-                self.channel_label = r"$\pi a_1^{1pr}$"
-            elif "pia1" in self.category:
-                self.channel_label = r"$\pi a_1^{3pr}$"
-            elif "a11prpi" in self.category:
-                self.channel_label = r"$a_1^{1pr}\pi$"
-            elif "a1pi" in self.category:
-                self.channel_label = r"$a_1^{3pr} \pi$"
-            elif "rhoa11pr" in self.category:
-                self.channel_label = r"""$\rho a_1^{1pr}$ / $a_1^{1pr}\rho$
-$a_1^{1pr}a_1^{1pr}$"""
-                self.ch_label_height = 0.825
-            elif "rhoa1" in self.category:
-                self.channel_label = r"$\rho a_1^{3pr}$"
-            elif "a1rho" in self.category:
-                self.channel_label = r"$a_1^{3pr}\rho$"
-            elif "a11pra1" in self.category:
-                self.channel_label = r"$a_1^{1pr}a_1^{3pr}$"
-            elif "a1a11pr" in self.category:
-                self.channel_label = r"$a_1^{3pr}a_1^{1pr}$"
-            elif "a1a1" in self.category:
-                self.channel_label = r"$a_1^{3pr}a_1^{3pr}$"
-        
-        # labels for leading/subleading tau category
-        if "subleading_" in self.category:
-            if "pi" in self.category:
-                self.channel_label = r"$X \pi$"
-            elif "rhoprime" in self.category:
-                self.channel_label = r"$X \rho^{,}$"
-            elif "rho" in self.category:
-                self.channel_label = r"$X \rho$"
-            elif "a11pr" in self.category:
-                self.channel_label = r"$X a_1^{1pr}$"
-            elif "a1" in self.category:
-                self.channel_label = r"$X a_1^{3pr}$"
-        elif "leading_" in self.category:
-            if "pi" in self.category:
-                self.channel_label = r"$\pi X$"
-            elif "rhoprime" in self.category:
-                self.channel_label = r"$\rho^{,} X$"
-            elif "rho" in self.category:
-                self.channel_label = r"$\rho X$"
-            elif "a11pr" in self.category:
-                self.channel_label = r"$a_1^{1pr} X$"
-            elif "a1" in self.category:
-                self.channel_label = r"$a_1^{3pr} X$"
+        if self.channel == 'tt':
+            # define CP channel label
+            if ("higgs_" in self.category) or ("inclusive_PNet_" in self.category):
+                if "pipi" in self.category:
+                    self.channel_label = r"$\pi\pi$"
+                elif "pirho" in self.category:
+                    self.channel_label = r"$\pi\rho$"
+                elif "rhopi" in self.category:
+                    self.channel_label = r"$\rho\pi$"
+                elif "rhorho" in self.category:
+                    self.channel_label = r"$\rho\rho$"
+                elif "pia11pr" in self.category:
+                    self.channel_label = r"$\pi a_1^{1pr}$"
+                elif "pia1" in self.category:
+                    self.channel_label = r"$\pi a_1^{3pr}$"
+                elif "a11prpi" in self.category:
+                    self.channel_label = r"$a_1^{1pr}\pi$"
+                elif "a1pi" in self.category:
+                    self.channel_label = r"$a_1^{3pr} \pi$"
+                elif "rhoa11pr" in self.category:
+                    self.channel_label = r"""$\rho a_1^{1pr}$ / $a_1^{1pr}\rho$
+    $a_1^{1pr}a_1^{1pr}$"""
+                    self.ch_label_height = 0.825
+                elif "rhoa1" in self.category:
+                    self.channel_label = r"$\rho a_1^{3pr}$"
+                elif "a1rho" in self.category:
+                    self.channel_label = r"$a_1^{3pr}\rho$"
+                elif "a11pra1" in self.category:
+                    self.channel_label = r"$a_1^{1pr}a_1^{3pr}$"
+                elif "a1a11pr" in self.category:
+                    self.channel_label = r"$a_1^{3pr}a_1^{1pr}$"
+                elif "a1a1" in self.category:
+                    self.channel_label = r"$a_1^{3pr}a_1^{3pr}$"
 
+        elif self.channel == 'mt':
+            if "DM0_" in self.category:
+                self.channel_label = r"$\mu\pi$"
+            elif "DM1_" in self.category:
+                self.channel_label = r"$\mu\rho$"
+            elif "DM2_" in self.category:
+                self.channel_label = r"$\mu a_1^{1pr}$"
+            elif "DM10_" in self.category:
+                self.channel_label = r"$\mu a_1^{3pr}$"
 
 
     def initialize_nodes(self):
         # get total background nodes
         if self.channel == "tt":
+            # self.backgrounds = {
+            #                     "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
+            #                     "QCD": {"nodes": ["QCD"], "color": "pink"},
+            #                     "Electroweak": {"nodes": ["VVT", "VVJ", "W", "ZL", "ZJ"], "color": "red"},
+            #                     "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
+            #                 }
             self.backgrounds = {
                                 "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
-                                "QCD": {"nodes": ["QCD"], "color": "pink"},
+                                "Jet$\\to\\tau_h$": {"nodes": ["JetFakes", "JetFakesSublead"], "color": "green"},
                                 "Electroweak": {"nodes": ["VVT", "VVJ", "W", "ZL", "ZJ"], "color": "red"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
@@ -357,9 +349,9 @@ $a_1^{1pr}a_1^{1pr}$"""
 
         # main plot
         if "(GeV)" in self.variable_label:
-            self.ax.set_ylabel(f"Events / {round(self.bin_widths[0],1)} GeV")
+            self.ax.set_ylabel(f"Events / {round(self.bin_widths[0],2)} GeV")
         else:
-            self.ax.set_ylabel(f"Events / {round(self.bin_widths[0],1)}")
+            self.ax.set_ylabel(f"Events / {round(self.bin_widths[0],2)}")
         if self.log_y:
             self.ax.set_yscale('log')
             self.ax.set_ylim(0.1, 10*np.max(self.stacked_block))
@@ -371,16 +363,20 @@ $a_1^{1pr}a_1^{1pr}$"""
         self.ax_ratio.set_xlabel(self.variable_label)
         self.ax_ratio.set_ylim(ratio_min, ratio_max)
 
-        # Save to pdf and root
-        plt.savefig(self.file_name.replace(".root", ".pdf"), bbox_inches='tight')
-        print(f'Saved histogram to {self.file_name.replace(".root", ".pdf")}')
-        plt.savefig(self.file_name.replace(".root", ".png"), bbox_inches='tight')
-        print(f'Saved histogram to {self.file_name.replace(".root", ".png")}')
+        # Save to pdf and png
+        save_path_png = self.file_name.split(os.sep)
+        save_path_png.insert(-1, 'pngs')
+        os.makedirs(os.sep.join(save_path_png[:-1]), exist_ok=True) # make dir if not exists
+        save_path_png = os.sep.join(save_path_png).replace(".root", ".png")
+        plt.savefig(save_path_png, bbox_inches='tight')
+        print(f'Saved histogram to {save_path_png}')
 
-
-
-
-
+        save_path_pdf = self.file_name.split(os.sep)
+        save_path_pdf.insert(-1, 'pdfs')
+        os.makedirs(os.sep.join(save_path_pdf[:-1]), exist_ok=True) # make dir if not exists
+        save_path_pdf = os.sep.join(save_path_pdf).replace(".root", ".pdf")
+        plt.savefig(save_path_pdf, bbox_inches='tight')
+        print(f'Saved histogram to {save_path_pdf}')
 
 
 if __name__ == "__main__":
