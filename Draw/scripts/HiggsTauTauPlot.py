@@ -83,7 +83,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.1)'
             single_muon_only = '(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)'
             trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
-            categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && mt_1 < 30 && n_bjets==0 && %s)' % trg_full
+            categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 %s)' % trg_full
 
 
     if args.channel == "et":
@@ -128,7 +128,6 @@ if args.channel == 'tt':
     sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && pion_E_split_X>0.2'
     sel_a11pr = 'decayMode_X==1 && decayModePNet_X==2 && pion_E_split_X>0.2'
     sel_a1 = 'decayModePNet_X==10 && hasRefitSV_X'
-    # sel_rhoprime = 'decayModePNet_X==11 && hasRefitSV_X'
 
     sel_pi_1 = sel_pi.replace('X','1')
     sel_pi_2 = sel_pi.replace('X','2')
@@ -138,9 +137,8 @@ if args.channel == 'tt':
     sel_a1_2 = sel_a1.replace('X','2')
     sel_a11pr_1 = sel_a11pr.replace('X','1')
     sel_a11pr_2 = sel_a11pr.replace('X','2')
-    sel_rhoprime_1 = sel_rhoprime.replace('X','1')
-    sel_rhoprime_2 = sel_rhoprime.replace('X','2')
 
+    categories["cp_inclusive"] = f"(({sel_pi_1} || {sel_rho_1} || {sel_a1_1} || {sel_a11pr_1})) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2}))"
 
     categories["inclusive_PNet_rhorho"] = '(%(sel_rho_1)s && %(sel_rho_2)s)' % vars()
     categories["inclusive_PNet_pipi"] = '(%(sel_pi_1)s && %(sel_pi_2)s)' % vars()
@@ -168,6 +166,13 @@ if args.channel == 'tt':
         categories["higgs_{}".format(c)] = '({} && {})'.format(categories['mva_higgs'], categories["inclusive_PNet_{}".format(c)])
         categories["tau_{}".format(c)] = '({} && {})'.format(categories['mva_tau'], categories["inclusive_PNet_{}".format(c)])
         categories["fake_{}".format(c)] = '({} && {})'.format(categories['mva_fake'], categories["inclusive_PNet_{}".format(c)])
+
+elif args.channel == 'mt':
+    # DM separated categories
+    categories['DM0_tau'] = 'decayModePNet_2 == 0'
+    categories['DM1_tau'] = 'decayMode_2==1 && decayModePNet_2 == 1'
+    categories['DM2_tau'] = 'decayMode_2==1 && decayModePNet_2 == 2'
+    categories['DM10_tau'] = 'decayModePNet_2 == 10'
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define the samples (Data and MC (Background & Signal))
