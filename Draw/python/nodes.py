@@ -134,9 +134,9 @@ def GetWNode(ana, name='W', samples_dict={}, gen_sels_dict={}, plot='',plot_unmo
     else:
         shape_cat = cat
     shape_selection = BuildCutString(wt, sel, shape_cat, OSSS, '')
-    if method in [1,3]:
+    if method in [1,3,4]:
         w_node = ana.SummedFactory(name, samples_dict['wjets_samples'], plot, full_selection)
-    elif method == 2:
+    elif method in [2]:
         full_selection = BuildCutString(wt, sel, cat, OSSS)
         ss_selection = BuildCutString(wt, '', cat, '!os', '')
         os_selection = BuildCutString(wt, '', cat, 'os', '')
@@ -224,10 +224,10 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
     else:
         OSSS = "!os"
 
-    cat = categories['cat']    
-    cat_data = categories_unmodified['cat']    
+    cat = categories['cat']
+    cat_data = categories_unmodified['cat']
 
-    if method in [1,2]:
+    if method in [1,2,4]:
         sub_shift='*1.0'
         if 'qcd_sub_up' in systematic:
             sub_shift = '*1.1'
@@ -235,9 +235,16 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             sub_shift = '*0.9'
 
         # TODO: Weight for data
-        # HERE
         data_weight = '(weight)'
         full_selection = BuildCutString(data_weight, sel, cat_data, '!os')
+
+        if method in [4]:
+            categories['qcd_loose_shape_cat'] = categories[cat_name]+'&&'+categories['qcd_loose_shape']
+            categories_unmodified['qcd_loose_shape_cat'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['qcd_loose_shape']
+            shape_selection = BuildCutString(data_weight, sel, categories_unmodified['qcd_loose_shape_cat'], '!os')
+            subtract_node = GetSubtractNode(ana , '', plot, plot_unmodified, wt+sub_shift, sel, 'qcd_loose_shape_cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True, w_shift=w_shift)
+            shape_node = Analysis.SubtractNode('shape', ana.SummedFactory('data_ss', samples_dict['data_samples'], plot_unmodified, shape_selection), subtract_node)
+
         subtract_node = GetSubtractNode(ana , '', plot, plot_unmodified, wt+sub_shift, sel, 'cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True, w_shift=w_shift)
 
         if get_os:
@@ -253,11 +260,10 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
 
     elif method == 3:
         # TODO: Weight for data
-        #HERE
         data_weight = '(weight)'
 
         categories['qcd_sdb_cat'] = categories[cat_name]+'&&'+categories['tt_qcd_norm']
-        categories_unmodified['qcd_sdb_cat'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_qcd_norm'] 
+        categories_unmodified['qcd_sdb_cat'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_qcd_norm']
 
         subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel, 'cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
         num_selection = BuildCutString(data_weight, sel, cat_data, '!os')
