@@ -5,7 +5,7 @@
 # 2. Basic method using MC samples & SS method for QCD estimation && WJets shape method (High mT control region)
 # 3. Basic method using MC samples & Flat FF method for QCD estimation
 # 4. Basic method using MC samples && FF method for QCD estimation
-# 4. Basic method using MC samples && SS method for QCD estimation but, relaxed isolation
+# 5. Basic method using MC samples && SS method for QCD estimation but, relaxed isolation
 
 import argparse
 from collections import OrderedDict
