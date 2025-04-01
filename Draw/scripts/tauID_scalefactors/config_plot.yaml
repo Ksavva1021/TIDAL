@@ -35,7 +35,7 @@ sf_calculation:
     Alias1b: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && idDeepTau2018v2p5VSe_2 >= 6)"
 
   mt:
-  - { method: "4", category: [ inclusive, dm0, dm1, dm2, dm10, dm11 ], plotting_variable: [ pt_2_vs_mvis ], blind: false, auto_rebin: false, additional_selections: [ "(mt_1<65)", "(mt_1>70)" ], set_alias: Alias1b, additional_weight: "(1)", unroll: False }
+  - { method: "5", category: [ inclusive, dm0, dm1, dm2, dm10, dm11 ], plotting_variable: [ pt_2_vs_mvis ], blind: false, auto_rebin: false, additional_selections: [ "(mt_1<65)", "(mt_1>70)" ], set_alias: Alias1b, additional_weight: "(1)", unroll: False }
   - { method: "1", category: [ inclusive, dm0, dm1, dm2, dm10, dm11 ], plotting_variable: [ pt_2_vs_mvis ], blind: false, auto_rebin: false, additional_selections: [ "(mt_1<65)" ], set_alias: Alias1b, additional_weight: "(1)", aiso: True, unroll: False }
 
   mm:
