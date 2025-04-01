@@ -8,9 +8,9 @@ from matplotlib.gridspec import GridSpec
 
 hep.style.use("CMS")
 
-channel = "mm"
-year = "Run3_2022"
-input_dir = f"/vols/cms/ks1021/TIDAL/Draw/plots/IP_corrections/before_2/{year}/ip_calculation/histograms"
+channel = "ee"
+year = "Run3_2023BPix"
+input_dir = f"/vols/cms/ks1021/TIDAL/Draw/plots/IP_corrections_after/{year}/ip_calculation/histograms"
 
 output_dir = os.path.join(input_dir, channel, year)
 if not os.path.exists(output_dir):
@@ -24,34 +24,6 @@ variable_mapping = {
     "ip_x": "Impact parameter x [cm]",
     "ip_y": "Impact parameter y [cm]",
     "ip_z": "Impact parameter z [cm]",
-    "log_err00": "Log error 00",
-    "log_err11": "Log error 11",
-    "log_err22": "Log error 22",
-    "ip_LengthSig": "Impact parameter significance",
-    "ip_LengthTotal": "Impact parameter total length [cm]",
-    "ip_ErrorTotal": "Impact parameter total error [cm]",
-    # "PCA_ip_cov00": "PCA covariance 00",
-    # "PCA_ip_cov11": "PCA covariance 11",
-    # "PCA_ip_cov22": "PCA covariance 22",
-    # "PCA_ip_cov10": "PCA covariance 10",
-    # "PCA_ip_cov20": "PCA covariance 20",
-    # "PCA_ip_cov21": "PCA covariance 21",
-#    "ip_alt_LengthSig": "Impact parameter significance (alternative)",
-#    "ip_x_Err": "Impact parameter x error [cm]",
-#    "ip_y_Err": "Impact parameter y error [cm]",
-#    "ip_z_Err": "Impact parameter z error [cm]",
-#    "ip_x_Err_ratio": "Impact parameter x error ratio",
-#    "ip_y_Err_ratio": "Impact parameter y error ratio",
-#    "ip_z_Err_ratio": "Impact parameter z error ratio",
-#    "ip_x_log_Err": "Impact parameter x error log scale",
-#    "ip_y_log_Err": "Impact parameter y error log scale",
-#    "ip_z_log_Err": "Impact parameter z error log scale",
-#    "ip_cov00": "Covariance 00",
-#    "ip_cov11": "Covariance 11",
-#    "ip_cov22": "Covariance 22",
-#    "ip_cov10": "Covariance 10",
-#    "ip_cov20": "Covariance 20",
-#    "ip_cov21": "Covariance 21",
 }
 
 sorted_keys = sorted(variable_mapping.keys(), key=len, reverse=True)
@@ -96,6 +68,7 @@ for clean_hist_name in cleaned_names:
             # Calculate ratio and handle division by zero
             ratio_vals = np.divide(data_vals, mc_vals, out=np.zeros_like(data_vals), where=mc_vals != 0)
             ratio_errors = np.divide(np.sqrt(data_vals), mc_vals, out=np.zeros_like(data_vals), where=mc_vals != 0)
+            ratio_errors = np.where(ratio_errors < 0 | np.isnan(ratio_errors), 0, ratio_errors)
 
             # Set up figure with two subplots (main plot and ratio plot)
             fig = plt.figure(figsize=(12, 8))
@@ -116,7 +89,7 @@ for clean_hist_name in cleaned_names:
                 lumi = 26.67
             elif year == "Run3_2023":
                 lumi = 17.79
-            elif year == "Run3_2023BPIX":
+            elif year == "Run3_2023BPix":
                 lumi = 9.45
             hep.cms.label(ax=ax_main, label="", data=False, lumi=lumi, com=13.6, fontsize=14)
 
