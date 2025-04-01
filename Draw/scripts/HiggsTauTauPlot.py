@@ -35,7 +35,6 @@ parser.add_argument('--masses', default='125', help='Mass points to process, sep
 parser.add_argument('--datacard_name', help='Override the datacard name')
 parser.add_argument('--auto_rebin', action='store_true', help='Automatically rebin histograms')
 parser.add_argument('--LO_DY', action='store_true', help='Use LO instead of NLO DY')
-parser.add_argument('--TES_variation', type=str, help="TES variation to apply")
 args = parser.parse_args()
 
 masses = args.masses.split(',')
@@ -71,21 +70,10 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "mm":
         categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.4))'
     if args.channel == "mt":
-        if args.TES_variation:
-            # make sure the tau passes pT cuts are applied
-            print(f"\nWARNING: Using TES variation {args.TES_variation} for the mt channel\n")
-            mt_cross_only = f'(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2_{args.TES_variation} > 32 && abs(eta_2) < 2.1)'
-            single_muon_only = f'(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4 && pt_2_{args.TES_variation}>20)'
-            trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
-            categories['baseline'] = f'(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && mt_1_{args.TES_variation} < 30 && n_bjets==0 && {trg_full})'
-        else:
-            args.TES_variation = 'nominal'
-            mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.1)'
-            single_muon_only = '(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)'
-            trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
-            categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 %s)' % trg_full
-
-
+        mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.1)'
+        single_muon_only = '(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)'
+        trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 %s)' % trg_full
     if args.channel == "et":
         et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 < 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)'
         single_electron_only = '(trg_singleelectron && pt_1 >= 31 && abs(eta_1) < 2.1 )'
@@ -95,7 +83,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
         doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
         trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
-        categories['baseline'] = '(decayModePNet_1!=0 && decayModePNet_2!=0 && m_vis > 40 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
+        categories['baseline'] = '(m_vis > 40 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
         categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 1')
         categories['tt_ff_AR'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 1')
         categories['subleadfake'] = categories['baseline'] + '&& genPartFlav_1 != 0 && genPartFlav_2 == 0'
