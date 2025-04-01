@@ -270,3 +270,34 @@ def RebinHist(hist, binning):
                 hout.SetBinError(i, new_error)
     # hout.Print("all")
     return hout
+
+def RenameDatacards(outfile, nodename):
+    directory = outfile.Get(nodename)
+
+    count = 0
+    print(nodename)
+    print(directory)
+    print(outfile)
+    for key in directory.GetListOfKeys():
+        count += 1
+
+    i = 0
+    for key in directory.GetListOfKeys():
+        if i < count:
+            name = key.GetName()
+            histo = directory.Get(name)
+
+            if not isinstance(histo,ROOT.TDirectory) and 'TTT' in name:
+                new_name = name.replace('TTT', 'TTL')
+                histo.SetName(new_name)
+                directory.cd()
+                histo.Write(new_name)
+                directory.Delete(name+';1')
+            elif not isinstance(histo,ROOT.TDirectory) and 'VVT' in name:
+                new_name = name.replace('VVT', 'VVL')
+                histo.SetName(new_name)
+                directory.cd()
+                histo.Write(new_name)
+                directory.Delete(name+';1')
+
+        i += 1
