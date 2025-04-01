@@ -13,9 +13,9 @@ import numpy as np
 import ROOT
 from Draw.python import Analysis
 from Draw.python import Plotting
-from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD, GenerateReweightedCPSignal
+from Draw.python.nodes import BuildCutString, GenerateZTT, GenerateZLL, GenerateTop, GenerateVV, GenerateW, GenerateQCD, GenerateFakes, GenerateReweightedCPSignal
 from Draw.python.HiggsTauTauPlot_utilities import PrintSummary, GetTotals, FixBins, FindRebinning, RebinHist
-
+from Draw.python.PlotHistograms import HTT_Histogram
 ROOT.TH1.SetDefaultSumw2(True)
 
 parser = argparse.ArgumentParser()
@@ -86,6 +86,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         categories['baseline'] = '(m_vis > 40 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
         categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 1')
         categories['tt_ff_AR'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 1')
+        categories['subleadfake'] = categories['baseline'] + '&& genPartFlav_1 != 0 && genPartFlav_2 == 0'
 
 categories['inclusive'] = '(1)'
 categories['nobtag'] = '(n_bjets==0)'
@@ -115,7 +116,6 @@ if args.channel == 'tt':
     sel_rho = 'decayMode_X==1 && decayModePNet_X==1 && pion_E_split_X>0.2'
     sel_a11pr = 'decayMode_X==1 && decayModePNet_X==2 && pion_E_split_X>0.2'
     sel_a1 = 'decayModePNet_X==10 && hasRefitSV_X'
-    sel_rhoprime = 'decayModePNet_X==11 && hasRefitSV_X'
 
     sel_pi_1 = sel_pi.replace('X','1')
     sel_pi_2 = sel_pi.replace('X','2')
@@ -125,17 +125,10 @@ if args.channel == 'tt':
     sel_a1_2 = sel_a1.replace('X','2')
     sel_a11pr_1 = sel_a11pr.replace('X','1')
     sel_a11pr_2 = sel_a11pr.replace('X','2')
-    sel_rhoprime_1 = sel_rhoprime.replace('X','1')
-    sel_rhoprime_2 = sel_rhoprime.replace('X','2')
 
-    categories["cp_inclusive"] = f"(({sel_pi_1} || {sel_rho_1} || {sel_a1_1} || {sel_a11pr_1} || {sel_rhoprime_1})) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2} || {sel_rhoprime_2}))"
-    # categories["cp_DM0"] = f"({sel_pi_1}) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2} || {sel_rhoprime_2}))"
-    # categories["cp_DM1"] = f"({sel_rho_1}) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2} || {sel_rhoprime_2}))"
-    # categories["cp_DM2"] = f"({sel_a11pr_1}) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2} || {sel_rhoprime_2}))"
-    # categories["cp_DM10"] = f"({sel_a1_1}) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2} || {sel_rhoprime_2}))"
-    # categories["cp_DM11"] = f"({sel_rhoprime_1}) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2} || {sel_rhoprime_2}))"
+    categories["cp_inclusive"] = f"(({sel_pi_1} || {sel_rho_1} || {sel_a1_1} || {sel_a11pr_1})) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2}))"
 
-    categories["inclusive_PNet_rhorho"] = '(%(sel_rho_1)s && %(sel_rho_2)s)' % vars() 
+    categories["inclusive_PNet_rhorho"] = '(%(sel_rho_1)s && %(sel_rho_2)s)' % vars()
     categories["inclusive_PNet_pipi"] = '(%(sel_pi_1)s && %(sel_pi_2)s)' % vars()
     categories["inclusive_PNet_a1a1"] = '(%(sel_a1_1)s && %(sel_a1_2)s)' % vars()
     categories["inclusive_PNet_rhoa11pr"] = '((%(sel_rho_1)s && %(sel_a11pr_2)s) || (%(sel_a11pr_1)s && %(sel_rho_2)s) || (%(sel_a11pr_1)s && %(sel_a11pr_2)s))' % vars()
@@ -162,48 +155,87 @@ if args.channel == 'tt':
         categories["tau_{}".format(c)] = '({} && {})'.format(categories['mva_tau'], categories["inclusive_PNet_{}".format(c)])
         categories["fake_{}".format(c)] = '({} && {})'.format(categories['mva_fake'], categories["inclusive_PNet_{}".format(c)])
 
-# ------------------------------------------------------------------------------------------------------------------------
+elif args.channel == 'mt':
+    # DM separated categories
+    categories['DM0_tau'] = 'decayModePNet_2 == 0'
+    categories['DM1_tau'] = 'decayMode_2==1 && decayModePNet_2 == 1'
+    categories['DM2_tau'] = 'decayMode_2==1 && decayModePNet_2 == 2'
+    categories['DM10_tau'] = 'decayModePNet_2 == 10'
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define the samples (Data and MC (Background & Signal))
 if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
-    samples_dict= {}
+    samples_dict = {}
     # Data Samples
     if args.era in ["Run3_2022"]:
-        if args.channel in ["ee","et"]:
-            data_samples = ['EGamma_Run2022C', 'EGamma_Run2022D']
-        elif args.channel in ["mm","mt"]:
-            data_samples = ['SingleMuon_Run2022C','Muon_Run2022C','Muon_Run2022D']
+        if args.channel in ["ee", "et"]:
+            data_samples = ["EGamma_Run2022C", "EGamma_Run2022D"]
+        elif args.channel in ["mm", "mt"]:
+            data_samples = ["SingleMuon_Run2022C", "Muon_Run2022C", "Muon_Run2022D"]
         elif args.channel == "tt":
-            data_samples = ['Tau_Run2022C','Tau_Run2022D']
+            data_samples = ["Tau_Run2022C", "Tau_Run2022D"]
     elif args.era in ["Run3_2022EE"]:
-        if args.channel in ["ee","et"]:
-            data_samples = ['EGamma_Run2022E', 'EGamma_Run2022F', 'EGamma_Run2022G']
-        elif args.channel in ["mm","mt"]:
-            data_samples = ['Muon_Run2022E','Muon_Run2022F','Muon_Run2022G']
+        if args.channel in ["ee", "et"]:
+            data_samples = ["EGamma_Run2022E", "EGamma_Run2022F", "EGamma_Run2022G"]
+        elif args.channel in ["mm", "mt"]:
+            data_samples = ["Muon_Run2022E", "Muon_Run2022F", "Muon_Run2022G"]
         elif args.channel == "tt":
-            data_samples = ['Tau_Run2022E','Tau_Run2022F','Tau_Run2022G']
+            data_samples = ["Tau_Run2022E", "Tau_Run2022F", "Tau_Run2022G"]
     elif args.era in ["Run3_2023"]:
-        if args.channel in ["ee","et"]:
-            data_samples = ['EGamma0_Run2023C_v1', 'EGamma0_Run2023C_v2', 'EGamma0_Run2023C_v3', 'EGamma0_Run2023C_v4', 'EGamma1_Run2023C_v1', 'EGamma1_Run2023C_v2', 'EGamma1_Run2023C_v3', 'EGamma1_Run2023C_v4']
-        elif args.channel in ["mm","mt"]:
-            data_samples = ['Muon0_Run2023C_v1', 'Muon0_Run2023C_v2', 'Muon0_Run2023C_v3', 'Muon0_Run2023C_v4', 'Muon1_Run2023C_v1', 'Muon1_Run2023C_v2', 'Muon1_Run2023C_v3', 'Muon1_Run2023C_v4']
+        if args.channel in ["ee", "et"]:
+            data_samples = [
+                "EGamma0_Run2023C_v1",
+                "EGamma0_Run2023C_v2",
+                "EGamma0_Run2023C_v3",
+                "EGamma0_Run2023C_v4",
+                "EGamma1_Run2023C_v1",
+                "EGamma1_Run2023C_v2",
+                "EGamma1_Run2023C_v3",
+                "EGamma1_Run2023C_v4",
+            ]
+        elif args.channel in ["mm", "mt"]:
+            data_samples = [
+                "Muon0_Run2023C_v1",
+                "Muon0_Run2023C_v2",
+                "Muon0_Run2023C_v3",
+                "Muon0_Run2023C_v4",
+                "Muon1_Run2023C_v1",
+                "Muon1_Run2023C_v2",
+                "Muon1_Run2023C_v3",
+                "Muon1_Run2023C_v4",
+            ]
         elif args.channel == "tt":
-            data_samples = ['Tau_Run2023C_v1', 'Tau_Run2023C_v2', 'Tau_Run2023C_v3', 'Tau_Run2023C_v4']
+            data_samples = [
+                "Tau_Run2023C_v1",
+                "Tau_Run2023C_v2",
+                "Tau_Run2023C_v3",
+                "Tau_Run2023C_v4",
+            ]
     elif args.era in ["Run3_2023BPix"]:
-        if args.channel in ["ee","et"]:
-            data_samples = ['EGamma0_Run2023D_v1', 'EGamma0_Run2023D_v2', 'EGamma1_Run2023D_v1', 'EGamma1_Run2023D_v2']
-        if args.channel in ["mm","mt"]:
-            data_samples = ['Muon0_Run2023D_v1', 'Muon0_Run2023D_v2', 'Muon1_Run2023D_v1', 'Muon1_Run2023D_v2']
+        if args.channel in ["ee", "et"]:
+            data_samples = [
+                "EGamma0_Run2023D_v1",
+                "EGamma0_Run2023D_v2",
+                "EGamma1_Run2023D_v1",
+                "EGamma1_Run2023D_v2",
+            ]
+        elif args.channel in ["mm", "mt"]:
+            data_samples = [
+                "Muon0_Run2023D_v1",
+                "Muon0_Run2023D_v2",
+                "Muon1_Run2023D_v1",
+                "Muon1_Run2023D_v2",
+            ]
         elif args.channel == "tt":
-            data_samples = ['Tau_Run2023D_v1', 'Tau_Run2023D_v2']
+            data_samples = ["Tau_Run2023D_v1", "Tau_Run2023D_v2"]
 
-    samples_dict['data_samples'] = data_samples
+    samples_dict["data_samples"] = data_samples
 
     # MC Samples
     if args.LO_DY:
         print('WARNING: Using LO DY samples')
-        ztt_samples = ['DYto2L_M_50_madgraphMLM','DYto2L_M_50_madgraphMLM_ext1','DYto2L_M_50_1J_madgraphMLM','DYto2L_M_50_2J_madgraphMLM','DYto2L_M_50_3J_madgraphMLM','DYto2L_M_50_4J_madgraphMLM']
+        ztt_samples = ['DYto2L_M_50_madgraphMLM','DYto2L_M_50_madgraphMLM_ext1','DYto2L_M_50_1J_madgraphMLM','DYto2L_M_50_2J_madgraphMLM',
+                       'DYto2L_M_50_3J_madgraphMLM','DYto2L_M_50_4J_madgraphMLM']
         if args.era in ["Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove('DYto2L_M_50_madgraphMLM_ext1')
     else:
@@ -214,22 +246,52 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
                     'DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_600_2J_amcatnloFXFX'] # use NLO samples
         if args.era in ["Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove('DYto2L_M_50_amcatnloFXFX_ext1')
-    top_samples = ['TTto2L2Nu','TTto2L2Nu_ext1','TTtoLNu2Q','TTtoLNu2Q_ext1','TTto4Q','TTto4Q_ext1']
-    vv_samples = ['WW','WZ','ZZ','ST_t_channel_top_4f_InclusiveDecays','ST_t_channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
-    #vv_samples = ['WW','WZ','ZZ','ST_t-channel_top_4f_InclusiveDecays','ST_t-channel_antitop_4f_InclusiveDecays','ST_tW_top_2L2Nu','ST_tW_top_2L2Nu_ext1','ST_tW_antitop_2L2Nu','ST_tW_antitop_2L2Nu_ext1','ST_tW_top_LNu2Q','ST_tW_top_LNu2Q_ext1','ST_tW_antitop_LNu2Q','ST_tW_antitop_LNu2Q_ext1']
-    wjets_samples = ['WtoLNu_madgraphMLM','WtoLNu_madgraphMLM_ext1','WtoLNu_1J_madgraphMLM','WtoLNu_2J_madgraphMLM','WtoLNu_3J_madgraphMLM','WtoLNu_4J_madgraphMLM']
+    top_samples = [
+        "TTto2L2Nu",
+        "TTto2L2Nu_ext1",
+        "TTtoLNu2Q",
+        "TTtoLNu2Q_ext1",
+        "TTto4Q",
+        "TTto4Q_ext1",
+    ]
+    vv_samples = [
+        "WWW_4F",
+        "WWZ_4F",
+        "WZZ",
+        "ZZZ",
+        "WW",
+        "WZ",
+        "ZZ",
+        "ST_t_channel_top_4f_InclusiveDecays",
+        "ST_t_channel_antitop_4f_InclusiveDecays",
+        "ST_tW_top_2L2Nu",
+        "ST_tW_top_2L2Nu_ext1",
+        "ST_tW_antitop_2L2Nu",
+        "ST_tW_antitop_2L2Nu_ext1",
+        "ST_tW_top_LNu2Q",
+        "ST_tW_top_LNu2Q_ext1",
+        "ST_tW_antitop_LNu2Q",
+        "ST_tW_antitop_LNu2Q_ext1",
+    ]
+    wjets_samples = [
+        "WtoLNu_madgraphMLM",
+        "WtoLNu_madgraphMLM_ext1",
+        "WtoLNu_1J_madgraphMLM",
+        "WtoLNu_2J_madgraphMLM",
+        "WtoLNu_3J_madgraphMLM",
+        "WtoLNu_4J_madgraphMLM",
+    ]
 
     if args.era in ["Run3_2023", "Run3_2023BPix"]:
-        top_samples.remove('TTto2L2Nu_ext1')
-        top_samples.remove('TTtoLNu2Q_ext1')
-        top_samples.remove('TTto4Q_ext1')
-        vv_samples.remove('ST_tW_top_2L2Nu_ext1')
-        vv_samples.remove('ST_tW_antitop_2L2Nu_ext1')
-        vv_samples.remove('ST_tW_top_LNu2Q_ext1')
-        if args.era == "Run3_2023":
-            vv_samples.remove('ST_tW_antitop_LNu2Q')
-        vv_samples.remove('ST_tW_antitop_LNu2Q_ext1')
-        wjets_samples.remove('WtoLNu_madgraphMLM_ext1')
+        top_samples.remove("TTto2L2Nu_ext1")
+        top_samples.remove("TTtoLNu2Q_ext1")
+        top_samples.remove("TTto4Q_ext1")
+        vv_samples.remove("ST_tW_top_2L2Nu_ext1")
+        vv_samples.remove("ST_tW_antitop_2L2Nu_ext1")
+        vv_samples.remove("ST_tW_top_LNu2Q_ext1")
+        vv_samples.remove("ST_tW_antitop_LNu2Q_ext1")
+        wjets_samples.remove("WtoLNu_madgraphMLM_ext1")
+
 
     if args.channel in ['et','mt','tt']:
         signal_samples = {
@@ -425,7 +487,11 @@ def RunPlotting(ana, nodename, samples_dict, gen_sels_dict, systematic='', cat_n
     GenerateTop(ana, nodename, add_name, samples_dict['top_samples'], plot, wt, sel, cat, gen_sels_dict['top_sels'], not args.do_ss, doTTT, doTTJ)
     GenerateVV(ana, nodename, add_name, samples_dict['vv_samples'], plot, wt, sel, cat, gen_sels_dict['vv_sels'], not args.do_ss, doVVT, doVVJ)
     GenerateW(ana, nodename, add_name, samples_dict, gen_sels_dict, plot, plot_unmodified, wt, sel, cat_name, categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
-    GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat_name, categories=categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+
+    if method in [1,2]: # QCD estimate
+        GenerateQCD(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat_name, categories=categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
+    elif method in [3,4]: # Jet Fakes
+        GenerateFakes(ana, nodename, add_name, samples_dict, gen_sels_dict, systematic, plot, plot_unmodified, wt, sel, cat_name, categories=categories, categories_unmodified=categories_unmodified, method=method, qcd_factor=qcd_factor, get_os=not args.do_ss)
 
     # generate correct signal
     # TODO: add scheme or similar flat to determine which ones to use
@@ -615,17 +681,33 @@ titles = Plotting.SetAxisTitles(args.var,args.channel)
 x_title = titles[0]
 y_title = titles[1]
 
-Plotting.HTTPlot(
-  nodename=nodename,
-  infile=plot_file,
-  channel=args.channel,
-  scheme=args.channel,
-  ratio_range="0.5,1.5",
-  x_title=x_title,
-  y_title=y_title,
-  plot_name=output_name.replace('.root',''),
-  lumi=f"{args.era}",
-  #lumi="Run3 2022 - 8.08 fb^{-1} (13.6 TeV)",
-  blind=args.blind,
-  log_y=False,
-)
+
+
+# Plotting.HTTPlot(
+#             nodename=nodename,
+#             infile=plot_file,
+#             channel=args.channel,
+#             scheme=args.channel,
+#             ratio_range="0.5,1.5",
+#             x_title=x_title,
+#             y_title=y_title,
+#             plot_name=output_name.replace('.root',''),
+#             lumi=f"{args.era}",
+#             blind=args.blind,
+#             log_y=False,
+#             is2Dunrolled=is_2d,
+#             )
+
+# new plotting available for 1D histograms (NB only 2D unrolled histograms are supported)
+Histo_Plotter = HTT_Histogram(output_name,
+            nodename,
+            args.channel,
+            args.era,
+            args.var,
+            blind = args.blind,
+            log_y = False,
+            is2Dunrolled = is_2d,
+            )
+
+Histo_Plotter.plot_1D_histo()
+
