@@ -32,12 +32,12 @@ def create_bins(variable: str) -> str:
 
     return variable
 
-def create_condor_submit_file(logs_path: str, variable_name: str, submit_file: str, script_path: str):
+def create_condor_submit_file(logs_path: str, variable_name: str, cat_name: str, submit_file: str, script_path: str):
     condor_template = f"""
 executable = {script_path}
-output = {logs_path}/condor_{variable_name}.out
-error = {logs_path}/condor_{variable_name}.err
-log = {logs_path}/condor_{variable_name}.log
+output = {logs_path}/condor_{variable_name}_{cat_name}.out
+error = {logs_path}/condor_{variable_name}_{cat_name}.err
+log = {logs_path}/condor_{variable_name}_{cat_name}.log
 request_memory = 8000
 getenv = True
 +MaxRuntime = 10800
@@ -48,7 +48,10 @@ queue
         f.write(condor_template)
     os.system(f"chmod +x {submit_file}")
 
-def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=False, LO_DY=False):
+def create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=False, LO_DY=False, do_ss=False):
+    if args.TES_variation != 'nominal' and 'm_vis' in variable:
+        variable = variable.split('[')[0] + f"_{args.TES_variation}[" + variable.split('[')[1]
+        print("Changing variable to TES variation")
     shell_script = f"""
 #!/bin/bash
 source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.32.02/x86_64-almalinux9.4-gcc114-opt/bin/thisroot.sh
@@ -66,6 +69,8 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
 
     if LO_DY: shell_script+=' \\\n--LO_DY'
 
+    if do_ss: shell_script+=' \\\n--do_ss'
+
     with open(script_path, "w") as script_file:
         script_file.write(shell_script)
     os.system(f"chmod +x {script_path}")
@@ -75,6 +80,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, help='Configuration file')
 parser.add_argument('--batch', action='store_true', help='Run in batch mode')
 parser.add_argument('--LO_DY', action='store_true', help='Use LO instead of NLO DY')
+parser.add_argument('--do_ss', action='store_true', help='Same sign')
 
 args = parser.parse_args()
 
@@ -131,10 +137,10 @@ for era in eras:
                     logs = f"{output_folder}/logs"
                     subprocess.run(["mkdir", "-p", logs])
                     script_path = os.path.join(logs, f"{variable_name}_{category}.sh")
-                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=blind, LO_DY=args.LO_DY)
+                    create_shell_script(input_folder, output_folder, parameter_file, channel, era, method, category, variable, script_path, blind=blind, LO_DY=args.LO_DY, do_ss=args.do_ss)
 
                     submit_file = os.path.join(logs, f"submit_{variable_name}_{category}.sub")
-                    create_condor_submit_file(logs, variable_name, submit_file, script_path)
+                    create_condor_submit_file(logs, variable_name, category, submit_file, script_path)
 
                     subprocess.run(["condor_submit", submit_file])
                 else:
@@ -153,5 +159,6 @@ for era in eras:
                     ]
                     if blind: process.append("--blind")
                     if args.LO_DY: process.append("--LO_DY")
+                    if args.do_ss: process.append("--do_ss")
                     print(" ".join(process))
                     subprocess.run(process)
