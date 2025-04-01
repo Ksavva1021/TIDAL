@@ -73,7 +73,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.1)'
         single_muon_only = '(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)'
         trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
-        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 %s)' % trg_full
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "et":
         et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 < 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)'
         single_electron_only = '(trg_singleelectron && pt_1 >= 31 && abs(eta_1) < 2.1 )'
