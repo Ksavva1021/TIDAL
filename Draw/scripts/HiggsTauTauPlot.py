@@ -3,7 +3,8 @@
 # Methods:
 # 1. Basic method using MC samples & SS method for QCD estimation
 # 2. Basic method using MC samples & SS method for QCD estimation && WJets shape method (High mT control region)
-# 3. Not available yet but it will be FF method for jets misidentified as hadronic taus
+# 3. Basic method using MC samples & Flat FF method for QCD estimation
+# 4. Basic method using MC samples && SS method for QCD estimation but, relaxed isolation
 
 import argparse
 from collections import OrderedDict
@@ -11,7 +12,7 @@ from prettytable import PrettyTable
 import copy
 import numpy as np
 import ROOT
-import yaml
+import re
 from Draw.python import Analysis
 from Draw.python import Plotting
 from Draw.python.nodes import (
@@ -31,6 +32,7 @@ from Draw.python.HiggsTauTauPlot_utilities import (
     FindRebinning,
     RebinHist,
     UnrollHist2D,
+    RenameDatacards,
 )
 from Draw.scripts.systematics.systematics import generate_systematics_dict
 
@@ -50,22 +52,53 @@ parser.add_argument("--method", default=1, help="Method to run on")
 parser.add_argument("--category", default="inclusive", help="Category to run on")
 parser.add_argument("--var", type=str, help="Variable to plot")
 parser.add_argument("--run_systematics", action="store_true", help="Run systematics")
-parser.add_argument(
-    "--systematics_file",
-    type=str,
-    help="Systematics file",
-    default="Draw/scripts/systematics/systematics.yaml",
-)
+
+# Available Systematic Options:
+# ------------------------------------------------------------------------------------------------------------------------
+systematic_options = [
+    ["Muon_ID", "Muon ID systematic"],
+    ["Muon_Isolation", "Muon Isolation systematic"],
+    ["Electron_ID", "Electron ID systematic"],
+    ["Tau_ID", "Tau ID systematic"],
+    ["Tau_FakeRate_e", "Tau Fake Rate systematic for genuine electrons misidentified as taus"],
+    ["Tau_FakeRate_mu", "Tau Fake Rate systematic for genuine muons misidentified as taus"],
+    ["Tau_EnergyScale_JSCALE", "Tau Energy Scale systematic for jets misidentified as taus"],
+    ["Tau_EnergyScale_TSCALE", "Tau Energy Scale systematic for genuine taus"],
+    ["Tau_EnergyScale_ESCALE", "Tau Energy Scale systematic for genuine electrons misidentified as taus"],
+    ["Tau_EnergyScale_MUSCALE", "Tau Energy Scale systematic for genuine muons misidentified as taus"],
+    ["Jet_EnergyScale_Total", "Jet Energy Scale Total systematic"],
+    ["Jet_EnergyResolution", "Jet Energy Resolution systematic"],
+    ["Electron_Scale", "Electron Scale systematic"],
+    ["Electron_Smearing", "Electron Smearing systematic"],
+    ["QCD_Background", "QCD Background systematic"],
+    ["DY_Shape", "DY Shape systematic from ZpT reweighting"],
+    ["TTbar_Shape", "TTbar Shape systematic from top pT reweighting"],
+]
+# The nargs="?" option allows the user to provide an optional value for the systematic e.g. overriding the name assigned to the histogram
+for systematic, description in systematic_options:
+    parser.add_argument(
+        f"--systematic_{systematic}",
+        nargs="?",  # Accepts an optional value
+        const=systematic,  # Default to the systematic name if no value is provided
+        help=description,  # Use the description from the list
+    )
+# ------------------------------------------------------------------------------------------------------------------------
 
 # Additional Options:
 parser.add_argument("--sel", type=str, help="Additional Selection to apply", default="")
+parser.add_argument("--set_alias", action="append", dest="set_alias", type=str, default=None,
+    help="Overwrite alias selection using this options. Specify with the form --set_alias=nameofaliastoreset:newselection")
 parser.add_argument("--add_weight", default="", help="Additional weight to apply")
+parser.add_argument("--do_aiso", action="store_true", help="Do Anti-Isolated")
 parser.add_argument("--do_ss", action="store_true", help="Do SS")
 parser.add_argument("--blind", action="store_true", help="Blind the plot (remove data)")
 parser.add_argument(
     "--masses", default="125", help="Mass points to process, seperated by commas"
 )
+parser.add_argument("--do_unrolling", action="store_true", help="Unroll 2D histograms")
+parser.add_argument("--rename_procs", action="store_true", help="Rename processes in the datacards")
 parser.add_argument("--datacard_name", help="Override the datacard name")
+parser.add_argument("--nodename", help="Override the nodename")
 parser.add_argument(
     "--auto_rebin", action="store_true", help="Automatically rebin histograms"
 )
@@ -80,7 +113,7 @@ if args.channel not in available_channels:
     raise ValueError(
         "Invalid channel. Please choose from: {}".format(available_channels)
     )
-available_methods = ["1", "2", "3"]
+available_methods = ["1", "2", "3", "4"]
 if args.method not in available_methods:
     raise ValueError("Invalid method. Please choose from: {}".format(available_methods))
 
@@ -95,7 +128,6 @@ table.add_row(["Method", args.method])
 table.add_row(["Category", args.category])
 table.add_row(["Variable", args.var])
 table.add_row(["Run Systematics", args.run_systematics])
-table.add_row(["Systematics File", args.systematics_file])
 table.add_row(["Selection", args.sel])
 table.add_row(["Additional Weight", args.add_weight])
 table.add_row(["Do SS", args.do_ss])
@@ -111,41 +143,36 @@ method = int(args.method)
 categories = {}
 if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.channel == "ee":
-        categories["baseline"] = (
-            "(iso_1<0.15 && iso_2<0.15 && (trg_singleelectron && pt_1 > 31))"
-        )
+        categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singleelectron && pt_1 > 31 && abs(eta_1) < 2.1))'
     if args.channel == "mm":
-        categories["baseline"] = (
-            "(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.1))"
-        )
+        categories['baseline'] = '(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.4))'
     if args.channel == "mt":
-        categories["baseline"] = (
-            "(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.1))"
-        )
+        mt_cross_only = '(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.5)'
+        single_muon_only = '(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)'
+        trg_full = '(%s || %s)' % (mt_cross_only, single_muon_only)
+        trg_full = single_muon_only
+        categories['baseline'] = '(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "et":
-        categories["baseline"] = (
-            "(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && (trg_singleelectron && pt_1 > 31))"
-        )
+        et_cross_only = '(trg_et_cross && pt_1 > 25 && pt_1 <= 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.5)'
+        single_electron_only = '(trg_singleelectron && pt_1 > 31 && abs(eta_1) < 2.1 )'
+        trg_full = '(%s || %s)' % (et_cross_only, single_electron_only)
+        # trg_full = single_electron_only
+        categories['baseline'] = '(iso_1 < 0.15&& idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
     if args.channel == "tt":
-        doubletau_only_trg = "(trg_doubletau && pt_1 > 40 && pt_2 > 40)"
-        doubletaujet_only_trg = "(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)"  # might need to revise jet cut later on
-        # TODO: add option to change triggers
-        trg_full = "(%s || %s)" % (doubletau_only_trg, doubletaujet_only_trg)
-        # trg_full = '(%s)' % (doubletau_only_trg)
-        categories["baseline"] = (
-            "(idDeepTau2018v2p5VSjet_1 >= 5 && idDeepTau2018v2p5VSjet_2 >= 5 && idDeepTau2018v2p5VSe_1 >= 6 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
-            % trg_full
-        )
-        categories["tt_qcd_norm"] = categories["baseline"].replace(
-            "idDeepTau2018v2p5VSjet_1 >= 5",
-            "idDeepTau2018v2p5VSjet_1 <= 5 && idDeepTau2018v2p5VSjet_1 >= 3",
-        )
+        doubletau_only_trg = '(trg_doubletau && pt_1 > 40 && pt_2 > 40)'
+        doubletaujet_only_trg = '(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)' # might need to revise jet cut later on
+        trg_full = '(%s || %s)' % (doubletau_only_trg, doubletaujet_only_trg)
+        # trg_full = doubletau_only_trg
+        categories['baseline'] = '(abs(eta_1) < 2.1 && abs(eta_2) < 2.1 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)' % trg_full
+        categories['tt_qcd_norm'] = categories['baseline'].replace('idDeepTau2018v2p5VSjet_1 >= 7', 'idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 3')
 
 categories["inclusive"] = "(1)"
 categories["nobtag"] = "(n_bjets==0)"
 categories["btag"] = "(n_bjets>=1)"
 categories["w_sdb"] = "mt_1>70."
 categories["w_shape"] = ""
+categories['qcd_loose_shape'] = re.sub('iso_1\s*<\s*0.15', 'iso_1 > 0.05 && iso_1 < 0.3', categories['baseline'])
+
 categories["aminus_low"] = (
     "(alphaAngle_mu_pi_1 < {} && svfit_Mass < 100 && mt_1<50 && ip_LengthSig_1 > 1)".format(
         np.pi / 4
@@ -158,10 +185,24 @@ categories["aminus_high"] = (
 )
 categories["ip_control"] = "(m_vis > 40 && m_vis < 90 && mt_1 < 40)"
 
-categories["xt_dM0"] = "(decayMode_2 == 0)"
-categories["xt_dM1"] = "(decayMode_2 == 1)"
-categories["xt_dM10"] = "(decayMode_2 == 10)"
-categories["xt_dM11"] = "(decayMode_2 == 11)"
+categories["dm0"] = "(decayModePNet_X == 0 && ip_LengthSig_X >= 1.25)"
+categories["dm1"] = "(decayModePNet_X == 1 && decayMode_X == 1 && pion_E_split_X > 0.2)"
+categories["dm2"] = "(decayModePNet_X == 2 && decayMode_X == 1 && pion_E_split_X > 0.2)"
+categories["dm10"] = "(decayModePNet_X == 10 && hasRefitSV_X == 1)"
+categories["dm11"] = "(decayModePNet_X == 11 && hasRefitSV_X == 1)"
+
+dm_list = ["dm0", "dm1", "dm2", "dm10", "dm11"]
+
+# Create conditions for leading and subleading
+dm_leading = " || ".join([categories[dm].replace("_X", "_1") for dm in dm_list])
+dm_subleading = " || ".join([categories[dm].replace("_X", "_2") for dm in dm_list])
+
+if args.channel == "tt":
+    categories["cp_inclusive"] = f"(({dm_leading}) && ({dm_subleading}))"
+elif args.channel in ["et", "mt"]:
+    categories["cp_inclusive"] = dm_subleading
+    for key in dm_list:
+        categories[key] = categories[key].replace("_X", "_2")
 
 if args.channel == "tt":
     categories["inclusive_pipi"] = (
@@ -245,7 +286,35 @@ if args.channel == "tt":
         categories["fake_{}".format(c)] = "({} && {})".format(
             categories["mva_fake"], categories["inclusive_PNet_{}".format(c)]
         )
-# ------------------------------------------------------------------------------------------------------------------------
+
+# if args.set_alias is not None then overwrite the categories with the selection provided
+
+if args.set_alias is not None:
+
+    for i in args.set_alias:
+        cat_to_overwrite = i.split(':')[0]
+        cat_to_overwrite=cat_to_overwrite.replace("\"","")
+        overwrite_with = i.split(':')[1]
+        overwrite_with=overwrite_with.replace("\"","")
+        start_index=overwrite_with.find("{")
+        end_index=overwrite_with.find("}")
+        while start_index >0:
+            replace_with=overwrite_with[start_index:end_index+1]
+            replace_with=replace_with.replace("{","")
+            replace_with=replace_with.replace("}","")
+            replace_string = categories[replace_with]
+            overwrite_with=overwrite_with[0:start_index] + replace_string  + overwrite_with[end_index+1:]
+            start_index=overwrite_with.find("{")
+            end_index=overwrite_with.find("}")
+
+        print('Overwriting alias: \"'+cat_to_overwrite+'\" with selection: \"'+overwrite_with+'\"')
+        if cat_to_overwrite == 'sel':
+            args.sel = overwrite_with
+        else:
+            categories[cat_to_overwrite] = overwrite_with
+
+if args.do_aiso:
+    categories["baseline"] = categories["baseline"].replace("iso_1<0.15", "iso_1>0.15 & iso_1<0.5")
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define the samples (Data and MC (Background & Signal))
@@ -297,7 +366,14 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
                 "Tau_Run2023C_v4",
             ]
     elif args.era in ["Run3_2023BPix"]:
-        if args.channel in ["mm", "mt"]:
+        if args.channel in ["ee", "et"]:
+            data_samples = [
+                "EGamma0_Run2023D_v1",
+                "EGamma0_Run2023D_v2",
+                "EGamma1_Run2023D_v1",
+                "EGamma1_Run2023D_v2",
+            ]
+        elif args.channel in ["mm", "mt"]:
             data_samples = [
                 "Muon0_Run2023D_v1",
                 "Muon0_Run2023D_v2",
@@ -310,14 +386,19 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     samples_dict["data_samples"] = data_samples
 
     # MC Samples
-    ztt_samples = [
-        "DYto2L_M_50_madgraphMLM",
-        "DYto2L_M_50_madgraphMLM_ext1",
-        "DYto2L_M_50_1J_madgraphMLM",
-        "DYto2L_M_50_2J_madgraphMLM",
-        "DYto2L_M_50_3J_madgraphMLM",
-        "DYto2L_M_50_4J_madgraphMLM",
-    ]
+    # ztt_samples = [
+    #     "DYto2L_M_50_madgraphMLM",
+    #     "DYto2L_M_50_madgraphMLM_ext1",
+    #     "DYto2L_M_50_1J_madgraphMLM",
+    #     "DYto2L_M_50_2J_madgraphMLM",
+    #     "DYto2L_M_50_3J_madgraphMLM",
+    #     "DYto2L_M_50_4J_madgraphMLM",
+    # ]
+    ztt_samples = ['DYto2L_M_50_amcatnloFXFX', 'DYto2L_M_50_amcatnloFXFX_ext1', 'DYto2L_M_50_0J_amcatnloFXFX', 'DYto2L_M_50_1J_amcatnloFXFX',
+                    'DYto2L_M_50_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_40to100_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_100to200_1J_amcatnloFXFX',
+                    'DYto2L_M_50_PTLL_200to400_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_400to600_1J_amcatnloFXFX', 'DYto2L_M_50_PTLL_600_1J_amcatnloFXFX',
+                    'DYto2L_M_50_PTLL_40to100_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_100to200_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_200to400_2J_amcatnloFXFX',
+                    'DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX', 'DYto2L_M_50_PTLL_600_2J_amcatnloFXFX']
     top_samples = [
         "TTto2L2Nu",
         "TTto2L2Nu_ext1",
@@ -327,6 +408,10 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         "TTto4Q_ext1",
     ]
     vv_samples = [
+        "WWW_4F",
+        "WWZ_4F",
+        "WZZ",
+        "ZZZ",
         "WW",
         "WZ",
         "ZZ",
@@ -351,15 +436,14 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     ]
 
     if args.era in ["Run3_2023", "Run3_2023BPix"]:
-        ztt_samples.remove("DYto2L_M_50_madgraphMLM_ext1")
+        # ztt_samples.remove("DYto2L_M_50_madgraphMLM_ext1")
+        ztt_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
         top_samples.remove("TTto2L2Nu_ext1")
         top_samples.remove("TTtoLNu2Q_ext1")
         top_samples.remove("TTto4Q_ext1")
         vv_samples.remove("ST_tW_top_2L2Nu_ext1")
         vv_samples.remove("ST_tW_antitop_2L2Nu_ext1")
         vv_samples.remove("ST_tW_top_LNu2Q_ext1")
-        if args.era == "Run3_2023":
-            vv_samples.remove("ST_tW_antitop_LNu2Q")
         vv_samples.remove("ST_tW_antitop_LNu2Q_ext1")
         wjets_samples.remove("WtoLNu_madgraphMLM_ext1")
 
@@ -430,6 +514,9 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         }
     else:
         signal_samples = {}
+
+    # TODO: REMOVE THIS IS TEMPORARY FOR TAU ID SFs
+    signal_samples = {}
 
     samples_dict["ztt_samples"] = ztt_samples
     samples_dict["top_samples"] = top_samples
@@ -544,6 +631,7 @@ def RunPlotting(
     do_data=True,
     qcd_factor=1.0,
     method=1,
+    samples_to_skip=[],
 ):
     """
     RunPlotting handles how each process is added to the analysis
@@ -565,12 +653,12 @@ def RunPlotting(
     cat = categories["cat"]
     cat_data = categories_unmodified["cat"]
 
-    doZL = True
-    doZJ = True
-    doTTT = True
-    doTTJ = True
-    doVVT = True
-    doVVJ = True
+    doZL = True if "ZL" not in samples_to_skip else False
+    doZJ = True if "ZJ" not in samples_to_skip else False
+    doTTT = True if "TTT" not in samples_to_skip else False
+    doTTJ = True if "TTJ" not in samples_to_skip else False
+    doVVT = True if "VVT" not in samples_to_skip else False
+    doVVJ = True if "VVJ" not in samples_to_skip else False
 
     if do_data:
         if args.do_ss:
@@ -583,110 +671,117 @@ def RunPlotting(
             ana.SummedFactory("data_obs", data_samples, plot_unmodified, full_selection)
         )
 
-    GenerateZTT(
-        ana,
-        nodename,
-        add_name,
-        samples_dict["ztt_samples"],
-        plot,
-        wt,
-        sel,
-        cat,
-        gen_sels_dict["z_sels"],
-        not args.do_ss,
-    )
-    GenerateZLL(
-        ana,
-        nodename,
-        add_name,
-        samples_dict["ztt_samples"],
-        plot,
-        wt,
-        sel,
-        cat,
-        gen_sels_dict["z_sels"],
-        not args.do_ss,
-        doZL,
-        doZJ,
-    )
-    GenerateTop(
-        ana,
-        nodename,
-        add_name,
-        samples_dict["top_samples"],
-        plot,
-        wt,
-        sel,
-        cat,
-        gen_sels_dict["top_sels"],
-        not args.do_ss,
-        doTTT,
-        doTTJ,
-    )
-    GenerateVV(
-        ana,
-        nodename,
-        add_name,
-        samples_dict["vv_samples"],
-        plot,
-        wt,
-        sel,
-        cat,
-        gen_sels_dict["vv_sels"],
-        not args.do_ss,
-        doVVT,
-        doVVJ,
-    )
-    GenerateW(
-        ana,
-        nodename,
-        add_name,
-        samples_dict,
-        gen_sels_dict,
-        plot,
-        plot_unmodified,
-        wt,
-        sel,
-        cat_name,
-        categories,
-        categories_unmodified=categories_unmodified,
-        method=method,
-        qcd_factor=qcd_factor,
-        get_os=not args.do_ss,
-    )
-    GenerateQCD(
-        ana,
-        nodename,
-        add_name,
-        samples_dict,
-        gen_sels_dict,
-        systematic,
-        plot,
-        plot_unmodified,
-        wt,
-        sel,
-        cat_name,
-        categories=categories,
-        categories_unmodified=categories_unmodified,
-        method=method,
-        qcd_factor=qcd_factor,
-        get_os=not args.do_ss,
-    )
+    if 'ZTT' not in samples_to_skip:
+        GenerateZTT(
+            ana,
+            nodename,
+            add_name,
+            samples_dict["ztt_samples"],
+            plot,
+            wt,
+            sel,
+            cat,
+            gen_sels_dict["z_sels"],
+            not args.do_ss,
+        )
+    if "ZLL" not in samples_to_skip:
+        GenerateZLL(
+            ana,
+            nodename,
+            add_name,
+            samples_dict["ztt_samples"],
+            plot,
+            wt,
+            sel,
+            cat,
+            gen_sels_dict["z_sels"],
+            not args.do_ss,
+            doZL,
+            doZJ,
+        )
+    if "TT" not in samples_to_skip:
+        GenerateTop(
+            ana,
+            nodename,
+            add_name,
+            samples_dict["top_samples"],
+            plot,
+            wt,
+            sel,
+            cat,
+            gen_sels_dict["top_sels"],
+            not args.do_ss,
+            doTTT,
+            doTTJ,
+        )
+    if "VV" not in samples_to_skip:
+        GenerateVV(
+            ana,
+            nodename,
+            add_name,
+            samples_dict["vv_samples"],
+            plot,
+            wt,
+            sel,
+            cat,
+            gen_sels_dict["vv_sels"],
+            not args.do_ss,
+            doVVT,
+            doVVJ,
+        )
+    if "W" not in samples_to_skip:
+        GenerateW(
+            ana,
+            nodename,
+            add_name,
+            samples_dict,
+            gen_sels_dict,
+            plot,
+            plot_unmodified,
+            wt,
+            sel,
+            cat_name,
+            categories,
+            categories_unmodified=categories_unmodified,
+            method=method,
+            qcd_factor=qcd_factor,
+            get_os=not args.do_ss,
+        )
+    if "QCD" not in samples_to_skip:
+        GenerateQCD(
+            ana,
+            nodename,
+            add_name,
+            samples_dict,
+            gen_sels_dict,
+            systematic,
+            plot,
+            plot_unmodified,
+            wt,
+            sel,
+            cat_name,
+            categories=categories,
+            categories_unmodified=categories_unmodified,
+            method=method,
+            qcd_factor=qcd_factor,
+            get_os=not args.do_ss,
+        )
 
-    # generate correct signal
-    # TODO: add scheme or similar flat to determine which ones to use
-    GenerateReweightedCPSignal(
-        ana,
-        nodename,
-        add_name,
-        samples_dict["signal_samples"],
-        masses,
-        plot,
-        wt,
-        sel,
-        cat,
-        not args.do_ss,
-    )
+    if "signal" not in samples_to_skip:
+        # generate correct signal
+        # TODO: add scheme or similar flat to determine which ones to use
+        GenerateReweightedCPSignal(
+            ana,
+            nodename,
+            add_name,
+            samples_dict["signal_samples"],
+            masses,
+            plot,
+            wt,
+            sel,
+            cat,
+            not args.do_ss,
+        )
 
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -716,6 +811,12 @@ if args.datacard_name:
     output_name = f"{args.output_folder}/datacard_{args.datacard_name}_{category_name}_{args.channel}_{args.era}.root"
 else:
     output_name = f"{args.output_folder}/datacard_{var_name}_{category_name}_{args.channel}_{args.era}.root"
+
+if args.nodename:
+    nodename = args.channel + "_" + args.category + args.nodename
+else:
+    nodename = args.channel + "_" + args.category
+
 if args.do_ss:
     output_name = output_name.replace(".root", "_ss.root")
 outfile = ROOT.TFile(output_name, "RECREATE")
@@ -732,7 +833,7 @@ elif args.channel == "et":
 else:
     qcd_factor = 1.0
 
-weight = "weight"
+weight = "(weight)"
 if args.add_weight:
     weight += "*" + args.add_weight
 
@@ -741,8 +842,6 @@ if args.add_weight:
 # - 2nd index sets string to be appended to output histograms
 # - 3rd index specifies the weight to be applied
 # - 4th lists samples that should be skipped
-nodename = args.channel + "_" + args.category
-
 systematics = OrderedDict()
 if args.channel == "mt":
     systematics["nominal"] = ("nominal", "", f"({weight})", [], False)
@@ -754,24 +853,24 @@ elif args.channel == "tt":
     systematics["nominal"] = ("nominal", "", f"({weight})", [], False)
 
 if args.run_systematics:
-    systematics_dict = generate_systematics_dict(
-        specific_era=args.era, specific_channel=args.channel
-    )
+    enabled_systematics = {
+        systematic: getattr(args, "systematic_" + systematic)
+        for systematic, _ in systematic_options
+        if getattr(args, "systematic_" + systematic) is not None
+    }
 
-    with open(args.systematics_file, "r") as systematics_file:
-        systematics_config = yaml.safe_load(systematics_file)
+    for syst in enabled_systematics.keys():
+        if syst == enabled_systematics[syst]:
+           specific_systematic_name = ''
+        else:
+            specific_systematic_name = enabled_systematics[syst]
 
-    # for key in systematics_dict.keys():
-    #     print(key)
+        systematics_dict = generate_systematics_dict(
+            specific_era=args.era, specific_channel=args.channel, specific_systematic=syst, specific_name=specific_systematic_name
+        )
 
-    for syst in systematics_config["systematics"]:
-        if syst in systematics_config[args.channel].keys():
-            if systematics_config[args.channel][f"{syst}"]:
-                for available_systematic in systematics_dict.keys():
-                    if available_systematic.startswith(syst):
-                        systematics[available_systematic] = systematics_dict[
-                            available_systematic
-                        ]
+        for available_systematic in systematics_dict.keys():
+            systematics[available_systematic] = systematics_dict[available_systematic]
 
     # loop over systematics and replace weight_to_replace with weight
     for syst in systematics.keys():
@@ -785,11 +884,11 @@ if args.run_systematics:
 
 # ------------------------------------------------------------------------------------------------------------------------
 
-
-# ------------------------------------------------------------------------------------------------------------------------
 categories["cat"] = (
     "(" + categories[args.category] + ")*(" + categories["baseline"] + ")"
 )
+
+# ------------------------------------------------------------------------------------------------------------------------
 
 # Loop over systematics & run plotting, etc
 samples_to_skip_dict = {}
@@ -834,7 +933,7 @@ while len(systematics) > 0:
 
         for sample_name in data_samples:
             analysis.AddSamples(
-                f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root",
+                f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/nominal/merged.root",
                 "ntuple",
                 None,
                 sample_name,
@@ -882,6 +981,7 @@ while len(systematics) > 0:
             do_data,
             qcd_factor,
             method,
+            samples_to_skip,
         )
 
         del systematics[systematic]
@@ -904,7 +1004,7 @@ while len(systematics) > 0:
 
 # unroll 2D histograms into 1D histograms but store both versions
 
-if is_2d:
+if is_2d and args.do_unrolling:
     x_lines = []
     y_labels = []
     first_hist = True
@@ -986,3 +1086,9 @@ Plotting.HTTPlot(
     blind=args.blind,
     log_y=False,
 )
+
+if args.rename_procs:
+    outfile = ROOT.TFile(output_name, "UPDATE")
+    if args.channel in ["mm","ee"]:
+        RenameDatacards(outfile, nodename)
+    outfile.Close()
