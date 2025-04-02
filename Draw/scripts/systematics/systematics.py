@@ -300,7 +300,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         # temporary patch for derivation of tau id scale factor systematics
         # Tau_EnergyScale_forTauIDSFs_TSCALE, Tau_EnergyScale_forTauIDSFs_ESCALE, Tau_EnergyScale_forTauIDSFs_MUSCALE,
         for index in range(len(prefixes)):
-            prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs")
+            # TODO: CHANGE BACK TO no PNet
+            prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
 
         for name, folder_suffix in kinds.items():
             for prefix in prefixes:
@@ -328,7 +329,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         prefix = 'Tau_EnergyScale_JSCALE_'
         # temporary patch for derivation of tau id scale factor systematics
         # Tau_EnergyScale_forTauIDSFs_JSCALE
-        prefix = prefix.replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs")
+        # TODO: CHANGE BACK TO no PNet
+        prefix = prefix.replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
         for updown in ['up', 'down']:
             systematic_name = 'syst_tau_escale_jscale_' + updown
             folder_name = prefix + updown
