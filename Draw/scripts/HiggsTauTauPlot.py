@@ -1185,23 +1185,23 @@ y_title = titles[1]
 #             plot_name=output_name.replace('.root',''),
 #             lumi=f"{args.era}",
 #             blind=args.blind,
-#             log_y=False,
-#             is2Dunrolled=is_2d,
+#             log_y=False
 #             )
 
 # new plotting available for 1D histograms (NB only 2D unrolled histograms are supported)
-Histo_Plotter = HTT_Histogram(
-    output_name,
-    nodename,
-    args.channel,
-    args.era,
-    args.var,
-    blind=args.blind,
-    log_y=False,
-    is2Dunrolled=is_2d,
-)
+if (not is_2d) or (is_2d and args.do_unrolling):
+    Histo_Plotter = HTT_Histogram(
+        output_name,
+        nodename,
+        args.channel,
+        args.era,
+        args.var,
+        blind=args.blind,
+        log_y=False,
+        is2Dunrolled=is_2d,
+    )
 
-Histo_Plotter.plot_1D_histo()
+    Histo_Plotter.plot_1D_histo()
 
 if args.rename_procs:
     outfile = ROOT.TFile(output_name, "UPDATE")
