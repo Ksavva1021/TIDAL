@@ -134,7 +134,7 @@ def GetWNode(ana, name='W', samples_dict={}, gen_sels_dict={}, plot='',plot_unmo
     else:
         shape_cat = cat
     shape_selection = BuildCutString(wt, sel, shape_cat, OSSS, '')
-    if method in [1,3,4]:
+    if method in [1,3,4,5]:
         w_node = ana.SummedFactory(name, samples_dict['wjets_samples'], plot, full_selection)
     elif method in [2]:
         full_selection = BuildCutString(wt, sel, cat, OSSS)
