@@ -35,6 +35,7 @@ from Draw.python.HiggsTauTauPlot_utilities import (
     RebinHist,
     UnrollHist2D,
     RenameDatacards,
+    Total_Uncertainty
 )
 from Draw.scripts.systematics.systematics import generate_systematics_dict
 from Draw.python.PlotHistograms import HTT_Histogram
@@ -46,6 +47,7 @@ parser = argparse.ArgumentParser()
 # Main Options:
 # parameter_file: yaml file containing the scaling parameters (e.g. cross-sections, luminosity, etc.)
 # input/output folders, channel, era, method, category, variable, run_systematics, systematics_file
+parser.add_argument("--bypass_plotter", action="store_true", help="Bypass plotter")
 parser.add_argument("--parameter_file", type=str, help="Parameter file")
 parser.add_argument("--input_folder", type=str, help="Input folder")
 parser.add_argument("--output_folder", default="output", help="Output folder")
@@ -880,9 +882,6 @@ def RunPlotting(
             not args.do_ss,
         )
 
-
-
-
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -918,7 +917,11 @@ else:
 
 if args.do_ss:
     output_name = output_name.replace(".root", "_ss.root")
-outfile = ROOT.TFile(output_name, "RECREATE")
+
+if args.bypass_plotter:
+    outfile = ROOT.TFile(output_name, "UPDATE")
+else:
+    outfile = ROOT.TFile(output_name, "RECREATE")
 # ------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -997,111 +1000,112 @@ samples_to_skip_dict = {}
 systematic_suffixes = []
 max_systematics_per_pass = 10
 
-while len(systematics) > 0:
-    analysis = Analysis.Analysis()
-    analysis.nodes.AddNode(Analysis.ListNode(nodename))
-    analysis.remaps = {}
+if not args.bypass_plotter:
+    while len(systematics) > 0:
+        analysis = Analysis.Analysis()
+        analysis.nodes.AddNode(Analysis.ListNode(nodename))
+        analysis.remaps = {}
 
-    if args.channel in ["mm", "mt"]:
-        analysis.remaps["Muon"] = "data_obs"
-    if args.channel == "tt":
-        analysis.remaps["Tau"] = "data_obs"
+        if args.channel in ["mm", "mt"]:
+            analysis.remaps["Muon"] = "data_obs"
+        if args.channel == "tt":
+            analysis.remaps["Tau"] = "data_obs"
 
-    previous_systematic_variation = None
-    for index, systematic in enumerate(
-        list(systematics.keys())[:max_systematics_per_pass]
-    ):
-        if (
-            previous_systematic_variation is not None
-            and systematics[systematic][0] != previous_systematic_variation
+        previous_systematic_variation = None
+        for index, systematic in enumerate(
+            list(systematics.keys())[:max_systematics_per_pass]
         ):
-            continue
-        previous_systematic_variation = systematics[systematic][0]
-        print("Processing:", systematic)
-        print("")
+            if (
+                previous_systematic_variation is not None
+                and systematics[systematic][0] != previous_systematic_variation
+            ):
+                continue
+            previous_systematic_variation = systematics[systematic][0]
+            print("Processing:", systematic)
+            print("")
 
-        sel = args.sel
-        plot = args.var
-        # use plot_unmodified and categories_unmodified in cases where the data and MC get different selections due to a systematic variation
-        plot_unmodified = plot
-        categories_unmodified = copy.deepcopy(categories)
-        systematic_folder_name = systematics[systematic][0]
-        systematic_suffix = systematics[systematic][1]
-        weight = systematics[systematic][2]
-        samples_to_skip = systematics[systematic][3]
-        is_FFsyst = systematics[systematic][4]
+            sel = args.sel
+            plot = args.var
+            # use plot_unmodified and categories_unmodified in cases where the data and MC get different selections due to a systematic variation
+            plot_unmodified = plot
+            categories_unmodified = copy.deepcopy(categories)
+            systematic_folder_name = systematics[systematic][0]
+            systematic_suffix = systematics[systematic][1]
+            weight = systematics[systematic][2]
+            samples_to_skip = systematics[systematic][3]
+            is_FFsyst = systematics[systematic][4]
 
-        systematic_suffixes.append(systematic_suffix)
+            systematic_suffixes.append(systematic_suffix)
 
-        for sample_name in data_samples:
-            analysis.AddSamples(
-                f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/nominal/merged.root",
-                "ntuple",
-                None,
-                sample_name,
+            for sample_name in data_samples:
+                analysis.AddSamples(
+                    f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/nominal/merged.root",
+                    "ntuple",
+                    None,
+                    sample_name,
+                )
+
+            for sample_name in ztt_samples + top_samples + vv_samples + wjets_samples:
+                analysis.AddSamples(
+                    f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root",
+                    "ntuple",
+                    None,
+                    sample_name,
+                )
+
+            for key, value in signal_samples.items():
+                if not isinstance(value, (list,)):
+                    value = [value]
+                for samp in value:
+                    for mass in masses:
+                        sample_name = samp.replace("*", mass)
+                        analysis.AddSamples(
+                            f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root",
+                            "ntuple",
+                            None,
+                            sample_name,
+                        )
+
+            analysis.AddInfo(args.parameter_file, scaleTo="data_obs")
+
+            if systematic == "nominal":
+                do_data = True
+            else:
+                do_data = False
+            RunPlotting(
+                analysis,
+                nodename,
+                samples_dict,
+                gen_sels_dict,
+                systematic,
+                args.category,
+                categories,
+                categories_unmodified,
+                sel,
+                systematic_suffix,
+                weight,
+                do_data,
+                qcd_factor,
+                method,
+                samples_to_skip,
             )
 
-        for sample_name in ztt_samples + top_samples + vv_samples + wjets_samples:
-            analysis.AddSamples(
-                f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root",
-                "ntuple",
-                None,
-                sample_name,
-            )
+            del systematics[systematic]
 
-        for key, value in signal_samples.items():
-            if not isinstance(value, (list,)):
-                value = [value]
-            for samp in value:
-                for mass in masses:
-                    sample_name = samp.replace("*", mass)
-                    analysis.AddSamples(
-                        f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root",
-                        "ntuple",
-                        None,
-                        sample_name,
-                    )
+        analysis.Run()
+        analysis.nodes.Output(outfile)
 
-        analysis.AddInfo(args.parameter_file, scaleTo="data_obs")
-
-        if systematic == "nominal":
-            do_data = True
-        else:
-            do_data = False
-        RunPlotting(
+        FixBins(analysis, nodename, outfile)
+        for suffix in systematic_suffixes:
+            GetTotals(analysis, nodename, suffix, samples_dict, outfile)
+        PrintSummary(
             analysis,
             nodename,
-            samples_dict,
-            gen_sels_dict,
-            systematic,
-            args.category,
-            categories,
-            categories_unmodified,
-            sel,
-            systematic_suffix,
-            weight,
-            do_data,
-            qcd_factor,
-            method,
-            samples_to_skip,
+            ["data_obs"],
+            add_names=systematic_suffixes,
+            channel=args.channel,
+            samples_dict=samples_dict,
         )
-
-        del systematics[systematic]
-
-    analysis.Run()
-    analysis.nodes.Output(outfile)
-
-    FixBins(analysis, nodename, outfile)
-    for suffix in systematic_suffixes:
-        GetTotals(analysis, nodename, suffix, samples_dict, outfile)
-    PrintSummary(
-        analysis,
-        nodename,
-        ["data_obs"],
-        add_names=systematic_suffixes,
-        channel=args.channel,
-        samples_dict=samples_dict,
-    )
 # ------------------------------------------------------------------------------------------------------------------------
 
 # unroll 2D histograms into 1D histograms but store both versions
@@ -1144,6 +1148,82 @@ if is_2d and args.do_unrolling:
             hist.GetName() + "_2D"
         )  # write a copy of the 2D histogram as this will be overwritten by 1D version
         hist.Write("", ROOT.TObject.kOverwrite)
+
+# --------------------
+# Full Uncertainty Band
+
+directory = outfile.Get(nodename)
+keys = [key.GetName() for key in directory.GetListOfKeys()]
+
+h0 = directory.Get('total_bkg')
+hists=[]
+
+# first process systematics affecting normalisation
+normalisation_systematics = {}
+normalisation_systematics['lumi'] = ((0.014), ["ZTT", "ZL", "TTT", "VVT"])
+normalisation_systematics['dy_xs'] = ((0.016, 0.013), ["ZTT", "ZL"])
+normalisation_systematics['top_xs'] = ((0.05), ["TTT"])
+
+for norm_syst, (value, processes) in normalisation_systematics.items():
+    if isinstance(value, tuple) and len(value) == 2:
+        down_shift = value[0]
+        up_shift = value[1]
+    else:
+        down_shift = value
+        up_shift = value
+
+    h1 = h0.Clone()
+    h2 = h0.Clone()
+    h1.SetName(h0.GetName() + "_" + norm_syst + "Up")
+    h2.SetName(h0.GetName() + "_" + norm_syst + "Down")
+    for proc in processes:
+        if proc not in keys:
+            print(f"Process {proc} not found in the directory.")
+            if proc in ["TTT", "VVT"]:
+                proc = proc.replace("TTT", "TTL").replace("VVT", "VVL")
+                if proc not in keys:
+                    print(f"Process {proc} not found in the directory.")
+                    continue
+            else:
+                continue
+
+        hup = directory.Get(proc).Clone()
+        hdown = directory.Get(proc).Clone()
+
+        h1.Add(hup, -1.0)
+        h2.Add(hdown, -1.0)
+
+        hup.Scale(1+up_shift)
+        hdown.Scale(1-down_shift)
+
+        h1.Add(hup)
+        h2.Add(hdown)
+
+    hists.append(h1.Clone())
+    hists.append(h2.Clone())
+
+# now process systematics affecting shape
+for hist in directory.GetListOfKeys():
+    if ".subnodes" in hist.GetName():
+        continue
+
+    processes = ["ZTT", "ZL", "ZJ", "TTT", "ΤΤJ","VVT","VVJ", "W", "QCD", "JetFakes", "JetFakesSublead"]
+    if hist.GetName().endswith("Up") or hist.GetName().endswith("Down"):
+        for proc in processes:
+            if proc+"_" in hist.GetName():
+                no_syst_name = proc
+                temp_hist = h0.Clone()
+                temp_hist.Add(directory.Get(no_syst_name),-1)
+                temp_hist.Add(directory.Get(hist.GetName()))
+                hists.append(temp_hist)
+
+(uncert, up, down) = Total_Uncertainty(h0, hists)
+outfile.cd(nodename)
+uncert.Write()
+up.Write()
+down.Write()
+
+# --------------------
 
 outfile.Close()
 plot_file = ROOT.TFile(output_name, "READ")
