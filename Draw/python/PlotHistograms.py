@@ -116,6 +116,11 @@ class HTT_Histogram:
 
     def initialize_nodes(self):
         # get total background nodes
+        self.total_background_nodes = {
+            "nominal": "total_bkg",
+            "up": "total_bkg_full_uncerts_up",
+            "down": "total_bkg_full_uncerts_down",
+        }
         if self.channel == "tt":
             # self.backgrounds = {
             #                     "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
@@ -244,10 +249,18 @@ class HTT_Histogram:
         return counts, errors
 
     def get_backgrounds(self):
-        # track total background
-        total_bkg_counts = np.zeros(len(self.bin_centers))
-        total_bkg_sq_errors = np.zeros(len(self.bin_centers))
-        # compute each background contribution
+        # total background template
+        bkg_counts, _ = self.get_counts_errors(self.total_background_nodes["nominal"])
+        bkg_counts_up, _ = self.get_counts_errors(self.total_background_nodes["up"])
+        bkg_counts_down, _ = self.get_counts_errors(self.total_background_nodes["down"])
+
+        self.total_bkg_error_up = np.abs(bkg_counts_up - bkg_counts)
+        self.total_bkg_error_down = np.abs(bkg_counts_down - bkg_counts)
+        self.total_bkg_error_pce_up = np.divide(self.total_bkg_error_up, bkg_counts, where=bkg_counts > 0, out=np.zeros_like(bkg_counts))
+        self.total_bkg_error_pce_down = np.divide(self.total_bkg_error_down, bkg_counts, where=bkg_counts > 0, out=np.zeros_like(bkg_counts))
+
+        self.total_background = {"counts": bkg_counts, "error_up": self.total_bkg_error_up, "error_down": self.total_bkg_error_down, "pc_error_up": self.total_bkg_error_pce_up, "pc_error_down": self.total_bkg_error_pce_down}
+
         for bkg, info in self.backgrounds.items():
             bkg_counts = np.zeros(len(self.bin_centers))
             bkg_sq_errors = np.zeros(len(self.bin_centers))
@@ -258,12 +271,7 @@ class HTT_Histogram:
             # store counts and yields for each contribution
             self.backgrounds[bkg]["counts"] = bkg_counts
             self.backgrounds[bkg]["errors"] = np.sqrt(bkg_sq_errors)
-            total_bkg_counts += bkg_counts
-            total_bkg_sq_errors += bkg_sq_errors
-        # store total background
-        total_bkg_err = np.sqrt(total_bkg_sq_errors)
-        total_bkg_pce_err = np.divide(total_bkg_err, total_bkg_counts, where=total_bkg_counts > 0, out=np.zeros_like(total_bkg_counts))
-        self.total_background = {"counts": total_bkg_counts, "errors": total_bkg_err, "pc_error": total_bkg_pce_err}
+
         return True
 
     def get_data(self):
@@ -273,7 +281,7 @@ class HTT_Histogram:
         self.data = {"counts": data_counts, "errors": data_errors, "pc_error": pce_data}
         # get data/MC ratio
         count_ratio =  np.divide(data_counts, self.total_background["counts"], where=self.total_background["counts"] > 0, out=np.zeros_like(data_counts))
-        self.data_MC_ratio = {"counts": count_ratio, "error_data": self.data["pc_error"], "error_MC": self.total_background["pc_error"]}
+        self.data_MC_ratio = {"counts": count_ratio, "error_data": self.data["pc_error"], "error_MC_up": self.total_background["pc_error_up"], "error_MC_down": self.total_background["pc_error_down"]}
         return True
 
     def stack_background(self, ax, name):
@@ -301,8 +309,8 @@ class HTT_Histogram:
         # add uncertainty on total MC
         self.stacked_block = np.insert(self.stacked_block, len(self.stacked_block), 0)
         self.ax.fill_between(self.bin_edges,
-                    self.stacked_block-np.insert(self.total_background["errors"], len(self.total_background["errors"]), 0),
-                    self.stacked_block+np.insert(self.total_background["errors"], len(self.total_background["errors"]), 0),
+                    self.stacked_block-np.insert(self.total_background["error_down"], len(self.total_background["error_down"]), 0),
+                    self.stacked_block+np.insert(self.total_background["error_up"], len(self.total_background["error_up"]), 0),
                     step="post", facecolor='none', hatch='////////', edgecolor='grey', linewidth=0, label = "Background Uncertainty")
         if not self.blind:
             # add data
@@ -317,8 +325,8 @@ class HTT_Histogram:
             self.ax_ratio.errorbar(self.bin_centers, self.data_MC_ratio['counts'], yerr=self.data_MC_ratio['error_data'], xerr=self.bin_widths/2, fmt='o', color = 'black', markersize=3, linewidth=0.6)
         # add MC uncertainty as shaded band
         self.ax_ratio.fill_between(self.bin_edges,
-            1 - np.insert(self.data_MC_ratio['error_MC'], len(self.data_MC_ratio['error_MC']), 0),
-            1 + np.insert(self.data_MC_ratio['error_MC'], len(self.data_MC_ratio['error_MC']), 0),
+            1 - np.insert(self.data_MC_ratio['error_MC_down'], len(self.data_MC_ratio['error_MC_down']), 0),
+            1 + np.insert(self.data_MC_ratio['error_MC_up'], len(self.data_MC_ratio['error_MC_up']), 0),
             step="post", facecolor='none', hatch='////////', edgecolor='grey', linewidth=0)
 
         # legends and labels
