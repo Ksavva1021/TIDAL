@@ -1,14 +1,13 @@
 input_folder: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/output/TauID_SF_Derivation
-output_path: /vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/TauIDSF/0204/Test
-channels: [ mt, mm ]
-eras: [ Run3_2022 ] # Run3_2023, Run3_2023BPix ]
+output_path: /vols/cms/ks1021/TIDAL/Draw/plots/0704/ControlPlots_BeforeTauIDSF
+channels: [ mt ]
+eras: [ Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix ]
 parameter_path: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/scripts/ditau/config/
-schemes: [ sf_calculation ]
-run_systematics: true
+schemes: [ control ]
+run_systematics: false
 
 sf_calculation:
   variable_definitions:
-    #pt_2_vs_mvis_2: "pt_2,m_vis[20,25,30,35,40,50,60,80,100,200],(30,40,200)"
     pt_2_vs_mvis: "pt_2,m_vis(60,20,200),(60,40,200)"
     pt_2: "pt_2(20,40,200)"
     m_vis: "m_vis(60,50,150)"
@@ -40,3 +39,41 @@ sf_calculation:
 
   mm:
   - { method: "1", category: [ inclusive ], plotting_variable: [ m_vis ], blind: false, auto_rebin: false, set_alias: Alias2, additional_weight: "(1)", rename_procs: True }
+
+control:
+  variable_definitions:
+    m_vis: "m_vis(60,50,150)"
+    pt_1: "pt_1(50,0,200)"
+    pt_2: "pt_2(50,0,200)"
+    eta_1: "eta_1(50,-pi,pi)"
+    eta_2: "eta_2(50,-pi,pi)"
+    phi_1: "phi_1(50,-pi,pi)"
+    phi_2: "phi_2(50,-pi,pi)"
+    ip_x_1: "ip_x_1(50,-0.01,0.01)"
+    ip_y_1: "ip_y_1(50,-0.01,0.01)"
+    ip_z_1: "ip_z_1(50,-0.01,0.01)"
+    ip_x_2: "ip_x_2(50,-0.01,0.01)"
+    ip_y_2: "ip_y_2(50,-0.01,0.01)"
+    ip_z_2: "ip_z_2(50,-0.01,0.01)"
+    decayMode_2: "decayMode_2[0,1,2,3,4,5,6,7,8,9,10,11,12]"
+    decayModePNet_2: "decayModePNet_2[0,1,2,3,4,5,6,7,8,9,10,11,12]"
+
+  systematics:
+    per_era:
+      default:
+        mt:
+        - [ "systematic_Tau_EnergyScale_JSCALE", "CMS_scale_jfake" ]
+        - [ "systematic_Tau_EnergyScale_TSCALE", "CMS_scale_t_*group_*year" ]
+        - [ "systematic_Tau_EnergyScale_MUSCALE", "CMS_scale_mu_*group_*year" ]
+        - [ "systematic_QCD_Background", "CMS_QCD_BackgroundSubtraction" ]
+        - [ "systematic_Jet_EnergyScale_Total", "CMS_scale_j_*year" ]
+        - [ "systematic_Jet_EnergyResolution", "CMS_res_j_*year" ]
+        common:
+        - [ "systematic_DY_Shape", "CMS_htt_dyShape" ]
+        - [ "systematic_TTbar_Shape", "CMS_htt_ttbarShape" ]
+
+  Aliases:
+    Alias1: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && idDeepTau2018v2p5VSe_2 >= 2)"
+
+  mt:
+  - { method: "2", category: [ inclusive, DM0_tau, DM1_tau, DM2_tau, DM10_tau, DM11_tau ], plotting_variable: [ m_vis, pt_1, pt_2, eta_1, eta_2 ], set_alias: Alias1 }

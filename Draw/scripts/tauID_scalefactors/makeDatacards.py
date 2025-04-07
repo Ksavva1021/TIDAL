@@ -86,6 +86,7 @@ def create_shell_script(
     same_sign=False,
     unroll=False,
     rename_procs=False,
+    dy_LO=False,
     nodename="",
 ):
     shell_script = f"""
@@ -109,7 +110,6 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
     if auto_rebin:
         shell_script += " \\\n--auto_rebin"
     if run_systematics:
-        # if systematics to run is not specified, run all systematics
         if systematics_to_run:
             shell_script += " \\\n--run_systematics"
             for syst in systematics_to_run:
@@ -124,6 +124,8 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
         shell_script += " \\\n--do_unrolling"
     if rename_procs:
         shell_script += " \\\n--rename_procs"
+    if dy_LO:
+        shell_script += " \\\n--LO_DY"
     if nodename != "":
         shell_script += f" \\\n--nodename {nodename}"
 
@@ -188,7 +190,7 @@ for era in eras:
             f"Era {era} is not a valid era. Please choose from {available_eras}"
         )
 
-available_schemes = ["sf_calculation"]
+available_schemes = ["sf_calculation", "control"]
 for scheme in schemes:
     if scheme not in available_schemes:
         raise ValueError(
@@ -202,7 +204,12 @@ for era in eras:
             settings = config[scheme]
             output_folder = f"{output_path}/{era}/{scheme}/{channel}"
             subprocess.run(["mkdir", "-p", output_folder])
-            available_aliases = settings["Aliases"]
+
+            # check if settings Aliases exists
+            if "Aliases" in settings:
+                available_aliases = settings["Aliases"]
+            else:
+                available_aliases = {}
 
             systematics_to_run = []
             if run_systematics:
@@ -243,12 +250,16 @@ for era in eras:
                 same_sign = setting.get("same_sign", False)
                 unroll = setting.get("unroll", False)
                 rename_procs = setting.get("rename_procs", False)
+                dy_LO= setting.get("dy_LO", False)
 
                 if set_alias and set_alias in available_aliases:
                     set_alias = available_aliases[set_alias]
 
                 for cat in category:
-                    alias = set_alias.replace("category", cat)
+                    if set_alias:
+                        alias = set_alias.replace("category", cat)
+                    else:
+                        alias = None
                     for additional_selection in additional_selections:
                         for variable in variables:
                             variable = settings["variable_definitions"][variable]
@@ -267,6 +278,8 @@ for era in eras:
                                 nodename = nodename + "_aiso"
                             if same_sign:
                                 variable_name = variable_name + "_ss"
+                            if dy_LO:
+                                variable_name = variable_name + "_dy_LO"
 
                             if nodename != "":
                                 if nodename[0] != "_":
@@ -301,6 +314,7 @@ for era in eras:
                                 same_sign=same_sign,
                                 unroll=unroll,
                                 rename_procs=rename_procs,
+                                dy_LO=dy_LO,
                                 nodename=nodename,
                             )
 
