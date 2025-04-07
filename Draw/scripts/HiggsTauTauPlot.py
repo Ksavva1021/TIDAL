@@ -330,11 +330,11 @@ if args.channel == "tt":
 
 elif args.channel == "mt":
     # DM separated categories
-    categories["DM0_tau"] = "decayModePNet_2 == 0"
-    categories["DM1_tau"] = "decayMode_2==1 && decayModePNet_2 == 1"
-    categories["DM2_tau"] = "decayMode_2==1 && decayModePNet_2 == 2"
-    categories["DM10_tau"] = "decayModePNet_2 == 10"
-    categories["DM11_tau"] = "decayModePNet_2 == 11"
+    categories["DM0_tau"] = "decayModePNet_2 == 0 && ip_LengthSig_2 >= 1.25"
+    categories["DM1_tau"] = "decayMode_2==1 && decayModePNet_2 == 1 && pion_E_split_2 > 0.2"
+    categories["DM2_tau"] = "decayMode_2==1 && decayModePNet_2 == 2 && pion_E_split_2 > 0.2"
+    categories["DM10_tau"] = "decayModePNet_2 == 10 && hasRefitSV_2"
+    categories["DM11_tau"] = "decayModePNet_2 == 11 && hasRefitSV_2"
 
 # if args.set_alias is not None then overwrite the categories with the selection provided
 
