@@ -3,7 +3,7 @@ output_path: /vols/cms/ks1021/TIDAL/Draw/plots/0704/ControlPlots_BeforeTauIDSF
 channels: [ mt ]
 eras: [ Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix ]
 parameter_path: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/scripts/ditau/config/
-schemes: [ sf_calculation ]
+schemes: [ control ]
 run_systematics: false
 
 sf_calculation:
