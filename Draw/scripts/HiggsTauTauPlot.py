@@ -1269,6 +1269,12 @@ y_title = titles[1]
 #             log_y=False
 #             )
 
+if args.rename_procs:
+    outfile = ROOT.TFile(output_name, "UPDATE")
+    if args.channel in ["mm", "ee"]:
+        RenameDatacards(outfile, nodename)
+    outfile.Close()
+
 # new plotting available for 1D histograms (NB only 2D unrolled histograms are supported)
 if (not is_2d) or (is_2d and args.do_unrolling):
     Histo_Plotter = HTT_Histogram(
@@ -1284,8 +1290,3 @@ if (not is_2d) or (is_2d and args.do_unrolling):
 
     Histo_Plotter.plot_1D_histo()
 
-if args.rename_procs:
-    outfile = ROOT.TFile(output_name, "UPDATE")
-    if args.channel in ["mm", "ee"]:
-        RenameDatacards(outfile, nodename)
-    outfile.Close()
