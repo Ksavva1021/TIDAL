@@ -176,7 +176,7 @@ parameter_path = config["parameter_path"]
 schemes = config["schemes"]
 run_systematics = config["run_systematics"]
 
-available_channels = ["mm", "mt"]
+available_channels = ["mm", "mt", "tt"]
 for channel in channels:
     if channel not in available_channels:
         raise ValueError(
@@ -243,9 +243,12 @@ for era in eras:
                 variables = setting.get("plotting_variable", "[m_vis]")
                 blind = setting.get("blind", False)
                 auto_rebin = setting.get("auto_rebin", False)
-                additional_selections = setting.get("additional_selections", ["(1)"])
+                additional_selections = setting.get("additional_selections", [""])
+                if isinstance(additional_selections, str):
+                    additional_selections = [additional_selections]
                 set_alias = setting.get("set_alias", "")
                 additional_weight = setting.get("additional_weight", "(1)")
+                extra_identifier = setting.get("extra_identifier", "")
                 aiso = setting.get("aiso", False)
                 same_sign = setting.get("same_sign", False)
                 unroll = setting.get("unroll", False)
@@ -267,12 +270,14 @@ for era in eras:
                             variable_name = variable.split("[")[0]
                             variable_name = variable_name.replace(",", "_vs_")
                             nodename = ""
-                            if additional_selection and additional_selection != "(1)":
+                            if additional_selection and additional_selection != "":
                                 variable_name = variable_name + '_' + format_first_selection(additional_selection)
                                 nodename = format_first_selection(additional_selection)
                             else:
                                 variable_name = variable_name
 
+                            if extra_identifier:
+                                variable_name = variable_name + "_" + extra_identifier
                             if aiso:
                                 variable_name = variable_name + "_aiso"
                                 nodename = nodename + "_aiso"
