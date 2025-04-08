@@ -223,7 +223,7 @@ categories["btag"] = "(n_bjets>=1)"
 categories["w_sdb"] = "mt_1>70."
 categories["w_shape"] = ""
 categories["qcd_loose_shape"] = re.sub(
-    "iso_1\s*<\s*0.15", "iso_1 > 0.05 && iso_1 < 0.3", categories["baseline"]
+    "iso_1\s*<\s*0.15", "iso_1 < 0.3", categories["baseline"]
 )
 
 categories["aminus_low"] = (
