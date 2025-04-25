@@ -243,7 +243,7 @@ for era in eras:
                 variables = setting.get("plotting_variable", "[m_vis]")
                 blind = setting.get("blind", False)
                 auto_rebin = setting.get("auto_rebin", False)
-                additional_selections = setting.get("additional_selections", [""])
+                additional_selections = setting.get("additional_selections", ["(1)"])
                 if isinstance(additional_selections, str):
                     additional_selections = [additional_selections]
                 set_alias = setting.get("set_alias", "")
