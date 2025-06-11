@@ -464,7 +464,7 @@ class HttWOSSSNode(BaseNode):
 
 
 class HttQCDNode(BaseNode):
-    def __init__(self, name, data, subtract, factor, qcd_shape=None, ratio_num_node=None, ratio_den_node=None,WriteSubnodes=True):
+    def __init__(self, name, data, subtract, factor, qcd_shape=None, ratio_num_node=None, ratio_den_node=None,WriteSubnodes=True, add_weight=None):
         BaseNode.__init__(self, name,WriteSubnodes)
         self.shape = None
         self.data_node = data
@@ -473,6 +473,7 @@ class HttQCDNode(BaseNode):
         self.ratio_num_node = ratio_num_node
         self.ratio_den_node = ratio_den_node
         self.qcd_shape = qcd_shape
+        self.add_weight = add_weight
 
     def RunSelf(self):
         if self.subtract_node is not None:
@@ -483,6 +484,8 @@ class HttQCDNode(BaseNode):
             self.shape *= self.ratio_num_node.shape.rate / self.ratio_den_node.shape.rate
         if self.qcd_shape is not None:
             self.shape = self.shape.rate / self.qcd_shape.shape.rate * self.qcd_shape.shape
+        if self.add_weight is not None:
+            self.shape *= self.add_weight
 
     def Objects(self):
         return {self.name: self.shape.hist}
