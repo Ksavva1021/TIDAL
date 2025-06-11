@@ -87,6 +87,7 @@ def create_shell_script(
     unroll=False,
     rename_procs=False,
     dy_LO=False,
+    dy_NLO_POWHEG=False,
     nodename="",
 ):
     shell_script = f"""
@@ -126,6 +127,8 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
         shell_script += " \\\n--rename_procs"
     if dy_LO:
         shell_script += " \\\n--LO_DY"
+    if dy_NLO_POWHEG:
+        shell_script += " \\\n--NLO_DY_POWHEG"
     if nodename != "":
         shell_script += f" \\\n--nodename {nodename}"
 
@@ -176,7 +179,7 @@ parameter_path = config["parameter_path"]
 schemes = config["schemes"]
 run_systematics = config["run_systematics"]
 
-available_channels = ["mm", "mt", "tt"]
+available_channels = ["mm", "mt", "tt", "et"]
 for channel in channels:
     if channel not in available_channels:
         raise ValueError(
@@ -243,7 +246,7 @@ for era in eras:
                 variables = setting.get("plotting_variable", "[m_vis]")
                 blind = setting.get("blind", False)
                 auto_rebin = setting.get("auto_rebin", False)
-                additional_selections = setting.get("additional_selections", ["(1)"])
+                additional_selections = setting.get("additional_selections", [""])
                 if isinstance(additional_selections, str):
                     additional_selections = [additional_selections]
                 set_alias = setting.get("set_alias", "")
@@ -254,6 +257,7 @@ for era in eras:
                 unroll = setting.get("unroll", False)
                 rename_procs = setting.get("rename_procs", False)
                 dy_LO= setting.get("dy_LO", False)
+                dy_NLO_POWHEG = setting.get("dy_NLO_POWHEG", False)
 
                 if set_alias and set_alias in available_aliases:
                     set_alias = available_aliases[set_alias]
@@ -285,6 +289,8 @@ for era in eras:
                                 variable_name = variable_name + "_ss"
                             if dy_LO:
                                 variable_name = variable_name + "_dy_LO"
+                            if dy_NLO_POWHEG:
+                                variable_name = variable_name + "_dy_NLO_POWHEG"
 
                             if nodename != "":
                                 if nodename[0] != "_":
@@ -320,6 +326,7 @@ for era in eras:
                                 unroll=unroll,
                                 rename_procs=rename_procs,
                                 dy_LO=dy_LO,
+                                dy_NLO_POWHEG=dy_NLO_POWHEG,
                                 nodename=nodename,
                             )
 
