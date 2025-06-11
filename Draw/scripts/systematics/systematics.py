@@ -78,10 +78,10 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
     # First Kind: stat1, stat2, syst_TES_era_dm
     # should be uncorrelated across DMs and eras
-    if specific_systematic == 'Tau_ID':
-        kinds = ['stat1','stat2','syst_TES_era_dm']
-        eras = ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]
-        decay_modes = ["0", "1", "10", "11"]
+    if specific_systematic == 'Tau_ID_PNet':
+        kinds = ['stat1','stat2']
+        eras = ["Run3_2023", "Run3_2022EE", "Run3_2022", "Run3_2023BPix"]
+        decay_modes = ["0", "1", "2", "10", "11"]
 
         for kind in kinds:
             for era in eras:
@@ -90,8 +90,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                     down_weights = []
                     for obj_index, obj_type in enumerate(specific_channel):
                         if obj_type == 't':
-                            up_var = f'w_Tau_ID_{obj_index+1}_{kind}_Up'
-                            down_var = f'w_Tau_ID_{obj_index+1}_{kind}_Down'
+                            up_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Up'
+                            down_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Down'
 
                             if specific_era == era:
                                 formula = (
@@ -109,12 +109,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
                             del up_var, down_var
 
-                    if kind != "syst_TES_era_dm":
-                        systematic_name = f'Tau_ID_{kind}_DM{dm}_{era}'
-                        histogram_name = f'syst_tau_id_{kind}_DM{dm}_{era}'
-                    else:
-                        systematic_name = f'Tau_ID_{kind.replace("_era_", "_")}_DM{dm}_{era}'
-                        histogram_name = f'syst_tau_id_{kind.replace("_era_", "_")}_DM{dm}_{era}'
+                    systematic_name = f'Tau_ID_{kind.replace("_era_", "_")}_DM{dm}_{era}'
+                    histogram_name = f'syst_tau_id_{kind.replace("_era_", "_")}_DM{dm}_{era}'
 
                     if specific_channel in ["et","mt","tt"]:
                         systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], False)
@@ -130,8 +126,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             down_weights = []
             for obj_index, obj_type in enumerate(specific_channel):
                 if obj_type == 't':
-                    up_var = f'w_Tau_ID_{obj_index+1}_syst_era_Up'
-                    down_var = f'w_Tau_ID_{obj_index+1}_syst_era_Down'
+                    up_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_era_Up'
+                    down_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_era_Down'
 
                     if specific_era == era:
                         up_weights.append(f"({up_var})")
@@ -157,8 +153,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         down_weights = []
         for obj_index, obj_type in enumerate(specific_channel):
             if obj_type == 't':
-                up_var = f'w_Tau_ID_{obj_index+1}_syst_all_eras_Up'
-                down_var = f'w_Tau_ID_{obj_index+1}_syst_all_eras_Down'
+                up_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_all_eras_Up'
+                down_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_all_eras_Down'
 
                 up_weights.append(f"({up_var})")
                 down_weights.append(f"({down_var})")
@@ -224,7 +220,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     # ----------------------------------------------------------------------------------------------------
     if specific_systematic == 'Tau_FakeRate_mu':
         eta_bins = ["0.0", "0.4", "0.8", "1.2", "1.7", "2.4"]
-        eras = ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]
+        eras = [ "Run3_2023", "Run3_2022", "Run3_2022EE", "Run3_2023BPix"]
 
         for era in eras:
             for i, eta in enumerate(eta_bins):
@@ -412,7 +408,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + specific_name + updown.capitalize()
 
             weight_updown = up_var if updown == "up" else down_var
-            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", [], False)
+            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", samples_to_skip, False)
 
         del up_var, down_var
     # ----------------------------------------------------------------------------------------------------
@@ -436,9 +432,28 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + specific_name + updown.capitalize()
 
             weight_updown = up_var if updown == "up" else down_var
-            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", [], False)
+            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", samples_to_skip, False)
 
         del up_var, down_var
+
+    if specific_systematic == 'Fake_Flat_Uncertainty':
+        samples_to_skip = [
+            "TT", "TTT", "TTJ",
+            "ZTT", "ZLL", "ZL", "ZJ",
+            "VV", "VVT", "VVJ",
+            "W","signal"
+        ]
+
+        for updown in ["up", "down"]:
+            systematic_name = 'flat_fake_sub_' + updown
+            if specific_name == '':
+                histogram_name = '_flat_fake_sub' + updown.capitalize()
+            else:
+                histogram_name = '_' + specific_name + updown.capitalize()
+
+            systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", samples_to_skip, False)
+
+
     # ----------------------------------------------------------------------------------------------------
 
     # QCD Background systematics
