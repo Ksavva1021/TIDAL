@@ -250,13 +250,21 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
         full_selection = BuildCutString(data_weight, sel, categories_unmodified['qcd_sdb_cat'], OSSS)
         subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel+'*(genPartFlav_1 != 0)', 'qcd_sdb_cat', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
 
+        if 'flat_fake_sub_up' in systematic:
+            syst_weight = 1.2
+        elif 'flat_fake_sub_down' in systematic:
+            syst_weight = 0.8
+        else:
+            syst_weight = 1.0
+
         ana.nodes[nodename].AddNode(Analysis.HttQCDNode('JetFakes'+add_name,
             ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, full_selection),
             subtract_node,
             1,
             shape_node,
             num_node,
-            den_node))
+            den_node,
+            add_weight=syst_weight))
 
     elif method == 4:  # Full Fake Factor Method
         ff_weight = '(weight) * (w_FakeFactor)' # apply the fake factor weight
@@ -276,7 +284,8 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
 
     ## Add estimation of fakes with fake subleading tau
     categories['sublead_fakes_estimate'] = categories[cat_name]+'&&'+categories['subleadfake']
-    fake_sublead_selection = BuildCutString('(weight)', sel, categories['sublead_fakes_estimate'], OSSS)
+    # add uncertainty if flat syst enabled
+    fake_sublead_selection = BuildCutString(f"(weight)*({syst_weight})", sel, categories['sublead_fakes_estimate'], OSSS)
     fake_sublead_node = ana.SummedFactory('JetFakesSublead'+add_name, samples_dict['ztt_samples']+samples_dict['wjets_samples']+samples_dict['vv_samples']+samples_dict['top_samples'], plot_unmodified, fake_sublead_selection)
     ana.nodes[nodename].AddNode(fake_sublead_node)
 
