@@ -93,7 +93,34 @@ systematic_options = [
     ["QCD_Background", "QCD Background systematic"],
     ["DY_Shape", "DY Shape systematic from ZpT reweighting"],
     ["TTbar_Shape", "TTbar Shape systematic from top pT reweighting"],
+    ["Fake_Flat_Uncertainty", "flat fake uncertainty"]
 ]
+
+# TODO: for later on, systematics for PNet/CP SFs
+    # ["Tau_ID_PNet", "Tau ID systematic"],
+    # [
+    #     "Tau_FakeRate_e",
+    #     "Tau Fake Rate systematic for genuine electrons misidentified as taus",
+    # ],
+    # [
+    #     "Tau_FakeRate_mu",
+    #     "Tau Fake Rate systematic for genuine muons misidentified as taus",
+    # ],
+    # [
+    #     "Tau_EnergyScale_PNet_JSCALE",
+    #     "Tau Energy Scale systematic for jets misidentified as taus",
+    # ],
+    # ["Tau_EnergyScale_PNet_TSCALE", "Tau Energy Scale systematic for genuine taus"],
+    # [
+    #     "Tau_EnergyScale_PNet_ESCALE",
+    #     "Tau Energy Scale systematic for genuine electrons misidentified as taus",
+    # ],
+    # [
+    #     "Tau_EnergyScale_PNet_MUSCALE",
+    #     "Tau Energy Scale systematic for genuine muons misidentified as taus",
+    # ],
+
+
 # The nargs="?" option allows the user to provide an optional value for the systematic e.g. overriding the name assigned to the histogram
 for systematic, description in systematic_options:
     parser.add_argument(
@@ -106,6 +133,7 @@ for systematic, description in systematic_options:
 
 # Additional Options:
 parser.add_argument("--LO_DY", action="store_true", help="Use LO instead of NLO DY")
+parser.add_argument("--NLO_DY_POWHEG", action="store_true", help="Use NLO POWHEG DY")
 parser.add_argument("--sel", type=str, help="Additional Selection to apply", default="")
 parser.add_argument(
     "--set_alias",
@@ -190,11 +218,11 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             % trg_full
         )
     if args.channel == "et":
-        et_cross_only = "(trg_et_cross && pt_1 > 25 && pt_1 < 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)"
+        # et_cross_only = "(trg_et_cross && pt_1 > 25 && pt_1 < 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)"
         single_electron_only = "(trg_singleelectron && pt_1 >= 31 && abs(eta_1) < 2.1 )"
-        trg_full = "(%s || %s)" % (et_cross_only, single_electron_only)
-        categories["baseline"] = (
-            "(iso_1 < 0.15&& idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
+        trg_full = single_electron_only # remove et cross trigger until Nanoprod v3
+        categories["baseline"] = ( # Tight VSe for et
+            "(iso_1 < 0.15&& idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
             % trg_full
         )
     if args.channel == "tt":
@@ -331,12 +359,19 @@ if args.channel == "tt":
         )
 
 elif args.channel == "mt":
-    # DM separated categories
-    categories["DM0_tau"] = "decayModePNet_2 == 0 && ip_LengthSig_2 >= 1.25"
-    categories["DM1_tau"] = "decayMode_2==1 && decayModePNet_2 == 1 && pion_E_split_2 > 0.2"
-    categories["DM2_tau"] = "decayMode_2==1 && decayModePNet_2 == 2 && pion_E_split_2 > 0.2"
-    categories["DM10_tau"] = "decayModePNet_2 == 10 && hasRefitSV_2"
-    categories["DM11_tau"] = "decayModePNet_2 == 11 && hasRefitSV_2"
+    # PNet DM separated categories (with CP selections)
+    categories["DM0_tau_cp"] = "decayModePNet_2 == 0 && ip_LengthSig_2 >= 1.25"
+    categories["DM1_tau_cp"] = "decayMode_2==1 && decayModePNet_2 == 1 && pion_E_split_2 > 0.2"
+    categories["DM2_tau_cp"] = "decayMode_2==1 && decayModePNet_2 == 2 && pion_E_split_2 > 0.2"
+    categories["DM10_tau_cp"] = "decayModePNet_2 == 10 && hasRefitSV_2"
+    categories["DM11_tau_cp"] = "decayModePNet_2 == 11 && hasRefitSV_2"
+    categories['cp_inclusive'] = f"(({categories['DM0_tau_cp']}) || ({categories['DM1_tau_cp']}) || ({categories['DM2_tau_cp']}) || ({categories['DM10_tau_cp']}))"
+
+    # HPS DM separate categories (inclusive)
+    categories["DM0_tau"] = "decayMode_2 == 0"
+    categories["DM1_tau"] = "decayMode_2==1"
+    categories["DM10_tau"] = "decayMode_2==10"
+    categories["DM11_tau"] = "decayMode_2==10"
 
 # if args.set_alias is not None then overwrite the categories with the selection provided
 
@@ -374,9 +409,15 @@ if args.set_alias is not None:
             categories[cat_to_overwrite] = overwrite_with
 
 if args.do_aiso:
-    categories["baseline"] = categories["baseline"].replace(
-        "iso_1<0.15", "iso_1>0.15 & iso_1<0.5"
-    )
+    if args.channel == 'mt':
+        categories["baseline"] = re.sub(
+            "iso_1\s*<\s*0.15", "iso_1 > 0.15 && iso_1 < 0.3", categories["baseline"] # NB: cut in HiggsDNA on iso is 0.3
+        )
+    elif args.channel == 'tt':
+        categories["baseline"] = categories["baseline"].replace(
+            "idDeepTau2018v2p5VSjet_2 >= 7",
+            "idDeepTau2018v2p5VSjet_2 < 7 && idDeepTau2018v2p5VSjet_2 >= 1",
+        )
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define the samples (Data and MC (Background & Signal))
@@ -460,6 +501,40 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         ]
         if args.era in ["Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2L_M_50_madgraphMLM_ext1")
+    elif args.NLO_DY_POWHEG:
+        print("WARNING: Using NLO POWHEG DY samples")
+        ztt_samples = [
+            "DYto2E_MLL_10to50_powheg",
+            "DYto2E_MLL_120to200_powheg",
+            "DYto2E_MLL_1500to2500_powheg",
+            "DYto2E_MLL_200to400_powheg",
+            "DYto2E_MLL_2500to4000_powheg",
+            "DYto2E_MLL_4000to6000_powheg",
+            "DYto2E_MLL_400to800_powheg",
+            "DYto2E_MLL_50to120_powheg",
+            "DYto2E_MLL_6000_powheg",
+            "DYto2E_MLL_800to1500_powheg",
+            "DYto2Mu_MLL_10to50_powheg",
+            "DYto2Mu_MLL_120to200_powheg",
+            "DYto2Mu_MLL_1500to2500_powheg",
+            "DYto2Mu_MLL_200to400_powheg",
+            "DYto2Mu_MLL_2500to4000_powheg",
+            "DYto2Mu_MLL_4000to6000_powheg",
+            "DYto2Mu_MLL_400to800_powheg",
+            "DYto2Mu_MLL_50to120_powheg",
+            "DYto2Mu_MLL_6000_powheg",
+            "DYto2Mu_MLL_800to1500_powheg",
+            "DYto2Tau_MLL_10to50_powheg",
+            "DYto2Tau_MLL_120to200_powheg",
+            "DYto2Tau_MLL_1500to2500_powheg",
+            "DYto2Tau_MLL_200to400_powheg",
+            "DYto2Tau_MLL_2500to4000_powheg",
+            "DYto2Tau_MLL_4000to6000_powheg",
+            "DYto2Tau_MLL_400to800_powheg",
+            "DYto2Tau_MLL_50to120_powheg",
+            "DYto2Tau_MLL_6000_powheg",
+            "DYto2Tau_MLL_800to1500_powheg",
+        ]
     else:
         ztt_samples = [
             "DYto2L_M_50_amcatnloFXFX",
@@ -527,75 +602,77 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         wjets_samples.remove("WtoLNu_madgraphMLM_ext1")
 
     if args.channel in ["et", "mt", "tt"]:
+        # TODO: Lucas Removing irrelevant signal samples for now (to avoid double counting)
         signal_samples = {
-            "qqH_sm_unfiltered_htt*": "VBFHToTauTau_UncorrelatedDecay_UnFiltered",
+
+            # "qqH_sm_unfiltered_htt*": "VBFHToTauTau_UncorrelatedDecay_UnFiltered",
             "qqH_sm_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            "qqH_ps_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            "qqH_mm_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            "Higgs_flat_htt*": [
-                "VBFHToTauTau_UncorrelatedDecay_Filtered",
-                "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
-                "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
-                "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
-            ],
-            "qqH_flat_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            "ggH_flat_prod_sm_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
-            ],
+            # "qqH_ps_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
+            # "qqH_mm_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
+            # "Higgs_flat_htt*": [
+            #     "VBFHToTauTau_UncorrelatedDecay_Filtered",
+            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
+            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
+            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
+            # ],
+            # "qqH_flat_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
+            # "ggH_flat_prod_sm_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
+            # ],
             "ggH_sm_prod_sm_htt*": [
                 "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
             ],
-            "ggH_sm_prod_ps_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
-            ],
-            "ggH_sm_prod_mm_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
-            ],
-            "ggH_ps_prod_sm_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
-            ],
-            "ggH_ps_prod_ps_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
-            ],
-            "ggH_ps_prod_mm_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
-            ],
-            "ggH_mm_prod_sm_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
-            ],
-            "ggH_mm_prod_ps_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
-            ],
-            "ggH_mm_prod_mm_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
-            ],
+            # "ggH_sm_prod_ps_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
+            # ],
+            # "ggH_sm_prod_mm_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
+            # ],
+            # "ggH_ps_prod_sm_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
+            # ],
+            # "ggH_ps_prod_ps_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
+            # ],
+            # "ggH_ps_prod_mm_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
+            # ],
+            # "ggH_mm_prod_sm_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
+            # ],
+            # "ggH_mm_prod_ps_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
+            # ],
+            # "ggH_mm_prod_mm_htt*": [
+            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
+            # ],
             # "ggH_sm_prod_sm_reweight_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
-            "WH_sm_unfiltered_htt*": [
-                "WplusHToTauTau_UncorrelatedDecay_UnFiltered",
-                "WminusHToTauTau_UncorrelatedDecay_UnFiltered",
-            ],
+            # "WH_sm_unfiltered_htt*": [
+            #     "WplusHToTauTau_UncorrelatedDecay_UnFiltered",
+            #     "WminusHToTauTau_UncorrelatedDecay_UnFiltered",
+            # ],
             "WH_sm_htt*": [
                 "WplusHToTauTau_UncorrelatedDecay_Filtered",
                 "WminusHToTauTau_UncorrelatedDecay_Filtered",
             ],
-            "WH_ps_htt*": [
-                "WplusHToTauTau_UncorrelatedDecay_Filtered",
-                "WminusHToTauTau_UncorrelatedDecay_Filtered",
-            ],
-            "WH_mm_htt*": [
-                "WplusHToTauTau_UncorrelatedDecay_Filtered",
-                "WminusHToTauTau_UncorrelatedDecay_Filtered",
-            ],
-            "ZH_sm_unfiltered_htt*": "ZHToTauTau_UncorrelatedDecay_UnFiltered",
+            # "WH_ps_htt*": [
+            #     "WplusHToTauTau_UncorrelatedDecay_Filtered",
+            #     "WminusHToTauTau_UncorrelatedDecay_Filtered",
+            # ],
+            # "WH_mm_htt*": [
+            #     "WplusHToTauTau_UncorrelatedDecay_Filtered",
+            #     "WminusHToTauTau_UncorrelatedDecay_Filtered",
+            # ],
+            # "ZH_sm_unfiltered_htt*": "ZHToTauTau_UncorrelatedDecay_UnFiltered",
             "ZH_sm_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
-            "ZH_ps_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
-            "ZH_mm_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
+            # "ZH_ps_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
+            # "ZH_mm_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
         }
     else:
         signal_samples = {}
 
-    # TODO: REMOVE THIS IS TEMPORARY FOR TAU ID SFs
-    signal_samples = {}
+    # # TODO: REMOVE THIS IS TEMPORARY FOR TAU ID SFs
+    # signal_samples = {}
 
     samples_dict["ztt_samples"] = ztt_samples
     samples_dict["top_samples"] = top_samples
@@ -1254,20 +1331,6 @@ titles = Plotting.SetAxisTitles(args.var, args.channel)
 x_title = titles[0]
 y_title = titles[1]
 
-
-# Plotting.HTTPlot(
-#             nodename=nodename,
-#             infile=plot_file,
-#             channel=args.channel,
-#             scheme=args.channel,
-#             ratio_range="0.5,1.5",
-#             x_title=x_title,
-#             y_title=y_title,
-#             plot_name=output_name.replace('.root',''),
-#             lumi=f"{args.era}",
-#             blind=args.blind,
-#             log_y=False
-#             )
 
 if args.rename_procs:
     outfile = ROOT.TFile(output_name, "UPDATE")
