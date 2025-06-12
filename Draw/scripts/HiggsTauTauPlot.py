@@ -371,7 +371,7 @@ elif args.channel == "mt":
     categories["DM0_tau"] = "decayMode_2 == 0"
     categories["DM1_tau"] = "decayMode_2==1"
     categories["DM10_tau"] = "decayMode_2==10"
-    categories["DM11_tau"] = "decayMode_2==10"
+    categories["DM11_tau"] = "decayMode_2==11"
 
 # if args.set_alias is not None then overwrite the categories with the selection provided
 
