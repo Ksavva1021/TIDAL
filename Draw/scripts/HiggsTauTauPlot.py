@@ -106,6 +106,7 @@ for systematic, description in systematic_options:
 
 # Additional Options:
 parser.add_argument("--LO_DY", action="store_true", help="Use LO instead of NLO DY")
+parser.add_argument("--NLO_DY_POWHEG", action="store_true", help="Use NLO POWHEG DY")
 parser.add_argument("--sel", type=str, help="Additional Selection to apply", default="")
 parser.add_argument(
     "--set_alias",
@@ -179,7 +180,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         )
     if args.channel == "mm":
         categories["baseline"] = (
-            "(iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.4))"
+            "(m_vis > 50 && iso_1<0.15 && iso_2<0.15 && (trg_singlemuon && pt_1 > 26 && abs(eta_1) < 2.4))"
         )
     if args.channel == "mt":
         mt_cross_only = "(trg_mt_cross && pt_1 > 21 && pt_1 <= 26 && abs(eta_1) < 2.1 && pt_2 > 32 && abs(eta_2) < 2.1)"
@@ -460,6 +461,49 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         ]
         if args.era in ["Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2L_M_50_madgraphMLM_ext1")
+    elif args.NLO_DY_POWHEG:
+        print("WARNING: Using NLO POWHEG DY samples")
+        ztt_samples = [
+            "DYto2E_MLL_120to200_powheg",
+            "DYto2E_MLL_1500to2500_powheg",
+            "DYto2E_MLL_200to400_powheg",
+            "DYto2E_MLL_2500to4000_powheg",
+            "DYto2E_MLL_4000to6000_powheg",
+            "DYto2E_MLL_400to800_powheg",
+            "DYto2E_MLL_50to120_powheg",
+            "DYto2E_MLL_6000_powheg",
+            "DYto2E_MLL_800to1500_powheg",
+            "DYto2Mu_MLL_120to200_powheg",
+            "DYto2Mu_MLL_1500to2500_powheg",
+            "DYto2Mu_MLL_200to400_powheg",
+            "DYto2Mu_MLL_2500to4000_powheg",
+            "DYto2Mu_MLL_4000to6000_powheg",
+            "DYto2Mu_MLL_400to800_powheg",
+            "DYto2Mu_MLL_50to120_powheg",
+            "DYto2Mu_MLL_6000_powheg",
+            "DYto2Mu_MLL_800to1500_powheg",
+            "DYto2Tau_MLL_120to200_powheg",
+            "DYto2Tau_MLL_1500to2500_powheg",
+            "DYto2Tau_MLL_200to400_powheg",
+            "DYto2Tau_MLL_2500to4000_powheg",
+            "DYto2Tau_MLL_4000to6000_powheg",
+            "DYto2Tau_MLL_400to800_powheg",
+            "DYto2Tau_MLL_50to120_powheg",
+            "DYto2Tau_MLL_6000_powheg",
+            "DYto2Tau_MLL_800to1500_powheg",
+        ]
+
+        if args.channel in ["mm","mt"]:
+            ztt_samples.remove("DYto2E_MLL_120to200_powheg")
+            ztt_samples.remove("DYto2E_MLL_1500to2500_powheg")
+            ztt_samples.remove("DYto2E_MLL_200to400_powheg")
+            ztt_samples.remove("DYto2E_MLL_2500to4000_powheg")
+            ztt_samples.remove("DYto2E_MLL_4000to6000_powheg")
+            ztt_samples.remove("DYto2E_MLL_400to800_powheg")
+            ztt_samples.remove("DYto2E_MLL_50to120_powheg")
+            ztt_samples.remove("DYto2E_MLL_6000_powheg")
+            ztt_samples.remove("DYto2E_MLL_800to1500_powheg")
+
     else:
         ztt_samples = [
             "DYto2L_M_50_amcatnloFXFX",
@@ -480,6 +524,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         ]  # use NLO samples
         if args.era in ["Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
+
     top_samples = [
         "TTto2L2Nu",
         "TTto2L2Nu_ext1",

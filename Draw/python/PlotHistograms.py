@@ -364,7 +364,7 @@ class HTT_Histogram:
             self.ax.set_yscale('log')
             self.ax.set_ylim(0.1, 10*np.max(self.stacked_block))
         else:
-            self.ax.set_ylim(0, 1.5*np.max(self.stacked_block))
+            self.ax.set_ylim(0, 2.0*np.max(self.stacked_block))
         self.ax.set_xlim(self.bin_edges[0], self.bin_edges[-1])
         # ratio plot
         self.ax_ratio.set_ylabel("Obs/Exp")
