@@ -1,77 +1,77 @@
 void zpt_reweighting(){
   // initialising binning
-  std::string outfile="/vols/cms/ks1021/TIDAL/Draw/plots/zpt_reweighting_LO_2023BPix.root";
+  std::string outfile="/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/zpt_reweighting_POWHEG.root";
   double x_bins[17] = {0,50,60,70,80,90,100,120,140,160,180,200,300,400,600,800,1000};
-  double y_bins[15] = {0,10,20,30,40,60,80,100,120,160,200,280,320,400,600};
+  double y_bins[14] = {0,10,20,30,40,60,80,100,120,160,200,250,300,600};
   int n_xbins = 16;
-  int n_ybins = 14;
+  int n_ybins = 13;
   TFile *fout = new TFile(outfile.c_str(),"RECREATE");
   // datacards (var pt_tt with mvis cuts)
   std::vector<std::string> file_names = {
     // Run3_2022
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2022.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2022.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2022.root",
     // Run3_2022EE
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2022EE.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2022EE.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2022EE/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2022EE.root",
     // Run3_2023
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2023.root",
-    // "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2023.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2023.root",
     // Run3_2023BPix
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2023BPix.root",
-    "/vols/cms/ks1021/TIDAL/Draw/plots/productions/testingSFs/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_50to60_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_60to70_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_70to80_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_80to90_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_90to100_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_100to120_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_120to140_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_140to160_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_160to180_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_180to200_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_200to300_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_300to400_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_400to600_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_600to800_inclusive_mm_Run3_2023BPix.root",
+    "/vols/cms/ks1021/TIDAL/Draw/Figures/deriving_zpt_reweighting/POWHEG/Run3_2023BPix/zpt_calculation/mm/datacard_pt_vis_mvis_800toinf_inclusive_mm_Run3_2023BPix.root",
   };
 
   std::vector<TH1D*> data_hist_vector;
@@ -94,9 +94,9 @@ void zpt_reweighting(){
     TH1D *h_ZTT = (TH1D*)f.Get("mm_inclusive/ZTT")->Clone();
     TH1D *h_ZL = (TH1D*)f.Get("mm_inclusive/ZL")->Clone();
     TH1D *h_ZJ = (TH1D*)f.Get("mm_inclusive/ZJ")->Clone();
-    TH1D *h_TTL = (TH1D*)f.Get("mm_inclusive/TTT")->Clone();
+    TH1D *h_TTL = (TH1D*)f.Get("mm_inclusive/TTL")->Clone();
     TH1D *h_TTJ = (TH1D*)f.Get("mm_inclusive/TTJ")->Clone();
-    TH1D *h_VVL = (TH1D*)f.Get("mm_inclusive/VVT")->Clone();
+    TH1D *h_VVL = (TH1D*)f.Get("mm_inclusive/VVL")->Clone();
     TH1D *h_VVJ = (TH1D*)f.Get("mm_inclusive/VVJ")->Clone();
     TH1D *h_W = (TH1D*)f.Get("mm_inclusive/W")->Clone();
     TH1D *h_QCD = (TH1D*)f.Get("mm_inclusive/QCD")->Clone();

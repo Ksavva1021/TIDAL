@@ -85,7 +85,7 @@ parameter_path = config['parameter_path']
 schemes = config['schemes']
 variables = config['variables']
 
-available_channels = ['mm']
+available_channels = ['ee','mm']
 for channel in channels:
     if channel not in available_channels:
         raise ValueError(f"Channel {channel} is not a valid channel. Please choose from {available_channels}")
@@ -125,7 +125,8 @@ for era in eras:
                     for selection_name, selection_string in additional_selections.items():
                         variable_name = f"{default_variable_name}_{selection_name}"
                         additional_selection = f"({selection_string})"
-                        additional_weight = "(1/w_Zpt_Reweighting)"
+                        additional_weight = "(1/w_Zpt_Reweighting_Imperial)"
+                        # additional_weight = "(1)"
 
                         if args.batch:
                             logs = f"{output_folder}/logs"
@@ -162,8 +163,8 @@ for era in eras:
                     additional_selection = "(m_vis > 50)"
                     #additional_weight = "1/w_Pileup"
                     #additional_weight = "(1/w_Zpt_Reweighting) * (1/w_DY_soup)"
-                    #additional_weight = "(1/w_Zpt_Reweighting)"
-                    additional_weight = "(1)"
+                    additional_weight = "(1/w_Zpt_Reweighting_Imperial)"
+                    # additional_weight = "(1)"
                     if args.batch:
                         logs = f"{output_folder}/logs"
                         subprocess.run(["mkdir", "-p", logs])
