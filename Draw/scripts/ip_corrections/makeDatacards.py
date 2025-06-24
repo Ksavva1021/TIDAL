@@ -105,7 +105,7 @@ for era in eras:
     if era not in available_eras:
         raise ValueError(f"Era {era} is not a valid era. Please choose from {available_eras}")
 
-available_schemes = ['ip_calculation']
+available_schemes = ['ip_calculation', 'ip_control']
 for scheme in schemes:
     if scheme not in available_schemes:
         raise ValueError(f"Scheme {scheme} is not a valid scheme. Please choose from {available_schemes}")

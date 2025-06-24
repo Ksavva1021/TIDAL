@@ -1,9 +1,9 @@
 input_folder: /vols/cms/ks1021/offline/HiggsDNA/master/HiggsDNA/output/test_0103_IP
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots/IP_corrections_after/
+output_path: /vols/cms/ks1021/TIDAL/Draw/plots/IP_corrections_after/no_additional_selections/
 channels: [ ee, mm ]
 eras: [ Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix ]
 parameter_path: /vols/cms/ks1021/offline/HiggsDNA/master/HiggsDNA/scripts/ditau/config/
-schemes: [ ip_calculation ]
+schemes: [ ip_control ]
 
 variables:
   ip_calculation:
@@ -40,6 +40,31 @@ variables:
         eta_2_1p0to1p48: "eta_2 > 1.0 && eta_2 < 1.48"
         eta_2_1p48to1p65: "eta_2 > 1.48 && eta_2 < 1.65"
         eta_2_1p65to2p1: "eta_2 > 1.65 && eta_2 < 2.1"
+
+    mm:
+    - [ "1", inclusive, ip_x_1 ]
+    - [ "1", inclusive, ip_x_2 ]
+    - [ "1", inclusive, ip_y_1 ]
+    - [ "1", inclusive, ip_y_2 ]
+    - [ "1", inclusive, ip_z_1 ]
+    - [ "1", inclusive, ip_z_2 ]
+
+    ee:
+    - [ "1", inclusive, ip_x_1 ]
+    - [ "1", inclusive, ip_x_2 ]
+    - [ "1", inclusive, ip_y_1 ]
+    - [ "1", inclusive, ip_y_2 ]
+    - [ "1", inclusive, ip_z_1 ]
+    - [ "1", inclusive, ip_z_2 ]
+
+  ip_control:
+    definitions:
+      ip_x_1: "ip_x_1(150,-0.03,0.03)"
+      ip_x_2: "ip_x_2(150,-0.03,0.03)"
+      ip_y_1: "ip_y_1(150,-0.03,0.03)"
+      ip_y_2: "ip_y_2(150,-0.03,0.03)"
+      ip_z_1: "ip_z_1(150,-0.03,0.03)"
+      ip_z_2: "ip_z_2(150,-0.03,0.03)"
 
     mm:
     - [ "1", inclusive, ip_x_1 ]
