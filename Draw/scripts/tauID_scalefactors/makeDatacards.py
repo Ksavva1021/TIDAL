@@ -179,7 +179,7 @@ parameter_path = config["parameter_path"]
 schemes = config["schemes"]
 run_systematics = config["run_systematics"]
 
-available_channels = ["mm", "mt", "tt"]
+available_channels = ["mm", "mt", "tt", "et"]
 for channel in channels:
     if channel not in available_channels:
         raise ValueError(

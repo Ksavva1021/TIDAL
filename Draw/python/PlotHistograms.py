@@ -102,7 +102,6 @@ class HTT_Histogram:
                     self.channel_label = r"$a_1^{3pr}a_1^{1pr}$"
                 elif "a1a1" in self.category:
                     self.channel_label = r"$a_1^{3pr}a_1^{3pr}$"
-
         elif self.channel == 'mt':
             if "DM0_" in self.category:
                 self.channel_label = r"$\mu\pi$"
@@ -122,37 +121,35 @@ class HTT_Histogram:
             "down": "total_bkg_full_uncerts_down",
         }
         if self.channel == "tt":
-            # self.backgrounds = {
-            #                     "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
-            #                     "QCD": {"nodes": ["QCD"], "color": "pink"},
-            #                     "Electroweak": {"nodes": ["VVT", "VVJ", "W", "ZL", "ZJ"], "color": "red"},
-            #                     "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
-            #                 }
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
+                                "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "Jet$\\to\\tau_h$": {"nodes": ["JetFakes", "JetFakesSublead"], "color": "green"},
-                                "Electroweak": {"nodes": ["VVT", "VVJ", "W", "ZL", "ZJ"], "color": "red"},
-                                "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
+                                "Electroweak": {"nodes": ["VVJ", "W", "ZL", "ZJ"], "color": "red"},
+                                "Genuine $\\tau$": {"nodes": ["ZTT", "TTT", "VVT", "qqH_sm_htt125","ggH_sm_prod_sm_htt125","WH_sm_htt125","ZH_sm_htt125"], "color": "yellow"},
                             }
+            # TEMPORARY: Add signal to list of backgrounds
+            # self.signal = {"SM H$\\to\\tau\\tau$": {"nodes": ["qqH_sm_htt125","ggH_sm_prod_sm_htt125","WH_sm_htt125","ZH_sm_htt125"]}
+                        #    }
             self.lep1 = "\\tau_1"
             self.lep2 = "\\tau_2"
         elif self.channel == "mt":
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
+                                "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
-                                "Electroweak": {"nodes": ["VVT", "VVJ", "W"], "color": "red"},
+                                "Electroweak": {"nodes": ["VVJ", "W"], "color": "red"},
                                 "Z$\\to\\mu\\mu$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
-                                "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
+                                "Genuine $\\tau$": {"nodes": ["VVT", "TTT", "ZTT"], "color": "yellow"},
                             }
             self.lep1 = "\\mu"
             self.lep2 = "\\tau"
+
         elif self.channel == "et":
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
+                                "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
-                                "Electroweak": {"nodes": ["VVT", "VVJ", "W"], "color": "red"},
-                                "Z$\\to ee": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
-                                "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
+                                "Electroweak": {"nodes": ["VVJ", "W"], "color": "red"},
+                                "Z$\\to ee$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
+                                "Genuine $\\tau$": {"nodes": ["VVT", "TTT", "ZTT"], "color": "yellow"},
                             }
             self.lep1 = "e"
             self.lep2 = "\\tau"
@@ -178,9 +175,9 @@ class HTT_Histogram:
             self.lep2 = "e_2"
         elif self.channel == "mm":
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTL", "TTJ"], "color": "violet"},
+                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
-                                "Electroweak": {"nodes": ["VVL", "VVJ", "W"], "color": "red"},
+                                "Electroweak": {"nodes": ["VVT", "VVJ", "W"], "color": "red"},
                                 "Z$\\to\\mu\\mu$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
@@ -297,6 +294,22 @@ class HTT_Histogram:
         self.stacked_step += steps
         return True
 
+    # def get_signal(self):
+    #     # total signal
+    #     for sig, info in self.signal.items():
+    #         sig_counts = np.zeros(len(self.bin_centers))
+    #         sig_sq_errors = np.zeros(len(self.bin_centers))
+    #         for contribution in info["nodes"]:
+    #             counts, errors = self.get_counts_errors(contribution)
+    #             sig_counts += counts
+    #             sig_sq_errors += errors**2
+    #         # store counts and yields for each contribution
+    #         self.signal[sig]["counts"] = sig_counts
+    #         self.signal[sig]["errors"] = np.sqrt(sig_sq_errors)
+
+    #     return True
+
+
     def plot_1D_histo(self, ratio_min=0.5, ratio_max=1.5):
         print("Plotting 1D histogram")
         # plot 1D histogram
@@ -317,8 +330,13 @@ class HTT_Histogram:
             self.ax.errorbar(self.bin_centers, self.data['counts'], label='Observation', yerr=self.data['errors'], fmt='o', color = 'black', markersize=3, linewidth=0.6)
             self.ax.errorbar(self.bin_centers, self.data['counts'],xerr=self.bin_widths/2, fmt='o', color = 'black', markersize=3, linewidth=0.6) # add width marker
 
+
+        # TODO: MAKE OPTION to add signal
+
         ## RATIO PLOT
         self.ax_ratio.axhline(1, color='black', linestyle=':')
+        for l in [0.6, 0.8, 1.2, 1.4]: # add horizontal lines
+            self.ax_ratio.axhline(l, color='darkgray', linestyle='dotted')
         self.fig.subplots_adjust(hspace=0.05)
         # add data/MC ratio as points
         if not self.blind:
@@ -387,11 +405,11 @@ class HTT_Histogram:
         print(f'Saved histogram to {save_path_pdf}')
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Tests1303/IPHC_FF_VVVLoose/Run3_2022/control/tt/datacard_m_vis_cp_inclusive_tt_Run3_2022.root", "tt_cp_inclusive", "tt", "Run3_2022", "m_vis", log_y=False, blind=False)
+    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/DeriveIDSFs_May25/AntiIso_0p3/Run3_2022/sf_calculation/mt/datacard_m_vis_mTLt65_aiso_inclusive_mt_Run3_2022.root", "mt_inclusive_mTLt65_aiso", "mt", "Run3_2022", "m_vis", log_y=False, blind=False)
 
-    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/1303/TestPlotting/Run3_2022/cpdecay/tt/datacard_BDT_pred_score_vs_aco_rho_rho_higgs_rhorho_tt_Run3_2022.root", "tt_higgs_rhorho", "tt", "Run3_2022", "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],[0.0,0.6283185307179586,1.2566370614359172,1.8849555921538759,2.5132741228718345,3.141592653589793,3.7699111843077517,4.39822971502571,5.026548245743669,5.654866776461628,6.283185307179586]", blind=True, is2Dunrolled=True)
-    histo.plot_1D_histo()
+    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/3104/BinnedSFs_DoubleTauJet/Run3_2023/control/tt/datacard_m_vis_1_cp_inclusive_tt_Run3_2023.root", "tt_higgs_rhorho", "tt", "Run3_2022", "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],[0.0,0.6283185307179586,1.2566370614359172,1.8849555921538759,2.5132741228718345,3.141592653589793,3.7699111843077517,4.39822971502571,5.026548245743669,5.654866776461628,6.283185307179586]", blind=True, is2Dunrolled=True)
+    # histo.plot_1D_histo()
 
 
