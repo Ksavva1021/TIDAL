@@ -1,9 +1,9 @@
-input_folder: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/output/TauID_SF_Derivation
-output_path: /vols/cms/ks1021/TIDAL/Draw/plots/0704/ControlPlots_BeforeTauIDSF
-channels: [ mt ]
+input_folder: /vols/cms/ks1021/offline/HiggsDNA/master/HiggsDNA/productions/POWHEG_TauID_derive_22_06_2025/
+output_path: /vols/cms/ks1021/TIDAL/Draw/Figures/POWHEG_TauID_derive_22_06_2025/
+channels: [ mm, mt ]
 eras: [ Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix ]
-parameter_path: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/scripts/ditau/config/
-schemes: [ control ]
+parameter_path: /vols/cms/ks1021/offline/HiggsDNA/master/HiggsDNA/scripts/ditau/config/
+schemes: [ sf_calculation ]
 run_systematics: false
 
 sf_calculation:
@@ -29,9 +29,9 @@ sf_calculation:
         - [ "systematic_TTbar_Shape", "CMS_htt_ttbarShape" ]
 
   Aliases:
-    Alias1: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && idDeepTau2018v2p5VSe_2 >= 2)"
+    Alias1: "category:({category} && m_vis > 50 && fabs(eta_1) < 2.4 && trg_singlemuon && idDeepTau2018v2p5VSe_2 >= 2)"
     Alias2: "category:({category} && m_vis > 50 && pt_1 > 26 && fabs(eta_1) < 2.4 && trg_singlemuon)"
-    Alias1b: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && idDeepTau2018v2p5VSe_2 >= 6)"
+    Alias1b: "category:({category} && m_vis > 50 && fabs(eta_1) < 2.4 && trg_singlemuon && idDeepTau2018v2p5VSe_2 >= 6)"
 
   mt:
   - { method: "5", category: [ inclusive, DM0_tau, DM1_tau, DM2_tau, DM10_tau, DM11_tau ], plotting_variable: [ pt_2_vs_mvis ], blind: false, auto_rebin: false, additional_selections: [ "(mt_1<65)", "(mt_1>70)" ], set_alias: Alias1b, additional_weight: "(1)", unroll: False }
@@ -42,21 +42,19 @@ sf_calculation:
 
 control:
   variable_definitions:
-    m_vis: "m_vis(60,50,150)"
+    m_vis: "m_vis(75,50,200)"
+    pt_vis: "pt_vis[0,10,20,30,40,60,80,100,120,160,200,280,320,400,600]"
+    mt_1: "mt_1(100,0,300)"
     pt_1: "pt_1(50,0,200)"
+    pt_tt: "pt_tt(80,0,400)"
     pt_2: "pt_2(50,0,200)"
-    eta_1: "eta_1(50,-pi,pi)"
-    eta_2: "eta_2(50,-pi,pi)"
-    phi_1: "phi_1(50,-pi,pi)"
-    phi_2: "phi_2(50,-pi,pi)"
-    ip_x_1: "ip_x_1(50,-0.01,0.01)"
-    ip_y_1: "ip_y_1(50,-0.01,0.01)"
-    ip_z_1: "ip_z_1(50,-0.01,0.01)"
-    ip_x_2: "ip_x_2(50,-0.01,0.01)"
-    ip_y_2: "ip_y_2(50,-0.01,0.01)"
-    ip_z_2: "ip_z_2(50,-0.01,0.01)"
-    decayMode_2: "decayMode_2[0,1,2,3,4,5,6,7,8,9,10,11,12]"
-    decayModePNet_2: "decayModePNet_2[0,1,2,3,4,5,6,7,8,9,10,11,12]"
+    eta_1: "eta_1(21,-2.1,2.1)"
+    eta_2: "eta_2(21,-2.1,2.1)"
+    phi_1: "phi_1(32,-pi,pi)"
+    phi_2: "phi_2(32,-pi,pi)"
+    dR: "dR(42,0,5)"
+    n_jets: "n_jets(10,0,10)"
+    met_pt: "met_pt(40,0,200)"
 
   systematics:
     per_era:
@@ -73,7 +71,9 @@ control:
         - [ "systematic_TTbar_Shape", "CMS_htt_ttbarShape" ]
 
   Aliases:
-    Alias1: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && idDeepTau2018v2p5VSe_2 >= 2)"
+    Alias1: "category:({category} && m_vis > 50 && fabs(eta_1) < 2.4 && trg_singlemuon && pt_1 > 26 && idDeepTau2018v2p5VSe_2 >= 2)"
 
+  mm:
+  - { method: "1", category: [ inclusive ], plotting_variable: [ m_vis, pt_vis ], blind: false, auto_rebin: false, additional_weight: "(1)", rename_procs: True, dy_LO: false, dy_NLO_POWHEG: true }
   mt:
-  - { method: "2", category: [ inclusive, DM0_tau, DM1_tau, DM2_tau, DM10_tau, DM11_tau ], plotting_variable: [ m_vis, pt_1, pt_2, eta_1, eta_2 ], set_alias: Alias1 }
+  - { method: "2", category: [ inclusive ], plotting_variable: [ m_vis, pt_1, pt_2, mt_1 ], blind: false, auto_rebin: false, set_alias: Alias1, dy_LO: false, dy_NLO_POWHEG: true }
