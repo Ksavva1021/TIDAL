@@ -92,6 +92,7 @@ systematic_options = [
     ["Electron_Smearing", "Electron Smearing systematic"],
     ["QCD_Background", "QCD Background systematic"],
     ["DY_Shape", "DY Shape systematic from ZpT reweighting"],
+    ["DY_Shape_Imperial", "DY Shape systematic from ZpT reweighting (Imperial)"],
     ["TTbar_Shape", "TTbar Shape systematic from top pT reweighting"],
     ["Fake_Flat_Uncertainty", "flat fake uncertainty"]
 ]
@@ -132,8 +133,8 @@ for systematic, description in systematic_options:
 # ------------------------------------------------------------------------------------------------------------------------
 
 # Additional Options:
-parser.add_argument("--LO_DY", action="store_true", help="Use LO instead of NLO DY")
-parser.add_argument("--NLO_DY_POWHEG", action="store_true", help="Use NLO POWHEG DY")
+parser.add_argument("--LO_DY", action="store_true", help="Use LO")
+parser.add_argument("--NLO_DY", action="store_true", help="Use NLO DY")
 parser.add_argument("--sel", type=str, help="Additional Selection to apply", default="")
 parser.add_argument(
     "--set_alias",
@@ -501,7 +502,30 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         ]
         if args.era in ["Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2L_M_50_madgraphMLM_ext1")
-    elif args.NLO_DY_POWHEG:
+
+    elif args.NLO_DY:
+        print("WARNING: Using NLO DY samples")
+        ztt_samples = [
+            "DYto2L_M_50_amcatnloFXFX",
+            "DYto2L_M_50_amcatnloFXFX_ext1",
+            "DYto2L_M_50_0J_amcatnloFXFX",
+            "DYto2L_M_50_1J_amcatnloFXFX",
+            "DYto2L_M_50_2J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_40to100_1J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_100to200_1J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_200to400_1J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_400to600_1J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_600_1J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_40to100_2J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_100to200_2J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_200to400_2J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX",
+            "DYto2L_M_50_PTLL_600_2J_amcatnloFXFX",
+        ]  # use NLO samples
+        if args.era in ["Run3_2023", "Run3_2023BPix"]:
+            ztt_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
+
+    else:
         print("WARNING: Using NLO POWHEG DY samples")
         ztt_samples = [
             "DYto2E_MLL_120to200_powheg",
@@ -533,7 +557,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             "DYto2Tau_MLL_800to1500_powheg",
         ]
 
-        if args.channel in ["mm","mt"]:
+        if args.channel in ["mm","mt","tt"]:
             ztt_samples.remove("DYto2E_MLL_120to200_powheg")
             ztt_samples.remove("DYto2E_MLL_1500to2500_powheg")
             ztt_samples.remove("DYto2E_MLL_200to400_powheg")
@@ -543,27 +567,16 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2E_MLL_50to120_powheg")
             ztt_samples.remove("DYto2E_MLL_6000_powheg")
             ztt_samples.remove("DYto2E_MLL_800to1500_powheg")
-
-    else:
-        ztt_samples = [
-            "DYto2L_M_50_amcatnloFXFX",
-            "DYto2L_M_50_amcatnloFXFX_ext1",
-            "DYto2L_M_50_0J_amcatnloFXFX",
-            "DYto2L_M_50_1J_amcatnloFXFX",
-            "DYto2L_M_50_2J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_40to100_1J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_100to200_1J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_200to400_1J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_400to600_1J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_600_1J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_40to100_2J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_100to200_2J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_200to400_2J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX",
-            "DYto2L_M_50_PTLL_600_2J_amcatnloFXFX",
-        ]  # use NLO samples
-        if args.era in ["Run3_2023", "Run3_2023BPix"]:
-            ztt_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
+        if args.channel in ["tt"]:
+            ztt_samples.remove("DYto2Mu_MLL_120to200_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_1500to2500_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_200to400_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_2500to4000_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_4000to6000_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_400to800_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_50to120_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_6000_powheg")
+            ztt_samples.remove("DYto2Mu_MLL_800to1500_powheg")
 
     top_samples = [
         "TTto2L2Nu",

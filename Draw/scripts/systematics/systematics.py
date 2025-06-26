@@ -415,14 +415,19 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
     # DY pT reweighting systematics
     # ----------------------------------------------------------------------------------------------------
-    if specific_systematic == 'DY_Shape':
+    if specific_systematic == 'DY_Shape' or specific_systematic == 'DY_Shape_Imperial':
         samples_to_skip = [
             "TT", "TTT", "TTJ",
             "VV", "VVT", "VVJ",
             "W","signal", 'QCD'
         ]
-        up_var = 'w_Zpt_Reweighting'
-        down_var = '(1/w_Zpt_Reweighting)'
+
+        if specific_systematic == 'DY_Shape':
+            up_var = 'w_Zpt_Reweighting'
+            down_var = '(1/w_Zpt_Reweighting)'
+        else:
+            up_var = 'w_Zpt_Reweighting_Imperial'
+            down_var = '(1/w_Zpt_Reweighting_Imperial)'
 
         for updown in ["up", "down"]:
             systematic_name = 'syst_dy_shape_' + updown

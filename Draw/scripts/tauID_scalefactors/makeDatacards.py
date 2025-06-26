@@ -87,7 +87,7 @@ def create_shell_script(
     unroll=False,
     rename_procs=False,
     dy_LO=False,
-    dy_NLO_POWHEG=False,
+    dy_NLO=False,
     nodename="",
 ):
     shell_script = f"""
@@ -127,8 +127,8 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
         shell_script += " \\\n--rename_procs"
     if dy_LO:
         shell_script += " \\\n--LO_DY"
-    if dy_NLO_POWHEG:
-        shell_script += " \\\n--NLO_DY_POWHEG"
+    if dy_NLO:
+        shell_script += " \\\n--NLO_DY"
     if nodename != "":
         shell_script += f" \\\n--nodename {nodename}"
 
@@ -257,7 +257,7 @@ for era in eras:
                 unroll = setting.get("unroll", False)
                 rename_procs = setting.get("rename_procs", False)
                 dy_LO= setting.get("dy_LO", False)
-                dy_NLO_POWHEG = setting.get("dy_NLO_POWHEG", False)
+                dy_NLO = setting.get("dy_NLO", False)
 
                 if set_alias and set_alias in available_aliases:
                     set_alias = available_aliases[set_alias]
@@ -289,8 +289,8 @@ for era in eras:
                                 variable_name = variable_name + "_ss"
                             if dy_LO:
                                 variable_name = variable_name + "_dy_LO"
-                            if dy_NLO_POWHEG:
-                                variable_name = variable_name + "_dy_NLO_POWHEG"
+                            if dy_NLO:
+                                variable_name = variable_name + "_dy_NLO"
 
                             if nodename != "":
                                 if nodename[0] != "_":
@@ -326,7 +326,7 @@ for era in eras:
                                 unroll=unroll,
                                 rename_procs=rename_procs,
                                 dy_LO=dy_LO,
-                                dy_NLO_POWHEG=dy_NLO_POWHEG,
+                                dy_NLO=dy_NLO,
                                 nodename=nodename,
                             )
 
