@@ -305,7 +305,7 @@ if args.channel == "tt":
     sel_a11pr_2 = sel_a11pr.replace("X", "2")
 
     categories["cp_inclusive"] = (
-        f"(({sel_pi_1} || {sel_rho_1} || {sel_a1_1} || {sel_a11pr_1})) && (({sel_pi_2} || {sel_rho_2} || {sel_a1_2} || {sel_a11pr_2}))"
+        f"((({sel_pi_1}) || ({sel_rho_1}) || ({sel_a1_1}) || ({sel_a11pr_1}))) && ((({sel_pi_2}) || ({sel_rho_2}) || ({sel_a1_2}) || ({sel_a11pr_2})))"
     )
 
     categories["inclusive_PNet_rhorho"] = "(%(sel_rho_1)s && %(sel_rho_2)s)" % vars()
@@ -567,7 +567,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2E_MLL_50to120_powheg")
             ztt_samples.remove("DYto2E_MLL_6000_powheg")
             ztt_samples.remove("DYto2E_MLL_800to1500_powheg")
-        if args.channel in ["tt"]:
+        if args.channel in ["tt", "et"]:
             ztt_samples.remove("DYto2Mu_MLL_120to200_powheg")
             ztt_samples.remove("DYto2Mu_MLL_1500to2500_powheg")
             ztt_samples.remove("DYto2Mu_MLL_200to400_powheg")
