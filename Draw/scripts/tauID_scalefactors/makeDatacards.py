@@ -246,7 +246,7 @@ for era in eras:
                 variables = setting.get("plotting_variable", "[m_vis]")
                 blind = setting.get("blind", False)
                 auto_rebin = setting.get("auto_rebin", False)
-                additional_selections = setting.get("additional_selections", [""])
+                additional_selections = setting.get("additional_selections", ["(1)"])
                 if isinstance(additional_selections, str):
                     additional_selections = [additional_selections]
                 set_alias = setting.get("set_alias", "")
@@ -274,7 +274,7 @@ for era in eras:
                             variable_name = variable.split("[")[0]
                             variable_name = variable_name.replace(",", "_vs_")
                             nodename = ""
-                            if additional_selection and additional_selection != "":
+                            if additional_selection and additional_selection != "" and additional_selection != "(1)":
                                 variable_name = variable_name + '_' + format_first_selection(additional_selection)
                                 nodename = format_first_selection(additional_selection)
                             else:
