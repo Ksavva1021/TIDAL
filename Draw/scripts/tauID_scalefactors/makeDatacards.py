@@ -55,7 +55,7 @@ log = {logs_path}/condor_{variable_name}.log
 request_memory = 16000
 request_cpus = 2
 getenv = True
-+MaxRuntime = 10800
++MaxRuntime = 10500
 queue
 """
 
@@ -193,7 +193,7 @@ for era in eras:
             f"Era {era} is not a valid era. Please choose from {available_eras}"
         )
 
-available_schemes = ["sf_calculation", "control"]
+available_schemes = ["sf_calculation", "control", "cpdecay"]
 for scheme in schemes:
     if scheme not in available_schemes:
         raise ValueError(
