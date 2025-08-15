@@ -89,9 +89,8 @@ class HTT_Histogram:
                 elif "a1pi" in self.category:
                     self.channel_label = r"$a_1^{3pr} \pi$"
                 elif "rhoa11pr" in self.category:
-                    self.channel_label = r"""$\rho a_1^{1pr}$ / $a_1^{1pr}\rho$
-    $a_1^{1pr}a_1^{1pr}$"""
-                    self.ch_label_height = 0.825
+                    self.channel_label = r"""$\rho a_1^{1pr}$ / $a_1^{1pr}\rho$ / $a_1^{1pr}a_1^{1pr}$"""
+                    # self.ch_label_height = 0.825
                 elif "rhoa1" in self.category:
                     self.channel_label = r"$\rho a_1^{3pr}$"
                 elif "a1rho" in self.category:
@@ -122,9 +121,8 @@ class HTT_Histogram:
         }
         if self.channel == "tt":
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "Jet$\\to\\tau_h$": {"nodes": ["JetFakes", "JetFakesSublead"], "color": "green"},
-                                "Electroweak": {"nodes": ["VVJ", "W", "ZL", "ZJ"], "color": "red"},
+                                "Z$\\to\\ell\\ell$": {"nodes": ["ZL"], "color": "lightblue"},
                                 "Genuine $\\tau$": {"nodes": ["ZTT", "TTT", "VVT", "qqH_sm_htt125","ggH_sm_prod_sm_htt125","WH_sm_htt125","ZH_sm_htt125"], "color": "yellow"},
                             }
             # TEMPORARY: Add signal to list of backgrounds
@@ -137,7 +135,7 @@ class HTT_Histogram:
                                 "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
                                 "Electroweak": {"nodes": ["VVJ", "W"], "color": "red"},
-                                "Z$\\to\\mu\\mu$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
+                                "Z$\\to\\ell\\ell$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Genuine $\\tau$": {"nodes": ["VVT", "TTT", "ZTT"], "color": "yellow"},
                             }
             self.lep1 = "\\mu"
@@ -148,7 +146,7 @@ class HTT_Histogram:
                                 "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
                                 "Electroweak": {"nodes": ["VVJ", "W"], "color": "red"},
-                                "Z$\\to ee$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
+                                "Z$\\to\\ell\\ell$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Genuine $\\tau$": {"nodes": ["VVT", "TTT", "ZTT"], "color": "yellow"},
                             }
             self.lep1 = "e"
@@ -405,7 +403,14 @@ class HTT_Histogram:
         print(f'Saved histogram to {save_path_pdf}')
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/ZpT_Recoil_v4_TEST/Run3_2022/control/mm/datacard_pt_tt_inclusive_mm_Run3_2022.root", "mm_inclusive", "mm", "Run3_2022", "pt_tt", log_y=False, blind=False)
+    # histo.plot_1D_histo()
+
+
+
+    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/test_datacards_newBDT/Run3_2022/cpdecay/tt/datacard_BDT_pred_score_vs_aco_rho_rho_higgs_rhorho_tt_Run3_2022.root", "tt_higgs_rhorho", "tt", "Run3_2022", "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],[0.0,0.6283185307179586,1.2566370614359172,1.8849555921538759,2.5132741228718345,3.141592653589793,3.7699111843077517,4.39822971502571,5.026548245743669,5.654866776461628,6.283185307179586]", log_y=False, blind=True, is2Dunrolled=True)
+    histo.plot_1D_histo()
 
     # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/DeriveIDSFs_May25/AntiIso_0p3/Run3_2022/sf_calculation/mt/datacard_m_vis_mTLt65_aiso_inclusive_mt_Run3_2022.root", "mt_inclusive_mTLt65_aiso", "mt", "Run3_2022", "m_vis", log_y=False, blind=False)
 
