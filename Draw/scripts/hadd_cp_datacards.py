@@ -135,4 +135,4 @@ if __name__ == "__main__":
 
     # Call the hadd function with the provided arguments
     hadd_root_files(input_files, output_file, dir_combinations)
-
+    # should be called added_histo_Run2Bins.root
