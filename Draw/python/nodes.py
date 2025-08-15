@@ -227,6 +227,12 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
     cat_data = categories_unmodified['cat']
 
     ## Add estimation of fake with anti-isolated (fake) leading tau
+    if 'flat_fake_sub_up' in systematic:
+        syst_weight = 1.2
+    elif 'flat_fake_sub_down' in systematic:
+        syst_weight = 0.8
+    else:
+        syst_weight = 1.0
 
     if method == 3: # Flat fake factor method
         data_weight = '(weight)'
@@ -250,13 +256,6 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
         full_selection = BuildCutString(data_weight, sel, categories_unmodified['qcd_sdb_cat'], OSSS)
         subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel+'*(genPartFlav_1 != 0)', 'qcd_sdb_cat', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
 
-        if 'flat_fake_sub_up' in systematic:
-            syst_weight = 1.2
-        elif 'flat_fake_sub_down' in systematic:
-            syst_weight = 0.8
-        else:
-            syst_weight = 1.0
-
         ana.nodes[nodename].AddNode(Analysis.HttQCDNode('JetFakes'+add_name,
             ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, full_selection),
             subtract_node,
@@ -275,7 +274,7 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
         # Get MC background and data yields
         mc_bkg_node = GetSubtractNode(ana, '', plot, plot_unmodified, ff_weight, sel+'*(genPartFlav_1 != 0)', 'qcd_ff_estimate', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
         data_node = ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, ff_selection)
-        # Data - MC background yield
+        # Data - MC background yield (left with only jet fakes as doing ALL fakes MINUS non-jet fakes)
         qcd_estimate = Analysis.SubtractNode('JetFakes'+add_name,
                        data_node,
                        mc_bkg_node)
