@@ -275,10 +275,10 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         kinds = {
             '1prong': '1PRONG',
             '1prong1pizero': '1PRONG_1PI0',
-            '1prong2pizero': '1PRONG_2PI0',
             '3prong': '3PRONG',
             '3prong1pizero': '3PRONG_1PI0'
         }
+            # '1prong2pizero': '1PRONG_2PI0', # disable for HPS
 
         # Genuine Taus
         if specific_systematic == 'Tau_EnergyScale_TSCALE':
@@ -297,7 +297,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         # Tau_EnergyScale_forTauIDSFs_TSCALE, Tau_EnergyScale_forTauIDSFs_ESCALE, Tau_EnergyScale_forTauIDSFs_MUSCALE,
         for index in range(len(prefixes)):
             # TODO: CHANGE BACK TO no PNet
-            prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
+            # prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
+            prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_HPS")
 
         for name, folder_suffix in kinds.items():
             for prefix in prefixes:
@@ -326,7 +327,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         # temporary patch for derivation of tau id scale factor systematics
         # Tau_EnergyScale_forTauIDSFs_JSCALE
         # TODO: CHANGE BACK TO no PNet
-        prefix = prefix.replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
+        # prefix = prefix.replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
+        prefix = prefix.replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_HPS")
         for updown in ['up', 'down']:
             systematic_name = 'syst_tau_escale_jscale_' + updown
             folder_name = prefix + updown
