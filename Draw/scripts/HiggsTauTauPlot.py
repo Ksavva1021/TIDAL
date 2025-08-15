@@ -215,7 +215,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         single_muon_only = "(trg_singlemuon && pt_1 > 26  && abs(eta_1) < 2.4)"
         trg_full = "(%s || %s)" % (mt_cross_only, single_muon_only)
         categories["baseline"] = (
-            "(iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
+            "(m_vis>40 && iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
             % trg_full
         )
     if args.channel == "et":
@@ -305,7 +305,7 @@ if args.channel == "tt":
     sel_a11pr_2 = sel_a11pr.replace("X", "2")
 
     categories["cp_inclusive"] = (
-        f"((({sel_pi_1}) || ({sel_rho_1}) || ({sel_a1_1}) || ({sel_a11pr_1}))) && ((({sel_pi_2}) || ({sel_rho_2}) || ({sel_a1_2}) || ({sel_a11pr_2})))"
+        f"( ({sel_pi_1}) || ({sel_rho_1}) || ({sel_a1_1}) || ({sel_a11pr_1}) ) && ( ({sel_pi_2}) || ({sel_rho_2}) || ({sel_a1_2}) || ({sel_a11pr_2}) )"
     )
 
     categories["inclusive_PNet_rhorho"] = "(%(sel_rho_1)s && %(sel_rho_2)s)" % vars()
@@ -328,9 +328,9 @@ if args.channel == "tt":
     categories["inclusive_PNet_a11prpi"] = "(%(sel_a11pr_1)s && %(sel_pi_2)s)" % vars()
     categories["inclusive_PNet_a11pra1"] = "(%(sel_a11pr_1)s && %(sel_a1_2)s)" % vars()
 
-    categories["mva_higgs"] = "(BDT_pred_class==1)"
-    categories["mva_fake"] = "(BDT_pred_class==2)"
-    categories["mva_tau"] = "(BDT_pred_class==0)"
+    categories["mva_higgs"] = f"(BDT_pred_class==1) && ( ({sel_pi_1}) || ({sel_rho_1}) || ({sel_a1_1}) || ({sel_a11pr_1}) ) && ( ({sel_pi_2}) || ({sel_rho_2}) || ({sel_a1_2}) || ({sel_a11pr_2}) )"
+    categories["mva_fake"] = f"(BDT_pred_class==2) && ( ({sel_pi_1}) || ({sel_rho_1}) || ({sel_a1_1}) || ({sel_a11pr_1}) ) && ( ({sel_pi_2}) || ({sel_rho_2}) || ({sel_a1_2}) || ({sel_a11pr_2}) )"
+    categories["mva_tau"] = f"(BDT_pred_class==0) && ( ({sel_pi_1}) || ({sel_rho_1}) || ({sel_a1_1}) || ({sel_a11pr_1}) ) && ( ({sel_pi_2}) || ({sel_rho_2}) || ({sel_a1_2}) || ({sel_a11pr_2}) )"
 
     tt_channels = [
         "rhorho",
@@ -360,6 +360,21 @@ if args.channel == "tt":
         )
 
 elif args.channel == "mt":
+    # PNet DM separated categories (with CP selections)
+    categories["DM0_tau_cp"] = "decayModePNet_2 == 0 && ip_LengthSig_2 >= 1.25"
+    categories["DM1_tau_cp"] = "decayMode_2==1 && decayModePNet_2 == 1 && pion_E_split_2 > 0.2"
+    categories["DM2_tau_cp"] = "decayMode_2==1 && decayModePNet_2 == 2 && pion_E_split_2 > 0.2"
+    categories["DM10_tau_cp"] = "decayModePNet_2 == 10 && hasRefitSV_2"
+    categories["DM11_tau_cp"] = "decayModePNet_2 == 11 && hasRefitSV_2"
+    categories['cp_inclusive'] = f"(({categories['DM0_tau_cp']}) || ({categories['DM1_tau_cp']}) || ({categories['DM2_tau_cp']}) || ({categories['DM10_tau_cp']}))"
+
+    # HPS DM separate categories (inclusive)
+    categories["DM0_tau"] = "decayMode_2 == 0"
+    categories["DM1_tau"] = "decayMode_2==1"
+    categories["DM10_tau"] = "decayMode_2==10"
+    categories["DM11_tau"] = "decayMode_2==11"
+
+elif args.channel == "et":
     # PNet DM separated categories (with CP selections)
     categories["DM0_tau_cp"] = "decayModePNet_2 == 0 && ip_LengthSig_2 >= 1.25"
     categories["DM1_tau_cp"] = "decayMode_2==1 && decayModePNet_2 == 1 && pion_E_split_2 > 0.2"
@@ -526,57 +541,24 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
 
     else:
-        print("WARNING: Using NLO POWHEG DY samples")
+        print("WARNING: Using New DY samples")
+        # print("WARNING: Using NLO POWHEG DY samples")
         ztt_samples = [
-            "DYto2E_MLL_120to200_powheg",
-            "DYto2E_MLL_1500to2500_powheg",
-            "DYto2E_MLL_200to400_powheg",
-            "DYto2E_MLL_2500to4000_powheg",
-            "DYto2E_MLL_4000to6000_powheg",
-            "DYto2E_MLL_400to800_powheg",
-            "DYto2E_MLL_50to120_powheg",
-            "DYto2E_MLL_6000_powheg",
-            "DYto2E_MLL_800to1500_powheg",
-            "DYto2Mu_MLL_120to200_powheg",
-            "DYto2Mu_MLL_1500to2500_powheg",
-            "DYto2Mu_MLL_200to400_powheg",
-            "DYto2Mu_MLL_2500to4000_powheg",
-            "DYto2Mu_MLL_4000to6000_powheg",
-            "DYto2Mu_MLL_400to800_powheg",
-            "DYto2Mu_MLL_50to120_powheg",
-            "DYto2Mu_MLL_6000_powheg",
-            "DYto2Mu_MLL_800to1500_powheg",
-            "DYto2Tau_MLL_120to200_powheg",
-            "DYto2Tau_MLL_1500to2500_powheg",
-            "DYto2Tau_MLL_200to400_powheg",
-            "DYto2Tau_MLL_2500to4000_powheg",
-            "DYto2Tau_MLL_4000to6000_powheg",
-            "DYto2Tau_MLL_400to800_powheg",
-            "DYto2Tau_MLL_50to120_powheg",
-            "DYto2Tau_MLL_6000_powheg",
-            "DYto2Tau_MLL_800to1500_powheg",
+            "DYto2Tau_MLL_50_0J_amcatnloFXFX",
+            "DYto2Tau_MLL_50_1J_amcatnloFXFX",
+            "DYto2Tau_MLL_50_2J_amcatnloFXFX"
         ]
+        zll_samples = [
+            "DYto2L_M_50_amcatnloFXFX",
+            "DYto2L_M_50_amcatnloFXFX_ext1",
+            "DYto2L_M_50_0J_amcatnloFXFX",
+            "DYto2L_M_50_1J_amcatnloFXFX",
+            "DYto2L_M_50_2J_amcatnloFXFX"
+        ]
+        if args.era in ["Run3_2023", "Run3_2023BPix"]:
+            zll_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
 
-        if args.channel in ["mm","mt","tt"]:
-            ztt_samples.remove("DYto2E_MLL_120to200_powheg")
-            ztt_samples.remove("DYto2E_MLL_1500to2500_powheg")
-            ztt_samples.remove("DYto2E_MLL_200to400_powheg")
-            ztt_samples.remove("DYto2E_MLL_2500to4000_powheg")
-            ztt_samples.remove("DYto2E_MLL_4000to6000_powheg")
-            ztt_samples.remove("DYto2E_MLL_400to800_powheg")
-            ztt_samples.remove("DYto2E_MLL_50to120_powheg")
-            ztt_samples.remove("DYto2E_MLL_6000_powheg")
-            ztt_samples.remove("DYto2E_MLL_800to1500_powheg")
-        if args.channel in ["tt", "et"]:
-            ztt_samples.remove("DYto2Mu_MLL_120to200_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_1500to2500_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_200to400_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_2500to4000_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_4000to6000_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_400to800_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_50to120_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_6000_powheg")
-            ztt_samples.remove("DYto2Mu_MLL_800to1500_powheg")
+
 
     top_samples = [
         "TTto2L2Nu",
@@ -625,72 +607,81 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         wjets_samples.remove("WtoLNu_madgraphMLM_ext1")
 
     if args.channel in ["et", "mt", "tt"]:
-        # TODO: Lucas Removing irrelevant signal samples for now (to avoid double counting)
         signal_samples = {
-
+            # Unfiltered samples
             # "qqH_sm_unfiltered_htt*": "VBFHToTauTau_UncorrelatedDecay_UnFiltered",
-            "qqH_sm_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            # "qqH_ps_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            # "qqH_mm_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            # "Higgs_flat_htt*": [
-            #     "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
-            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
-            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
-            # ],
-            # "qqH_flat_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
-            # "ggH_flat_prod_sm_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
-            # ],
-            "ggH_sm_prod_sm_htt*": [
-                "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
-            ],
-            # "ggH_sm_prod_ps_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_sm_prod_mm_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_ps_prod_sm_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_ps_prod_ps_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_ps_prod_mm_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_mm_prod_sm_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_mm_prod_ps_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_mm_prod_mm_htt*": [
-            #     "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"
-            # ],
-            # "ggH_sm_prod_sm_reweight_htt*": ['GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', 'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'],
             # "WH_sm_unfiltered_htt*": [
             #     "WplusHToTauTau_UncorrelatedDecay_UnFiltered",
             #     "WminusHToTauTau_UncorrelatedDecay_UnFiltered",
             # ],
+            # "ZH_sm_unfiltered_htt*": "ZHToTauTau_UncorrelatedDecay_UnFiltered",
+
+            # VBF samples
+            "qqH_sm_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
+            "qqH_ps_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
+            "qqH_mm_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
+
+            # ggH samples (SM production)
+            "ggH_sm_prod_sm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
+            "ggH_ps_prod_sm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
+            "ggH_mm_prod_sm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
+            # ggH samples (PS production)
+            "ggH_sm_prod_ps_htt*": "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
+            "ggH_ps_prod_ps_htt*": "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
+            "ggH_mm_prod_ps_htt*": "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
+            # ggH samples (MM production)
+            "ggH_sm_prod_mm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
+            "ggH_ps_prod_mm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
+            "ggH_mm_prod_mm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
+
+            # WH samples
             "WH_sm_htt*": [
                 "WplusHToTauTau_UncorrelatedDecay_Filtered",
                 "WminusHToTauTau_UncorrelatedDecay_Filtered",
             ],
-            # "WH_ps_htt*": [
-            #     "WplusHToTauTau_UncorrelatedDecay_Filtered",
-            #     "WminusHToTauTau_UncorrelatedDecay_Filtered",
-            # ],
-            # "WH_mm_htt*": [
-            #     "WplusHToTauTau_UncorrelatedDecay_Filtered",
-            #     "WminusHToTauTau_UncorrelatedDecay_Filtered",
-            # ],
-            # "ZH_sm_unfiltered_htt*": "ZHToTauTau_UncorrelatedDecay_UnFiltered",
+            "WH_ps_htt*": [
+                "WplusHToTauTau_UncorrelatedDecay_Filtered",
+                "WminusHToTauTau_UncorrelatedDecay_Filtered",
+            ],
+            "WH_mm_htt*": [
+                "WplusHToTauTau_UncorrelatedDecay_Filtered",
+                "WminusHToTauTau_UncorrelatedDecay_Filtered",
+            ],
+
+            # ZH samples
             "ZH_sm_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
-            # "ZH_ps_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
-            # "ZH_mm_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
+            "ZH_ps_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
+            "ZH_mm_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
+
+            # Higgs Flat samples (uncorrelated decay)
+            "Higgs_flat_htt*": [
+                "VBFHToTauTau_UncorrelatedDecay_Filtered",
+                "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
+                "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
+                "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
+                "ZHToTauTau_UncorrelatedDecay_Filtered",
+                "WplusHToTauTau_UncorrelatedDecay_Filtered",
+                "WminusHToTauTau_UncorrelatedDecay_Filtered"
+            ],
+            "qqH_flat_htt*": "VBFHToTauTau_UncorrelatedDecay_Filtered",
+            "ggH_flat_prod_sm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay",
+            "ggH_flat_prod_ps_htt*": "GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay",
+            "ggH_flat_prod_mm_htt*": "GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay",
+            "WH_flat_htt*": [
+                "WplusHToTauTau_UncorrelatedDecay_Filtered",
+                "WminusHToTauTau_UncorrelatedDecay_Filtered",
+            ],
+            "ZH_flat_htt*": "ZHToTauTau_UncorrelatedDecay_Filtered",
+
+            # combined ggH (events from all production mechanisms)
+            # "ggH_sm_prod_sm_reweight_htt*": [
+            #     'GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay',
+            #     'GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay',
+            #     'GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay'
+            # ],
         }
+
+
     else:
         signal_samples = {}
 
@@ -698,6 +689,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     # signal_samples = {}
 
     samples_dict["ztt_samples"] = ztt_samples
+    samples_dict["zll_samples"] = zll_samples
     samples_dict["top_samples"] = top_samples
     samples_dict["vv_samples"] = vv_samples
     samples_dict["wjets_samples"] = wjets_samples
@@ -839,6 +831,12 @@ def RunPlotting(
     doVVT = True if "VVT" not in samples_to_skip else False
     doVVJ = True if "VVJ" not in samples_to_skip else False
 
+
+    if method in [3,4]: # jet fake estimate so don't include other MC jet fakes:
+        doTTJ = False
+        doZJ = False
+        doVVJ = False
+
     if do_data:
         if args.do_ss:
             OSSS = "!os"
@@ -868,7 +866,7 @@ def RunPlotting(
             ana,
             nodename,
             add_name,
-            samples_dict["ztt_samples"],
+            samples_dict["ztt_samples"]+samples_dict["zll_samples"],
             plot,
             wt,
             sel,
@@ -909,23 +907,24 @@ def RunPlotting(
             doVVJ,
         )
     if "W" not in samples_to_skip:
-        GenerateW(
-            ana,
-            nodename,
-            add_name,
-            samples_dict,
-            gen_sels_dict,
-            plot,
-            plot_unmodified,
-            wt,
-            sel,
-            cat_name,
-            categories,
-            categories_unmodified=categories_unmodified,
-            method=method,
-            qcd_factor=qcd_factor,
-            get_os=not args.do_ss,
-        )
+        if method in [1, 2, 5]: # only generate W if no jetfakes
+            GenerateW(
+                ana,
+                nodename,
+                add_name,
+                samples_dict,
+                gen_sels_dict,
+                plot,
+                plot_unmodified,
+                wt,
+                sel,
+                cat_name,
+                categories,
+                categories_unmodified=categories_unmodified,
+                method=method,
+                qcd_factor=qcd_factor,
+                get_os=not args.do_ss,
+            )
     if "QCD" not in samples_to_skip:
         if method in [1, 2, 5]:  # QCD estimate
             GenerateQCD(
@@ -1038,7 +1037,7 @@ else:
 weight = "(weight)"
 if args.add_weight:
     weight += "*" + args.add_weight
-
+# weight += "/(w_Tau_e_FakeRate*w_Tau_mu_FakeRate)"
 # set systematics:
 # - 1st index sets folder name contaning systematic samples
 # - 2nd index sets string to be appended to output histograms
@@ -1145,7 +1144,7 @@ if not args.bypass_plotter:
                     sample_name,
                 )
 
-            for sample_name in ztt_samples + top_samples + vv_samples + wjets_samples:
+            for sample_name in ztt_samples + zll_samples + top_samples + vv_samples + wjets_samples:
                 analysis.AddSamples(
                     f"{args.input_folder}/{args.era}/{args.channel}/{sample_name}/{systematic_folder_name}/merged.root",
                     "ntuple",
