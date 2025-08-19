@@ -478,10 +478,12 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             name_prefix = specific_name
 
         for updown in ["up", "down"]:
-            # stat uncertainty is just given as a total uncertainty so far, we can split this later on in CH to seperate by dm
-            systematic_name = f'ff_stat_' + updown
-            histogram_name = f'_{name_prefix}_stat'+ updown.capitalize()
-            systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", samples_to_skip, f"*ff_nom_{updown}")
+
+            # we split the stat error by the dm of the leading tau as this is how the FFs are measured
+            for dm in [0,1,2,10]:
+                systematic_name = f'ff_stat_dm{dm}{updown}'
+                histogram_name = f'_{name_prefix}_stat_dm{dm}{updown.capitalize()}'
+                systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", samples_to_skip, f"(*ff_nom*(decayModePNet_1 != {dm}) + *ff_nom_{updown}*(decayModePNet_1 == {dm}))")
 
             # subtraction unceratinty
             systematic_name = f'ff_sub_syst_'+ updown
