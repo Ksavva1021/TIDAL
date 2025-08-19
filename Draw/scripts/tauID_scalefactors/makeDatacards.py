@@ -133,6 +133,7 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
         shell_script += f" \\\n--nodename {nodename}"
 
     with open(script_path, "w") as script_file:
+        print(shell_script)
         script_file.write(shell_script)
     os.system(f"chmod +x {script_path}")
 

@@ -94,11 +94,12 @@ systematic_options = [
     ["DY_Shape", "DY Shape systematic from ZpT reweighting"],
     ["DY_Shape_Imperial", "DY Shape systematic from ZpT reweighting (Imperial)"],
     ["TTbar_Shape", "TTbar Shape systematic from top pT reweighting"],
-    ["Fake_Flat_Uncertainty", "flat fake uncertainty"]
+    ["Fake_Flat_Uncertainty", "flat fake uncertainty"],
+    ["Tau_ID_PNet", "Tau ID systematic"],
+    ["Fake_Factors", "fake factor related uncertainties"],
 ]
 
 # TODO: for later on, systematics for PNet/CP SFs
-    # ["Tau_ID_PNet", "Tau ID systematic"],
     # [
     #     "Tau_FakeRate_e",
     #     "Tau Fake Rate systematic for genuine electrons misidentified as taus",
@@ -1132,7 +1133,8 @@ if not args.bypass_plotter:
             systematic_suffix = systematics[systematic][1]
             weight = systematics[systematic][2]
             samples_to_skip = systematics[systematic][3]
-            is_FFsyst = systematics[systematic][4]
+            ff_syst = systematics[systematic][4]
+            if not isinstance(ff_syst, str): ff_syst = None
 
             systematic_suffixes.append(systematic_suffix)
 
@@ -1176,7 +1178,7 @@ if not args.bypass_plotter:
                 nodename,
                 samples_dict,
                 gen_sels_dict,
-                systematic,
+                ff_syst if ff_syst else systematic,
                 args.category,
                 categories,
                 categories_unmodified,
