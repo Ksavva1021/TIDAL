@@ -1,6 +1,7 @@
 import ROOT
 import argparse
 import os
+from Draw.python.PlotHistograms import HTT_Histogram
 
 def hadd_root_files(input_files, output_file, dir_combinations):
     """
@@ -83,10 +84,13 @@ def hadd_root_files(input_files, output_file, dir_combinations):
 
     all_dirs_histograms = combined_dirs_histograms | independent_dirs_histograms
 
+    dir_names = []
+
     for dir_name, histograms in all_dirs_histograms.items():
         # Create the directory in the output file
         output.mkdir(dir_name)
         output.cd(dir_name)
+        dir_names.append(dir_name)
 
         # Write all histograms in this directory
         for hist_name, hist in histograms.items():
@@ -94,6 +98,30 @@ def hadd_root_files(input_files, output_file, dir_combinations):
 
     # Close the output file
     output.Close()
+
+    for dir_name in dir_names:
+
+        blind = True
+        if 'mva_fake' in dir_name or 'mva_tau' in dir_name or 'aiso' in dir_name:
+            blind = False
+    
+        print(dir_name)
+    
+        # make a plot of the combined histograms
+        Histo_Plotter = HTT_Histogram(
+            output_file,
+            dir_name,
+            'tt',
+            '...',
+            '...',
+            blind=blind,
+            log_y=False,
+            is2Dunrolled=False,
+            save_name=output_file.replace('.root', f'_{dir_name}')
+        )
+        Histo_Plotter.plot_1D_histo()
+
+
 
 if __name__ == "__main__":
     # Argument parser for command-line arguments
@@ -132,6 +160,12 @@ if __name__ == "__main__":
         'tt_tau_pia11pr': ['tt_tau_pia11pr', 'tt_tau_a11prpi'],
         'tt_tau_a11pra1': ['tt_tau_a11pra1', 'tt_tau_a1a11pr'],
     }
+
+    # add aiso directories to the combinations
+    dir_combinations_extra = {}
+    for dir_name in dir_combinations.keys():
+        dir_combinations_extra[dir_name + '_aiso'] = [d + '_aiso' for d in dir_combinations[dir_name]]
+    dir_combinations.update(dir_combinations_extra)
 
     # Call the hadd function with the provided arguments
     hadd_root_files(input_files, output_file, dir_combinations)

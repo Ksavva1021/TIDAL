@@ -80,19 +80,18 @@ cpdecay:
              - { method: '4', category:  ['mva_fake'], plotting_variable: [ MVA_score], aiso: true}
              - { method: '4', category:  ['higgs_rhorho'], plotting_variable: [ aco_rho_rho], aiso: true}
              - { method: '4', category:  ['higgs_pipi'], plotting_variable: [ aco_pi_pi], aiso: true}
-              - { method: '4', category:  ['higgs_a1a1'], plotting_variable: [ aco_a1_a1], aiso: true}
-              - { method: '4', category:  ['higgs_pirho'], plotting_variable: [ aco_pi_rho], aiso: true}
-              - { method: '4', category:  ['higgs_rhopi'], plotting_variable: [ aco_rho_pi], aiso: true}
-              - { method: '4', category:  ['higgs_pia11pr'], plotting_variable: [ aco_pi_a11pr], aiso: true}
-              - { method: '4', category:  ['higgs_a11prpi'], plotting_variable: [ aco_a11pr_pi], aiso: true}
-              - { method: '4', category:  ['higgs_rhoa11pr'], plotting_variable: [ aco_rho_a11pr], aiso: true}
-              - { method: '4', category:  ['higgs_a1a11pr'], plotting_variable: [ aco_a1_a11pr_FASTMTT_MassConstraint], aiso: true}
-              - { method: '4', category:  ['higgs_a11pra1'], plotting_variable: [ aco_a11pr_a1_FASTMTT_MassConstraint], aiso: true}
-              - { method: '4', category:  ['higgs_a1rho'], plotting_variable: [ aco_a1_rho_FASTMTT_MassConstraint], aiso: true}
-              - { method: '4', category:  ['higgs_rhoa1'], plotting_variable: [ aco_rho_a1_FASTMTT_MassConstraint], aiso: true}
-              - { method: '4', category:  ['higgs_a1pi'], plotting_variable: [ aco_a1_pi_FASTMTT_MassConstraint], aiso: true}
-              - { method: '4', category:  ['higgs_pia1'], plotting_variable: [ aco_pi_a1_FASTMTT_MassConstraint], aiso: true}
-
+             - { method: '4', category:  ['higgs_a1a1'], plotting_variable: [ aco_a1_a1], aiso: true}
+             - { method: '4', category:  ['higgs_pirho'], plotting_variable: [ aco_pi_rho], aiso: true}
+             - { method: '4', category:  ['higgs_rhopi'], plotting_variable: [ aco_rho_pi], aiso: true}
+             - { method: '4', category:  ['higgs_pia11pr'], plotting_variable: [ aco_pi_a11pr], aiso: true}
+             - { method: '4', category:  ['higgs_a11prpi'], plotting_variable: [ aco_a11pr_pi], aiso: true}
+             - { method: '4', category:  ['higgs_rhoa11pr'], plotting_variable: [ aco_rho_a11pr], aiso: true}
+             - { method: '4', category:  ['higgs_a1a11pr'], plotting_variable: [ aco_a1_a11pr_FASTMTT_MassConstraint], aiso: true}
+             - { method: '4', category:  ['higgs_a11pra1'], plotting_variable: [ aco_a11pr_a1_FASTMTT_MassConstraint], aiso: true}
+             - { method: '4', category:  ['higgs_a1rho'], plotting_variable: [ aco_a1_rho_FASTMTT_MassConstraint], aiso: true}
+             - { method: '4', category:  ['higgs_rhoa1'], plotting_variable: [ aco_rho_a1_FASTMTT_MassConstraint], aiso: true}
+             - { method: '4', category:  ['higgs_a1pi'], plotting_variable: [ aco_a1_pi_FASTMTT_MassConstraint], aiso: true}
+             - { method: '4', category:  ['higgs_pia1'], plotting_variable: [ aco_pi_a1_FASTMTT_MassConstraint], aiso: true}
 
   systematics:
     per_era:
