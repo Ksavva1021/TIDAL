@@ -25,10 +25,12 @@ def hadd_root_files(input_files, output_file, dir_combinations):
 
     # Open each input ROOT file
     for file_name in input_files:
+
         input_root = ROOT.TFile.Open(file_name, "READ")
         
         # Loop over all the keys in the input file
         for key in input_root.GetListOfKeys():
+
             obj = key.ReadObj()
             
             # Check if the object is a directory
@@ -38,6 +40,7 @@ def hadd_root_files(input_files, output_file, dir_combinations):
                 # Find if the directory matches any in dir_combinations
                 combined = False
                 for combined_dir, dirs_to_combine in dir_combinations.items():
+
                     if dir_name in dirs_to_combine:
                         combined = True
                         # If this combined directory doesn't exist yet, create it
@@ -47,6 +50,7 @@ def hadd_root_files(input_files, output_file, dir_combinations):
                         # Loop over all histograms in the directory
                         input_root.cd(dir_name)
                         for hist_key in ROOT.gDirectory.GetListOfKeys():
+
                             hist_name = hist_key.GetName()
                             hist = hist_key.ReadObj()
                             
@@ -104,8 +108,6 @@ def hadd_root_files(input_files, output_file, dir_combinations):
         blind = True
         if 'mva_fake' in dir_name or 'mva_tau' in dir_name or 'aiso' in dir_name:
             blind = False
-    
-        print(dir_name)
     
         # make a plot of the combined histograms
         Histo_Plotter = HTT_Histogram(
@@ -165,6 +167,8 @@ if __name__ == "__main__":
     dir_combinations_extra = {}
     for dir_name in dir_combinations.keys():
         dir_combinations_extra[dir_name + '_aiso'] = [d + '_aiso' for d in dir_combinations[dir_name]]
+        dir_combinations_extra[dir_name + '_aco_aiso'] = [d + '_aco_aiso' for d in dir_combinations[dir_name]]
+        dir_combinations_extra[dir_name + '_BDT_score_aiso'] = [d + '_BDT_score_aiso' for d in dir_combinations[dir_name]]
     dir_combinations.update(dir_combinations_extra)
 
     # Call the hadd function with the provided arguments

@@ -281,6 +281,8 @@ for era in eras:
                             else:
                                 variable_name = variable_name
 
+                            nodename += setting.get("nodename", "")
+
                             if extra_identifier:
                                 variable_name = variable_name + "_" + extra_identifier
                             if aiso:
@@ -288,6 +290,7 @@ for era in eras:
                                 nodename = nodename + "_aiso"
                             if same_sign:
                                 variable_name = variable_name + "_ss"
+                                nodename = nodename + "_ss"
                             if dy_LO:
                                 variable_name = variable_name + "_dy_LO"
                             if dy_NLO:
