@@ -270,20 +270,19 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
     # Tau Energy Scale systematics (This are recommended to be uncorrelated across eras but we will leave it for now)
     # ----------------------------------------------------------------------------------------------------
-
     if specific_systematic in ['Tau_EnergyScale_TSCALE', 'Tau_EnergyScale_ESCALE', 'Tau_EnergyScale_MUSCALE']:
         kinds = {
             '1prong': '1PRONG',
             '1prong1pizero': '1PRONG_1PI0',
-            '3prong': '3PRONG',
-            '3prong1pizero': '3PRONG_1PI0'
+            '1prong2pizero': '1PRONG_2PI0',
+            '3prong': '3PRONG'
         }
-            # '1prong2pizero': '1PRONG_2PI0', # disable for HPS
+            # '3prong1pizero': '3PRONG_1PI0' # can enable this for tau ID systematics
 
         # Genuine Taus
         if specific_systematic == 'Tau_EnergyScale_TSCALE':
             prefixes = ['Tau_EnergyScale_TSCALE_']
-            samples_to_skip = ["QCD"]
+            samples_to_skip = ["QCD"] # ADD JetFakes
         # Genuine electrons misidentified as taus
         elif specific_systematic == 'Tau_EnergyScale_ESCALE':
             prefixes = ['Tau_EnergyScale_ESCALE_']
@@ -293,12 +292,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             prefixes = ['Tau_EnergyScale_MUSCALE_']
             samples_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','signal','W']
 
-        # temporary patch for derivation of tau id scale factor systematics
-        # Tau_EnergyScale_forTauIDSFs_TSCALE, Tau_EnergyScale_forTauIDSFs_ESCALE, Tau_EnergyScale_forTauIDSFs_MUSCALE,
-        for index in range(len(prefixes)):
-            # TODO: CHANGE BACK TO no PNet
+        # for index in range(len(prefixes)): # for IDSFs
             # prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
-            prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_HPS")
 
         for name, folder_suffix in kinds.items():
             for prefix in prefixes:
@@ -324,11 +319,6 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         ]
 
         prefix = 'Tau_EnergyScale_JSCALE_'
-        # temporary patch for derivation of tau id scale factor systematics
-        # Tau_EnergyScale_forTauIDSFs_JSCALE
-        # TODO: CHANGE BACK TO no PNet
-        # prefix = prefix.replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
-        prefix = prefix.replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_HPS")
         for updown in ['up', 'down']:
             systematic_name = 'syst_tau_escale_jscale_' + updown
             folder_name = prefix + updown
@@ -427,9 +417,9 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         if specific_systematic == 'DY_Shape':
             up_var = 'w_Zpt_Reweighting'
             down_var = '(1/w_Zpt_Reweighting)'
-        else:
-            up_var = 'w_Zpt_Reweighting_Imperial'
-            down_var = '(1/w_Zpt_Reweighting_Imperial)'
+        # else:
+        #     up_var = 'w_Zpt_Reweighting_Imperial'
+        #     down_var = '(1/w_Zpt_Reweighting_Imperial)'
 
         for updown in ["up", "down"]:
             systematic_name = 'syst_dy_shape_' + updown
