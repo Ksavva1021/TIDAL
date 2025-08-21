@@ -88,6 +88,7 @@ def create_shell_script(
     rename_procs=False,
     dy_LO=False,
     dy_NLO=False,
+    use_filtered_DY=False,
     nodename="",
 ):
     shell_script = f"""
@@ -129,6 +130,8 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
         shell_script += " \\\n--LO_DY"
     if dy_NLO:
         shell_script += " \\\n--NLO_DY"
+    if use_filtered_DY:
+        shell_script += " \\\n--use_filtered_DY"
     if nodename != "":
         shell_script += f" \\\n--nodename {nodename}"
 
@@ -259,7 +262,10 @@ for era in eras:
                 rename_procs = setting.get("rename_procs", False)
                 dy_LO= setting.get("dy_LO", False)
                 dy_NLO = setting.get("dy_NLO", False)
-
+                use_filtered_DY = setting.get('use_filtered_DY', False)
+                if use_filtered_DY:
+                    print("WARNING: To use filtered DY, different parameters will be sourced (automatically)")
+                    parameter_file = f"{parameter_path}/{era}/params_DYfiltered.yaml"
                 if set_alias and set_alias in available_aliases:
                     set_alias = available_aliases[set_alias]
 
@@ -331,6 +337,7 @@ for era in eras:
                                 rename_procs=rename_procs,
                                 dy_LO=dy_LO,
                                 dy_NLO=dy_NLO,
+                                use_filtered_DY=use_filtered_DY,
                                 nodename=nodename,
                             )
 
