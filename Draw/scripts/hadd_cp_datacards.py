@@ -106,8 +106,14 @@ def hadd_root_files(input_files, output_file, dir_combinations):
     for dir_name in dir_names:
 
         blind = True
-        if 'mva_fake' in dir_name or 'mva_tau' in dir_name or 'aiso' in dir_name:
+        if 'mva_fake' in dir_name or 'mva_tau' in dir_name or 'aiso' in dir_name or '_ss' in dir_name:
             blind = False
+
+        var_name = "Bin number"
+        if 'BDT_score' in dir_name:
+            var_name = "BDT score"
+        elif 'aiso' in dir_name or dir_name == 'tt_higgs_pipi_ss':
+            var_name = r"$\phi_{CP}$"
     
         # make a plot of the combined histograms
         Histo_Plotter = HTT_Histogram(
@@ -115,7 +121,7 @@ def hadd_root_files(input_files, output_file, dir_combinations):
             dir_name,
             'tt',
             '...',
-            '...',
+            var_name,
             blind=blind,
             log_y=False,
             is2Dunrolled=False,
