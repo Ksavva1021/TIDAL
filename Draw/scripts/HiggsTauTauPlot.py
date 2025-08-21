@@ -564,15 +564,9 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         "TTto2L2Nu",
         "TTto2L2Nu_ext1",
         "TTtoLNu2Q",
-        "TTtoLNu2Q_ext1",
-        "TTto4Q",
-        "TTto4Q_ext1",
+        "TTtoLNu2Q_ext1"
     ]
     vv_samples = [
-        "WWW_4F",
-        "WWZ_4F",
-        "WZZ",
-        "ZZZ",
         "WW",
         "WZ",
         "ZZ",
@@ -599,7 +593,6 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
     if args.era in ["Run3_2023", "Run3_2023BPix"]:
         top_samples.remove("TTto2L2Nu_ext1")
         top_samples.remove("TTtoLNu2Q_ext1")
-        top_samples.remove("TTto4Q_ext1")
         vv_samples.remove("ST_tW_top_2L2Nu_ext1")
         vv_samples.remove("ST_tW_antitop_2L2Nu_ext1")
         vv_samples.remove("ST_tW_top_LNu2Q_ext1")
