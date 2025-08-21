@@ -275,7 +275,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
     # Tau Energy Scale systematics (This are recommended to be uncorrelated across eras but we will leave it for now)
     # ----------------------------------------------------------------------------------------------------
-    if specific_systematic in ['Tau_EnergyScale_TSCALE', 'Tau_EnergyScale_ESCALE', 'Tau_EnergyScale_MUSCALE']:
+    if specific_systematic in ['Tau_EnergyScale_PNet_TSCALE', 'Tau_EnergyScale_PNet_ESCALE', 'Tau_EnergyScale_PNet_MUSCALE']:
         kinds = {
             '1prong': '1PRONG',
             '1prong1pizero': '1PRONG_1PI0',
@@ -285,21 +285,21 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             # '3prong1pizero': '3PRONG_1PI0' # can enable this for tau ID systematics
 
         # Genuine Taus
-        if specific_systematic == 'Tau_EnergyScale_TSCALE':
-            prefixes = ['Tau_EnergyScale_TSCALE_']
+        if specific_systematic == 'Tau_EnergyScale_PNet_TSCALE':
+            prefixes = ['Tau_EnergyScale_PNet_TSCALE_']
             samples_to_skip = ["QCD"] # ADD JetFakes
         # Genuine electrons misidentified as taus
-        elif specific_systematic == 'Tau_EnergyScale_ESCALE':
-            prefixes = ['Tau_EnergyScale_ESCALE_']
+        elif specific_systematic == 'Tau_EnergyScale_PNet_ESCALE':
+            prefixes = ['Tau_EnergyScale_PNet_ESCALE_']
             samples_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','signal','W']
         # Genuine muons misidentified as taus
-        elif specific_systematic == 'Tau_EnergyScale_MUSCALE':
-            prefixes = ['Tau_EnergyScale_MUSCALE_']
+        elif specific_systematic == 'Tau_EnergyScale_PNet_MUSCALE':
+            prefixes = ['Tau_EnergyScale_PNet_MUSCALE_']
             samples_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','signal','W']
 
 
         # for index in range(len(prefixes)): # for IDSFs
-            # prefixes[index] = prefixes[index].replace("Tau_EnergyScale", "Tau_EnergyScale_forTauIDSFs_PNet")
+            # prefixes[index] = prefixes[index].replace("Tau_EnergyScale_PNet", "Tau_EnergyScale_forTauIDSFs_PNet")
 
         for name, folder_suffix in kinds.items():
             for prefix in prefixes:
@@ -315,7 +315,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                     if specific_channel in ["et","mt","tt"]:
                         systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', samples_to_skip, None)
 
-    if specific_systematic == 'Tau_EnergyScale_JSCALE':
+    if specific_systematic == 'Tau_EnergyScale_PNet_JSCALE':
 
         samples_to_skip = [
             'ZJ','ZL','ZLL','ZTT'
@@ -324,7 +324,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             'QCD','signal',
         ]
 
-        prefix = 'Tau_EnergyScale_JSCALE_'
+        prefix = 'Tau_EnergyScale_PNet_JSCALE_'
         for updown in ['up', 'down']:
             systematic_name = 'syst_tau_escale_jscale_' + updown
             folder_name = prefix + updown
