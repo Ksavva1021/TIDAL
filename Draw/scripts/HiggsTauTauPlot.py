@@ -74,16 +74,16 @@ systematic_options = [
         "Tau Fake Rate systematic for genuine muons misidentified as taus",
     ],
     [
-        "Tau_EnergyScale_JSCALE",
+        "Tau_EnergyScale_PNet_JSCALE",
         "Tau Energy Scale systematic for jets misidentified as taus",
     ],
-    ["Tau_EnergyScale_TSCALE", "Tau Energy Scale systematic for genuine taus"],
+    ["Tau_EnergyScale_PNet_TSCALE", "Tau Energy Scale systematic for genuine taus"],
     [
-        "Tau_EnergyScale_ESCALE",
+        "Tau_EnergyScale_PNet_ESCALE",
         "Tau Energy Scale systematic for genuine electrons misidentified as taus",
     ],
     [
-        "Tau_EnergyScale_MUSCALE",
+        "Tau_EnergyScale_PNet_MUSCALE",
         "Tau Energy Scale systematic for genuine muons misidentified as taus",
     ],
     ["Jet_EnergyScale_Total", "Jet Energy Scale Total systematic"],
@@ -98,29 +98,6 @@ systematic_options = [
     ["Tau_ID_PNet", "Tau ID systematic"],
     ["Fake_Factors", "fake factor related uncertainties"],
 ]
-
-# TODO: for later on, systematics for PNet/CP SFs
-    # [
-    #     "Tau_FakeRate_e",
-    #     "Tau Fake Rate systematic for genuine electrons misidentified as taus",
-    # ],
-    # [
-    #     "Tau_FakeRate_mu",
-    #     "Tau Fake Rate systematic for genuine muons misidentified as taus",
-    # ],
-    # [
-    #     "Tau_EnergyScale_PNet_JSCALE",
-    #     "Tau Energy Scale systematic for jets misidentified as taus",
-    # ],
-    # ["Tau_EnergyScale_PNet_TSCALE", "Tau Energy Scale systematic for genuine taus"],
-    # [
-    #     "Tau_EnergyScale_PNet_ESCALE",
-    #     "Tau Energy Scale systematic for genuine electrons misidentified as taus",
-    # ],
-    # [
-    #     "Tau_EnergyScale_PNet_MUSCALE",
-    #     "Tau Energy Scale systematic for genuine muons misidentified as taus",
-    # ],
 
 
 # The nargs="?" option allows the user to provide an optional value for the systematic e.g. overriding the name assigned to the histogram
