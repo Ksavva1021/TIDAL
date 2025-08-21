@@ -340,6 +340,9 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     # Jet Energy Scale systematics
     # ----------------------------------------------------------------------------------------------------
     if specific_systematic == 'Jet_EnergyScale_Total':
+
+        samples_to_skip = ['JetFakes', 'QCD']
+
         prefix = 'jec_syst_Total'
         name = 'syst_jet_scale_Total'
         for updown in ['up', 'down']:
@@ -349,13 +352,16 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + prefix + updown.capitalize()
             else:
                 histogram_name = '_' + specific_name + updown.capitalize()
-            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', [], None)
+            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', samples_to_skip, None)
 
     # ----------------------------------------------------------------------------------------------------
 
     # Jet Energy Resolution systematics
     # ----------------------------------------------------------------------------------------------------
     if specific_systematic == 'Jet_EnergyResolution':
+
+        samples_to_skip = ['JetFakes', 'QCD']
+
         prefix = 'jer_syst'
         name = 'syst_jet_resolution'
         for updown in ['up', 'down']:
@@ -365,7 +371,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + prefix + updown.capitalize()
             else:
                 histogram_name = '_' + specific_name + updown.capitalize()
-            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', [], None)
+            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', samples_to_skip, None)
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -475,7 +481,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             for dm in [0,1,2,10]:
                 systematic_name = f'ff_stat_dm{dm}{updown}'
                 histogram_name = f'_{name_prefix}_stat_dm{dm}{updown.capitalize()}'
-                systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", samples_to_skip, f"(*ff_nom*(decayModePNet_1 != {dm}) + *ff_nom_{updown}*(decayModePNet_1 == {dm}))")
+                systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", samples_to_skip, f"FF_syst:(*ff_nom*(decayModePNet_1 != {dm}) + *ff_nom_{updown}*(decayModePNet_1 == {dm}))")
 
             # subtraction unceratinty
             systematic_name = f'ff_sub_syst_'+ updown
