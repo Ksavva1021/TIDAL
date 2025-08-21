@@ -7,7 +7,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
     # we add eras and channels to names when the name contains *year or *channel
     # note could do the same thing for other binning e.g dm
-    specific_name = specific_name.replace("*year", specific_era)
+    specific_name = specific_name.replace("*year", specific_era.split("Run3_")[1]) # keep the year part only (CMS/combine convention)
     specific_name = specific_name.replace("*channel", specific_channel)
 
     # Muon ID/Isolation systematics
@@ -277,12 +277,11 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     # ----------------------------------------------------------------------------------------------------
     if specific_systematic in ['Tau_EnergyScale_PNet_TSCALE', 'Tau_EnergyScale_PNet_ESCALE', 'Tau_EnergyScale_PNet_MUSCALE']:
         kinds = {
-            '1prong': '1PRONG',
-            '1prong1pizero': '1PRONG_1PI0',
-            '1prong2pizero': '1PRONG_2PI0',
-            '3prong': '3PRONG'
+            'DM0PNet': '1PRONG',
+            'DM1PNet': '1PRONG_1PI0',
+            'DM2PNet': '1PRONG_2PI0',
+            'DM10PNet': '3PRONG'
         }
-            # '3prong1pizero': '3PRONG_1PI0' # can enable this for tau ID systematics
 
         # Genuine Taus
         if specific_systematic == 'Tau_EnergyScale_PNet_TSCALE':
