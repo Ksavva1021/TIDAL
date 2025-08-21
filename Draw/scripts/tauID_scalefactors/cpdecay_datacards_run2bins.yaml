@@ -1,10 +1,10 @@
 input_folder: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/output/full_syst_noMETrecoil
-output_path: /vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/2108/TestSysts_v3
+output_path: /vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/FilteredDY/TestFiltered_ToggleOff
 channels: [tt]
 eras: [Run3_2022]
 parameter_path: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/scripts/ditau/config/
-schemes: [cpdecay]
-run_systematics: true
+schemes: [control]
+run_systematics: false
 
 cpdecay:
 
@@ -74,6 +74,26 @@ cpdecay:
      - { method: '4', category:  ['higgs_rhoa1'], plotting_variable: [ MVA_vs_aco_rho_a1_FASTMTT_MassConstraint], aiso: true, unroll: true}
      - { method: '4', category:  ['higgs_a1pi'], plotting_variable: [ MVA_vs_aco_a1_pi_FASTMTT_MassConstraint], aiso: true, unroll: true}
      - { method: '4', category:  ['higgs_pia1'], plotting_variable: [ MVA_vs_aco_pi_a1_FASTMTT_MassConstraint], aiso: true, unroll: true}
+
+
+control:   # GENERAL CONTROL PLOTS (kinematics etc)
+  variable_definitions:
+    m_vis: "m_vis(50,0,400)"
+    pt_1: "pt_1(40,0,200)"
+    pt_2: "pt_2(40,0,200)"
+    eta_1: "eta_1(21,-2.1,2.1)"
+    eta_2: "eta_2(21,-2.1,2.1)"
+    phi_1: "phi_1(32,-pi,pi)"
+    phi_2: "phi_2(32,-pi,pi)"
+    dR: "dR(42,0,5)"
+    pt_tt: "pt_tt(50,0,400)"
+    met_pt: "met_pt(40,0,200)"
+    met_phi: "met_phi(32,-pi,pi)"
+    n_jets: "n_jets(10,0,10)"
+
+  tt:
+  # option to use filtered DY (false by default): `use_filtered_DY: true`
+  - { method: "4", category:  [ cp_inclusive ], plotting_variable: [ m_vis]}
 
 
 cpdecay_fakefactors_control:

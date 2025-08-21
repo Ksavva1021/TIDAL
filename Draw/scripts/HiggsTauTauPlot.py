@@ -113,6 +113,7 @@ for systematic, description in systematic_options:
 # Additional Options:
 parser.add_argument("--LO_DY", action="store_true", help="Use LO")
 parser.add_argument("--NLO_DY", action="store_true", help="Use NLO DY")
+parser.add_argument("--use_filtered_DY", action="store_true", help="Include filtered DY")
 parser.add_argument("--sel", type=str, help="Additional Selection to apply", default="")
 parser.add_argument(
     "--set_alias",
@@ -520,13 +521,19 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             ztt_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
 
     else:
-        print("WARNING: Using New DY samples")
-        # print("WARNING: Using NLO POWHEG DY samples")
+        print("Using New DY samples")
         ztt_samples = [
             "DYto2Tau_MLL_50_0J_amcatnloFXFX",
             "DYto2Tau_MLL_50_1J_amcatnloFXFX",
             "DYto2Tau_MLL_50_2J_amcatnloFXFX"
         ]
+        if args.use_filtered_DY:
+            print(f"WARNING: Will use filtered DY, and read effective events from alternate file")
+            ztt_samples += [
+                "DYto2Tau_MLL_50_0J_Filtered_amcatnloFXFX",
+                "DYto2Tau_MLL_50_1J_Filtered_amcatnloFXFX",
+                "DYto2Tau_MLL_50_2J_Filtered_amcatnloFXFX"
+            ]
         zll_samples = [
             "DYto2L_M_50_amcatnloFXFX",
             "DYto2L_M_50_amcatnloFXFX_ext1",
