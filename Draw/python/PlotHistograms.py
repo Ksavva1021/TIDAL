@@ -10,7 +10,7 @@ plt.rcParams.update({"font.size": 16})
 
 class HTT_Histogram:
 
-    def __init__(self, file, category, channel, era, variable,blind=False, log_y=False, is2Dunrolled=False):
+    def __init__(self, file, category, channel, era, variable,blind=False, log_y=False, is2Dunrolled=False, save_name=None):
         self.file = uproot.open(file)
         self.file_name = file
         self.directory = os.path.dirname(file)
@@ -21,6 +21,7 @@ class HTT_Histogram:
         self.variable = variable.split("[")[0]
         self.log_y = log_y
         self.is2Dunrolled = is2Dunrolled
+        self.save_name = save_name
 
         self.initialize_plotting()
         self.initialize_nodes()
@@ -190,6 +191,8 @@ class HTT_Histogram:
             self.lumi = 17.79
         elif self.era == "Run3_2023BPix":
             self.lumi = 9.45
+        else: 
+            self.lumi = 61.9
         # get color for each background
         for bkg, info in self.backgrounds.items():
             info['color'] = self.colors[info["color"]]  # replace color name with hex code
@@ -388,17 +391,21 @@ class HTT_Histogram:
         self.ax_ratio.set_ylim(ratio_min, ratio_max)
 
         # Save to pdf and png
-        save_path_png = self.file_name.split(os.sep)
-        save_path_png.insert(-1, 'pngs')
-        os.makedirs(os.sep.join(save_path_png[:-1]), exist_ok=True) # make dir if not exists
-        save_path_png = os.sep.join(save_path_png).replace(".root", ".png")
+        if self.save_name:
+            save_path_png = self.save_name+".png"
+            save_path_pdf = self.save_name+".pdf"
+        else:
+            save_path_png = self.file_name.split(os.sep)
+            save_path_png.insert(-1, 'pngs')
+            os.makedirs(os.sep.join(save_path_png[:-1]), exist_ok=True) # make dir if not exists
+            save_path_png = os.sep.join(save_path_png).replace(".root", ".png")
+            save_path_pdf = self.file_name.split(os.sep)
+            save_path_pdf.insert(-1, 'pdfs')
+            os.makedirs(os.sep.join(save_path_pdf[:-1]), exist_ok=True) # make dir if not exists
+            save_path_pdf = os.sep.join(save_path_pdf).replace(".root", ".pdf")
         plt.savefig(save_path_png, bbox_inches='tight')
         print(f'Saved histogram to {save_path_png}')
 
-        save_path_pdf = self.file_name.split(os.sep)
-        save_path_pdf.insert(-1, 'pdfs')
-        os.makedirs(os.sep.join(save_path_pdf[:-1]), exist_ok=True) # make dir if not exists
-        save_path_pdf = os.sep.join(save_path_pdf).replace(".root", ".pdf")
         plt.savefig(save_path_pdf, bbox_inches='tight')
         print(f'Saved histogram to {save_path_pdf}')
 

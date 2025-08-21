@@ -94,11 +94,12 @@ systematic_options = [
     ["DY_Shape", "DY Shape systematic from ZpT reweighting"],
     ["DY_Shape_Imperial", "DY Shape systematic from ZpT reweighting (Imperial)"],
     ["TTbar_Shape", "TTbar Shape systematic from top pT reweighting"],
-    ["Fake_Flat_Uncertainty", "flat fake uncertainty"]
+    ["Fake_Flat_Uncertainty", "flat fake uncertainty"],
+    ["Tau_ID_PNet", "Tau ID systematic"],
+    ["Fake_Factors", "fake factor related uncertainties"],
 ]
 
 # TODO: for later on, systematics for PNet/CP SFs
-    # ["Tau_ID_PNet", "Tau ID systematic"],
     # [
     #     "Tau_FakeRate_e",
     #     "Tau Fake Rate systematic for genuine electrons misidentified as taus",
@@ -218,6 +219,10 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             "(m_vis>40 && iso_1 < 0.15 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
             % trg_full
         )
+        if args.do_aiso:
+            categories["baseline"] = re.sub(
+                "iso_1\s*<\s*0.15", "iso_1 > 0.15 && iso_1 < 0.3", categories["baseline"] # NB: cut in HiggsDNA on iso is 0.3
+            )
     if args.channel == "et":
         # et_cross_only = "(trg_et_cross && pt_1 > 25 && pt_1 < 31 && abs(eta_1) < 2.1 && pt_2 > 35 && abs(eta_2) < 2.1)"
         single_electron_only = "(trg_singleelectron && pt_1 >= 31 && abs(eta_1) < 2.1 )"
@@ -226,6 +231,7 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             "(iso_1 < 0.15&& idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_2 >= 6 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
             % trg_full
         )
+
     if args.channel == "tt":
         doubletau_only_trg = "(trg_doubletau && pt_1 > 40 && pt_2 > 40)"
         doubletaujet_only_trg = "(trg_doubletauandjet && pt_1 > 35 && pt_2 > 35 && jpt_1 > 60)"  # might need to revise jet cut later on
@@ -234,6 +240,13 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
             "(m_vis > 40 && idDeepTau2018v2p5VSjet_1 >= 7 && idDeepTau2018v2p5VSjet_2 >= 7 && idDeepTau2018v2p5VSe_1 >= 2 && idDeepTau2018v2p5VSe_2 >= 2 && idDeepTau2018v2p5VSmu_1 >= 4 && idDeepTau2018v2p5VSmu_2 >= 4 && %s)"
             % trg_full
         )
+
+        if args.do_aiso:
+            categories["baseline"] = categories["baseline"].replace(
+                "idDeepTau2018v2p5VSjet_2 >= 7",
+                "idDeepTau2018v2p5VSjet_2 < 7 && idDeepTau2018v2p5VSjet_2 >= 1",
+            )
+
         categories["tt_qcd_norm"] = categories["baseline"].replace(
             "idDeepTau2018v2p5VSjet_1 >= 7",
             "idDeepTau2018v2p5VSjet_1 < 7 && idDeepTau2018v2p5VSjet_1 >= 1",
@@ -423,17 +436,6 @@ if args.set_alias is not None:
             args.sel = overwrite_with
         else:
             categories[cat_to_overwrite] = overwrite_with
-
-if args.do_aiso:
-    if args.channel == 'mt':
-        categories["baseline"] = re.sub(
-            "iso_1\s*<\s*0.15", "iso_1 > 0.15 && iso_1 < 0.3", categories["baseline"] # NB: cut in HiggsDNA on iso is 0.3
-        )
-    elif args.channel == 'tt':
-        categories["baseline"] = categories["baseline"].replace(
-            "idDeepTau2018v2p5VSjet_2 >= 7",
-            "idDeepTau2018v2p5VSjet_2 < 7 && idDeepTau2018v2p5VSjet_2 >= 1",
-        )
 
 # ------------------------------------------------------------------------------------------------------------------------
 # Define the samples (Data and MC (Background & Signal))
@@ -1046,7 +1048,7 @@ elif args.channel in ["ee", "mm"]:
 elif args.channel == "tt":
     systematics["nominal"] = ("nominal", "", f"({weight})", [], False)
 
-if args.run_systematics:
+if args.run_systematics and not args.do_aiso: # we dont run systematics for anti-iso region 
     enabled_systematics = {
         systematic: getattr(args, "systematic_" + systematic)
         for systematic, _ in systematic_options
@@ -1125,7 +1127,8 @@ if not args.bypass_plotter:
             systematic_suffix = systematics[systematic][1]
             weight = systematics[systematic][2]
             samples_to_skip = systematics[systematic][3]
-            is_FFsyst = systematics[systematic][4]
+            ff_syst = systematics[systematic][4]
+            if not isinstance(ff_syst, str): ff_syst = None
 
             systematic_suffixes.append(systematic_suffix)
 
@@ -1169,7 +1172,7 @@ if not args.bypass_plotter:
                 nodename,
                 samples_dict,
                 gen_sels_dict,
-                systematic,
+                ff_syst if ff_syst else systematic,
                 args.category,
                 categories,
                 categories_unmodified,

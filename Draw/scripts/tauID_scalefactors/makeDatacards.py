@@ -133,6 +133,7 @@ python3 Draw/scripts/HiggsTauTauPlot.py \\
         shell_script += f" \\\n--nodename {nodename}"
 
     with open(script_path, "w") as script_file:
+        print(shell_script)
         script_file.write(shell_script)
     os.system(f"chmod +x {script_path}")
 
@@ -280,6 +281,8 @@ for era in eras:
                             else:
                                 variable_name = variable_name
 
+                            nodename += setting.get("nodename", "")
+
                             if extra_identifier:
                                 variable_name = variable_name + "_" + extra_identifier
                             if aiso:
@@ -287,6 +290,7 @@ for era in eras:
                                 nodename = nodename + "_aiso"
                             if same_sign:
                                 variable_name = variable_name + "_ss"
+                                nodename = nodename + "_ss"
                             if dy_LO:
                                 variable_name = variable_name + "_dy_LO"
                             if dy_NLO:
