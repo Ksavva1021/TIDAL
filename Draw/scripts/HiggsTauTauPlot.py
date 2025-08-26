@@ -1223,9 +1223,9 @@ if is_2d and args.do_unrolling:
                         [hist.GetYaxis().GetBinLowEdge(hist.GetNbinsY() + 1), -1]
                     )
     for hist in hists_to_add:
-        directory.Get(hist.GetName()).Write(
-            hist.GetName() + "_2D"
-        )  # write a copy of the 2D histogram as this will be overwritten by 1D version
+        hist_2d = directory.Get(hist.GetName()).Clone()
+        hist_2d.SetName(hist.GetName() + "_2D")
+        hist_2d.Write("", ROOT.TObject.kOverwrite)
         hist.Write("", ROOT.TObject.kOverwrite)
 
 # --------------------

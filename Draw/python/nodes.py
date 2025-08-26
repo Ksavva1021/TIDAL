@@ -272,8 +272,8 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
             add_weight=syst_weight))
 
     elif method == 4:  # Full Fake Factor Method
-        if systematic == 'nominal' or 'sub_syst' in add_name: ff_weight = f'(weight) * (w_FakeFactor_cmb)' # apply the fake factor weight
-        else: ff_weight = f'(weight) * ({systematic.replace("*ff_nom", "w_FakeFactor_cmb")})'
+        if systematic == 'nominal' or 'sub_syst' in add_name or 'FF_syst:' not in systematic: ff_weight = f'(weight) * (w_FakeFactor_cmb)' # apply the nominal fake factor weight
+        else: ff_weight = f'(weight) * ({systematic.replace("FF_syst:", "").replace("*ff_nom", "w_FakeFactor_cmb")})'
         # application region
         categories['qcd_ff_estimate'] = categories[cat_name]+'&&'+categories['tt_ff_AR']
         categories_unmodified['qcd_ff_estimate'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_ff_AR']

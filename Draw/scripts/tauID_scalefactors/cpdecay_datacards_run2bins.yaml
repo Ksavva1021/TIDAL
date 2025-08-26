@@ -1,10 +1,10 @@
 input_folder: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/output/full_syst_noMETrecoil
-output_path: /vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/FilteredDY/TestFiltered_ToggleOff
+output_path: /vols/cms/dw515/Run3_CP_workareas/TIDAL_fordatacards/TIDAL/Draw/cp_datacards_Aug22/
 channels: [tt]
-eras: [Run3_2022]
+eras: [ Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix]
 parameter_path: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/scripts/ditau/config/
-schemes: [control]
-run_systematics: false
+schemes: [cpdecay]
+run_systematics: true
 
 cpdecay:
 
@@ -12,13 +12,13 @@ cpdecay:
     per_era:
       default:
         common:
-        # - [ "systematic_DY_Shape", "dy_pt_reweighting" ]
-        # - [ "systematic_TTbar_Shape", "top_pt_reweighting" ]
-        # - [ "systematic_Fake_Factors", "ff_*channel"]
-        - [ "systematic_Tau_EnergyScale_PNet_TSCALE", "CMS_scale_t_DeepTau2018v2p5_*group_*year" ]
+         - [ "systematic_DY_Shape", "dy_pt_reweighting" ]
+         - [ "systematic_TTbar_Shape", "top_pt_reweighting" ]
+         - [ "systematic_Fake_Factors", "ff_*channel"]
+         - [ "systematic_Tau_EnergyScale_PNet_TSCALE", "CMS_scale_t_DeepTau2018v2p5_*group_*year_genTau" ]
         # - [ "systematic_Tau_ID_PNet", "CMS_SENSIBLENAME_*year" ]
-        # - [ "systematic_Jet_EnergyScale_Total", "CMS_scale_j_*year" ]
-        # - [ "systematic_Jet_EnergyResolution", "CMS_res_j_*year" ]
+         - [ "systematic_Jet_EnergyScale_Total", "CMS_scale_j_13p6TeV" ]
+         - [ "systematic_Jet_EnergyResolution", "CMS_res_j_13p6TeV" ]
 
   variable_definitions:
       MVA_score: "BDT_pred_score[0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]"  
