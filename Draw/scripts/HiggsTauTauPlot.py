@@ -904,45 +904,44 @@ def RunPlotting(
                 qcd_factor=qcd_factor,
                 get_os=not args.do_ss,
             )
-    if "QCD" not in samples_to_skip:
-        if method in [1, 2, 5]:  # QCD estimate
-            GenerateQCD(
-                ana,
-                nodename,
-                add_name,
-                samples_dict,
-                gen_sels_dict,
-                systematic,
-                plot,
-                plot_unmodified,
-                wt,
-                sel,
-                cat_name,
-                categories=categories,
-                categories_unmodified=categories_unmodified,
-                method=method,
-                qcd_factor=qcd_factor,
-                get_os=not args.do_ss,
-            )
-        elif method in [3, 4]:  # Jet Fakes
-            GenerateFakes(
-                ana,
-                nodename,
-                add_name,
-                samples_dict,
-                gen_sels_dict,
-                systematic,
-                plot,
-                plot_unmodified,
-                wt,
-                sel,
-                cat_name,
-                categories=categories,
-                categories_unmodified=categories_unmodified,
-                method=method,
-                qcd_factor=qcd_factor,
-                get_os=not args.do_ss,
-            )
+    if "QCD" not in samples_to_skip and method in [1, 2, 5]:  # QCD estimate
+        GenerateQCD(
+            ana,
+            nodename,
+            add_name,
+            samples_dict,
+            gen_sels_dict,
+            systematic,
+            plot,
+            plot_unmodified,
+            wt,
+            sel,
+            cat_name,
+            categories=categories,
+            categories_unmodified=categories_unmodified,
+            method=method,
+            qcd_factor=qcd_factor,
+            get_os=not args.do_ss,
+        )
+    elif "JetFakes" not in samples_to_skip and method in [3, 4]:  # Jet Fakes
+        GenerateFakes(
+            ana,
+            nodename,
+            add_name,
+            samples_dict,
+            gen_sels_dict,
+            systematic,
+            plot,
+            plot_unmodified,
+            wt,
+            sel,
+            cat_name,
+            categories=categories,
+            categories_unmodified=categories_unmodified,
+            method=method,
+            qcd_factor=qcd_factor,
+            get_os=not args.do_ss,
+        )
 
     if "signal" not in samples_to_skip:
         # generate correct signal
