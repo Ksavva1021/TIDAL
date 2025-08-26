@@ -72,23 +72,15 @@ def PrintSummary(
 def GetTotals(ana, nodename="", add_name="", samples_dict={}, outfile="outfile.root"):
     # add histograms to get totals for backgrounds split into real/fake taus and make a total backgrounds histogram
 
+    processes = ["ZTT", "ZL", "ZJ", "TTT", "ΤΤJ","VVT","VVJ", "W", "QCD", "JetFakes", "JetFakesSublead"]
+
     outfile.cd(nodename)
     nodes = ana.nodes[nodename].SubNodes()
     first_hist = True
     for node in nodes:
         if add_name not in node.name:
             continue
-        # check not signal (by matching to wildcard format from * that is replaced by mass)
-        if any(
-            fn.fnmatch(node.name, sig) for sig in list(samples_dict["signal_samples"])
-        ):
-            continue
-        # if node.name == "data_obs": continue
-        if node.name.endswith("Up"):
-            continue
-        if node.name.endswith("Down"):
-            continue
-        if node.name.endswith("extrap"):
+        if node.name not in processes:
             continue
         if first_hist:
             total_bkg = ana.nodes[nodename].nodes[node.name].shape.hist.Clone()
@@ -129,13 +121,19 @@ def Get1DBinNumFrom3D(h3d, xbin, ybin, zbin):
 
 
 def UnrollHist2D(h2d, inc_y_of=True):
-    # inc_y_of = True includes the y over-flow bins
+    """
+    Unroll a 2D histogram h2d into a 1d histogram
+    inc_y_of = True includes the y over-flow bins
+    """
     if inc_y_of:
         n = 1
     else:
         n = 0
     Nbins = (h2d.GetNbinsY() + n) * (h2d.GetNbinsX())
-    h1d = ROOT.TH1D(h2d.GetName(), "", Nbins, 0, Nbins)
+    if isinstance(h2d, ROOT.TH2D):
+        h1d = ROOT.TH1D(h2d.GetName(), "", Nbins, 0, Nbins)
+    else:
+        h1d = ROOT.TH1F(h2d.GetName(), "", Nbins, 0, Nbins)
     for i in range(1, h2d.GetNbinsX() + 1):
         for j in range(1, h2d.GetNbinsY() + 1 + n):
             glob_bin = Get1DBinNumFrom2D(h2d, i, j)
@@ -264,3 +262,89 @@ def RebinHist(hist, binning):
                 hout.SetBinError(i, new_error)
     # hout.Print("all")
     return hout
+
+
+def RenameDatacards(outfile, nodename):
+    directory = outfile.Get(nodename)
+
+    count = 0
+    print(nodename)
+    print(directory)
+    print(outfile)
+    for key in directory.GetListOfKeys():
+        count += 1
+
+    i = 0
+    for key in directory.GetListOfKeys():
+        if i < count:
+            name = key.GetName()
+            histo = directory.Get(name)
+
+            if not isinstance(histo, ROOT.TDirectory) and "TTT" in name:
+                new_name = name.replace("TTT", "TTL")
+                histo.SetName(new_name)
+                directory.cd()
+                histo.Write(new_name)
+                directory.Delete(name + ";1")
+            elif not isinstance(histo, ROOT.TDirectory) and "VVT" in name:
+                new_name = name.replace("VVT", "VVL")
+                histo.SetName(new_name)
+                directory.cd()
+                histo.Write(new_name)
+                directory.Delete(name + ";1")
+
+        i += 1
+
+# Add systematic uncertainties to the histogram even if systematics are not used
+def Total_Uncertainty(h0, hists=[]):
+    # sum in quadrature several systematic uncertainties to form total uncertainty band
+    hout = h0.Clone()
+    hup = h0.Clone()
+    hdown = h0.Clone()
+    hout.SetName(h0.GetName() + "_full_uncerts")
+    hup.SetName(h0.GetName() + "_full_uncerts_up")
+    hdown.SetName(h0.GetName() + "_full_uncerts_down")
+    if len(hists) == 0:
+        for i in range(1, h0.GetNbinsX() + 2):
+            x0 = h0.GetBinContent(i)
+            up = h0.GetBinError(i)
+            down = h0.GetBinError(i)
+            hup.SetBinContent(i, x0 + up)
+            hdown.SetBinContent(i, x0 - down)
+            c = (x0 + up + x0 - down) / 2
+            u = (up + down) / 2
+            hout.SetBinContent(i, c)
+            hout.SetBinError(i, u)
+        return (hout, hup, hdown)
+
+    for i in range(1, h0.GetNbinsX() + 2):
+        x0 = h0.GetBinContent(i)
+        uncerts_up = [0.0]
+        uncerts_down = [0.0]
+        for h in hists:
+            x = h.GetBinContent(i)
+            if x > x0:
+                uncerts_up.append(x - x0)
+            if x < x0:
+                uncerts_down.append(x0 - x)
+        up = 0.0
+        down = 0.0
+        for u in uncerts_up:
+            up += u**2
+        for u in uncerts_down:
+            down += u**2
+
+        # add the statistical uncertainty
+        up += h0.GetBinError(i) ** 2
+        down += h0.GetBinError(i) ** 2
+
+        up = up**0.5
+        down = down**0.5
+
+        hup.SetBinContent(i, x0 + up)
+        hdown.SetBinContent(i, x0 - down)
+        c = (x0 + up + x0 - down) / 2
+        u = (up + down) / 2
+        hout.SetBinContent(i, c)
+        hout.SetBinError(i, u)
+    return (hout, hup, hdown)

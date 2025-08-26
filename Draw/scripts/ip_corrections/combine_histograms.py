@@ -309,34 +309,9 @@ variables = [
     "ip_x_1", "ip_x_2",
     "ip_y_1", "ip_y_2",
     "ip_z_1", "ip_z_2",
-    "log_err00_1", "log_err00_2",
-    "log_err11_1", "log_err11_2",
-    "log_err22_1", "log_err22_2",
-    "ip_LengthSig_1", "ip_LengthSig_2",
-    "ip_LengthTotal_1", "ip_LengthTotal_2",
-    "ip_ErrorTotal_1", "ip_ErrorTotal_2",
-#    "ip_alt_LengthSig_1", "ip_alt_LengthSig_2",
-#    "ip_x_1_Err", "ip_x_2_Err",
-#    "ip_y_1_Err", "ip_y_2_Err",
-#    "ip_z_1_Err", "ip_z_2_Err",
-#    "ip_cov10_1", "ip_cov10_2",
-#    "ip_cov20_1", "ip_cov20_2",
-#    "ip_cov21_1", "ip_cov21_2",
-#    "ip_x_1_Err_ratio", "ip_x_2_Err_ratio",
-#    "ip_y_1_Err_ratio", "ip_y_2_Err_ratio",
-#    "ip_z_1_Err_ratio", "ip_z_2_Err_ratio",
-#    "ip_x_1_log_Err", "ip_x_2_log_Err",
-#    "ip_y_1_log_Err", "ip_y_2_log_Err",
-#    "ip_z_1_log_Err", "ip_z_2_log_Err",
-#    "ip_cov00_1", "ip_cov00_2",
-#    "ip_cov11_1", "ip_cov11_2",
-#    "ip_cov22_1", "ip_cov22_2",
-#    "ip_cov10_1", "ip_cov10_2",
-#    "ip_cov20_1", "ip_cov20_2",
-#    "ip_cov21_1", "ip_cov21_2",
 ]
 
-channel = "mm"
+channel = "ee"
 
 if channel == "mm":
     eta_boundaries = [0.0, 0.9, 1.2, 2.1, 2.4]
@@ -346,45 +321,14 @@ else:
     logger.error(f"Channel '{channel}' not supported.")
     exit(1)
 
-year = "Run3_2022"  # Specify the year
-directory = f"/vols/cms/ks1021/TIDAL/Draw/plots/IP_corrections/before_2/{year}/ip_calculation/"
+year = "Run3_2023BPix"  # Specify the year
+directory = f"/vols/cms/ks1021/TIDAL/Draw/plots/IP_corrections_after/{year}/ip_calculation/"
 
 # Define the merge mapping
 merge_mapping = {
     "ip_x": ["ip_x_1", "ip_x_2"],
     "ip_y": ["ip_y_1", "ip_y_2"],
     "ip_z": ["ip_z_1", "ip_z_2"],
-    "log_err00": ["log_err00_1", "log_err00_2"],
-    "log_err11": ["log_err11_1", "log_err11_2"],
-    "log_err22": ["log_err22_1", "log_err22_2"],
-    "ip_LengthSig": ["ip_LengthSig_1", "ip_LengthSig_2"],
-    "ip_LengthTotal": ["ip_LengthTotal_1", "ip_LengthTotal_2"],
-    "ip_ErrorTotal": ["ip_ErrorTotal_1", "ip_ErrorTotal_2"],
-    # "PCA_ip_cov00": ["PCA_ip_cov00_1", "PCA_ip_cov00_2"],
-    # "PCA_ip_cov11": ["PCA_ip_cov11_1", "PCA_ip_cov11_2"],
-    # "PCA_ip_cov22": ["PCA_ip_cov22_1", "PCA_ip_cov22_2"],
-    # "PCA_ip_cov10": ["PCA_ip_cov10_1", "PCA_ip_cov10_2"],
-    # "PCA_ip_cov20": ["PCA_ip_cov20_1", "PCA_ip_cov20_2"],
-    # "PCA_ip_cov21": ["PCA_ip_cov21_1", "PCA_ip_cov21_2"],
-    #"ip_alt_LengthSig": ["ip_alt_LengthSig_1", "ip_alt_LengthSig_2"],
-#    "ip_x_Err": ["ip_x_1_Err", "ip_x_2_Err"],
-#    "ip_y_Err": ["ip_y_1_Err", "ip_y_2_Err"],
-#    "ip_z_Err": ["ip_z_1_Err", "ip_z_2_Err"],
-    #"ip_cov10": ["ip_cov10_1", "ip_cov10_2"],
-    #"ip_cov20": ["ip_cov20_1", "ip_cov20_2"],
-    #"ip_cov21": ["ip_cov21_1", "ip_cov21_2"],
-#    "ip_x_Err_ratio": ["ip_x_1_Err_ratio", "ip_x_2_Err_ratio"],
-#    "ip_y_Err_ratio": ["ip_y_1_Err_ratio", "ip_y_2_Err_ratio"],
-#    "ip_z_Err_ratio": ["ip_z_1_Err_ratio", "ip_z_2_Err_ratio"],
-    #"ip_x_log_Err": ["ip_x_1_log_Err", "ip_x_2_log_Err"],
-    #"ip_y_log_Err": ["ip_y_1_log_Err", "ip_y_2_log_Err"],
-    #"ip_z_log_Err": ["ip_z_1_log_Err", "ip_z_2_log_Err"],
-#    "ip_cov00": ["ip_cov00_1", "ip_cov00_2"],
-#    "ip_cov11": ["ip_cov11_1", "ip_cov11_2"],
-#    "ip_cov22": ["ip_cov22_1", "ip_cov22_2"],
-#    "ip_cov10": ["ip_cov10_1", "ip_cov10_2"],
-#    "ip_cov20": ["ip_cov20_1", "ip_cov20_2"],
-#    "ip_cov21": ["ip_cov21_1", "ip_cov21_2"],
 }
 
 # Run the processing

@@ -10,7 +10,7 @@ plt.rcParams.update({"font.size": 16})
 
 class HTT_Histogram:
 
-    def __init__(self, file, category, channel, era, variable,blind=False, log_y=False, is2Dunrolled=False):
+    def __init__(self, file, category, channel, era, variable,blind=False, log_y=False, is2Dunrolled=False, save_name=None):
         self.file = uproot.open(file)
         self.file_name = file
         self.directory = os.path.dirname(file)
@@ -21,6 +21,7 @@ class HTT_Histogram:
         self.variable = variable.split("[")[0]
         self.log_y = log_y
         self.is2Dunrolled = is2Dunrolled
+        self.save_name = save_name
 
         self.initialize_plotting()
         self.initialize_nodes()
@@ -89,9 +90,8 @@ class HTT_Histogram:
                 elif "a1pi" in self.category:
                     self.channel_label = r"$a_1^{3pr} \pi$"
                 elif "rhoa11pr" in self.category:
-                    self.channel_label = r"""$\rho a_1^{1pr}$ / $a_1^{1pr}\rho$
-    $a_1^{1pr}a_1^{1pr}$"""
-                    self.ch_label_height = 0.825
+                    self.channel_label = r"""$\rho a_1^{1pr}$ / $a_1^{1pr}\rho$ / $a_1^{1pr}a_1^{1pr}$"""
+                    # self.ch_label_height = 0.825
                 elif "rhoa1" in self.category:
                     self.channel_label = r"$\rho a_1^{3pr}$"
                 elif "a1rho" in self.category:
@@ -102,7 +102,6 @@ class HTT_Histogram:
                     self.channel_label = r"$a_1^{3pr}a_1^{1pr}$"
                 elif "a1a1" in self.category:
                     self.channel_label = r"$a_1^{3pr}a_1^{3pr}$"
-
         elif self.channel == 'mt':
             if "DM0_" in self.category:
                 self.channel_label = r"$\mu\pi$"
@@ -116,38 +115,40 @@ class HTT_Histogram:
 
     def initialize_nodes(self):
         # get total background nodes
+        self.total_background_nodes = {
+            "nominal": "total_bkg",
+            "up": "total_bkg_full_uncerts_up",
+            "down": "total_bkg_full_uncerts_down",
+        }
         if self.channel == "tt":
-            # self.backgrounds = {
-            #                     "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
-            #                     "QCD": {"nodes": ["QCD"], "color": "pink"},
-            #                     "Electroweak": {"nodes": ["VVT", "VVJ", "W", "ZL", "ZJ"], "color": "red"},
-            #                     "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
-            #                 }
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
                                 "Jet$\\to\\tau_h$": {"nodes": ["JetFakes", "JetFakesSublead"], "color": "green"},
-                                "Electroweak": {"nodes": ["VVT", "VVJ", "W", "ZL", "ZJ"], "color": "red"},
-                                "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
+                                "Z$\\to\\ell\\ell$": {"nodes": ["ZL"], "color": "lightblue"},
+                                "Genuine $\\tau$": {"nodes": ["ZTT", "TTT", "VVT", "qqH_sm_htt125","ggH_sm_prod_sm_htt125","WH_sm_htt125","ZH_sm_htt125"], "color": "yellow"},
                             }
+            # TEMPORARY: Add signal to list of backgrounds
+            # self.signal = {"SM H$\\to\\tau\\tau$": {"nodes": ["qqH_sm_htt125","ggH_sm_prod_sm_htt125","WH_sm_htt125","ZH_sm_htt125"]}
+                        #    }
             self.lep1 = "\\tau_1"
             self.lep2 = "\\tau_2"
         elif self.channel == "mt":
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
+                                "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
-                                "Electroweak": {"nodes": ["VVT", "VVJ", "W"], "color": "red"},
-                                "Z$\\to\\mu\\mu$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
-                                "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
+                                "Electroweak": {"nodes": ["VVJ", "W"], "color": "red"},
+                                "Z$\\to\\ell\\ell$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
+                                "Genuine $\\tau$": {"nodes": ["VVT", "TTT", "ZTT"], "color": "yellow"},
                             }
             self.lep1 = "\\mu"
             self.lep2 = "\\tau"
+
         elif self.channel == "et":
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
+                                "$t\\bar{t}$": {"nodes": ["TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
-                                "Electroweak": {"nodes": ["VVT", "VVJ", "W"], "color": "red"},
-                                "Z$\\to ee": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
-                                "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
+                                "Electroweak": {"nodes": ["VVJ", "W"], "color": "red"},
+                                "Z$\\to\\ell\\ell$": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
+                                "Genuine $\\tau$": {"nodes": ["VVT", "TTT", "ZTT"], "color": "yellow"},
                             }
             self.lep1 = "e"
             self.lep2 = "\\tau"
@@ -163,9 +164,9 @@ class HTT_Histogram:
             self.lep2 = "\\mu"
         elif self.channel == "ee":
             self.backgrounds = {
-                                "$t\\bar{t}$": {"nodes": ["TTT", "TTJ"], "color": "violet"},
+                                "$t\\bar{t}$": {"nodes": ["TTL", "TTJ"], "color": "violet"},
                                 "QCD": {"nodes": ["QCD"], "color": "pink"},
-                                "Electroweak": {"nodes": ["VVT", "VVJ", "W"], "color": "red"},
+                                "Electroweak": {"nodes": ["VVL", "VVJ", "W"], "color": "red"},
                                 "Z$\\to ee": {"nodes": ["ZL", "ZJ"], "color": "lightblue"},
                                 "Z$\\to\\tau\\tau$": {"nodes": ["ZTT"], "color": "yellow"},
                             }
@@ -190,6 +191,8 @@ class HTT_Histogram:
             self.lumi = 17.79
         elif self.era == "Run3_2023BPix":
             self.lumi = 9.45
+        else: 
+            self.lumi = 61.9
         # get color for each background
         for bkg, info in self.backgrounds.items():
             info['color'] = self.colors[info["color"]]  # replace color name with hex code
@@ -244,10 +247,18 @@ class HTT_Histogram:
         return counts, errors
 
     def get_backgrounds(self):
-        # track total background
-        total_bkg_counts = np.zeros(len(self.bin_centers))
-        total_bkg_sq_errors = np.zeros(len(self.bin_centers))
-        # compute each background contribution
+        # total background template
+        bkg_counts, _ = self.get_counts_errors(self.total_background_nodes["nominal"])
+        bkg_counts_up, _ = self.get_counts_errors(self.total_background_nodes["up"])
+        bkg_counts_down, _ = self.get_counts_errors(self.total_background_nodes["down"])
+
+        self.total_bkg_error_up = np.abs(bkg_counts_up - bkg_counts)
+        self.total_bkg_error_down = np.abs(bkg_counts_down - bkg_counts)
+        self.total_bkg_error_pce_up = np.divide(self.total_bkg_error_up, bkg_counts, where=bkg_counts > 0, out=np.zeros_like(bkg_counts))
+        self.total_bkg_error_pce_down = np.divide(self.total_bkg_error_down, bkg_counts, where=bkg_counts > 0, out=np.zeros_like(bkg_counts))
+
+        self.total_background = {"counts": bkg_counts, "error_up": self.total_bkg_error_up, "error_down": self.total_bkg_error_down, "pc_error_up": self.total_bkg_error_pce_up, "pc_error_down": self.total_bkg_error_pce_down}
+
         for bkg, info in self.backgrounds.items():
             bkg_counts = np.zeros(len(self.bin_centers))
             bkg_sq_errors = np.zeros(len(self.bin_centers))
@@ -258,12 +269,7 @@ class HTT_Histogram:
             # store counts and yields for each contribution
             self.backgrounds[bkg]["counts"] = bkg_counts
             self.backgrounds[bkg]["errors"] = np.sqrt(bkg_sq_errors)
-            total_bkg_counts += bkg_counts
-            total_bkg_sq_errors += bkg_sq_errors
-        # store total background
-        total_bkg_err = np.sqrt(total_bkg_sq_errors)
-        total_bkg_pce_err = np.divide(total_bkg_err, total_bkg_counts, where=total_bkg_counts > 0, out=np.zeros_like(total_bkg_counts))
-        self.total_background = {"counts": total_bkg_counts, "errors": total_bkg_err, "pc_error": total_bkg_pce_err}
+
         return True
 
     def get_data(self):
@@ -273,7 +279,7 @@ class HTT_Histogram:
         self.data = {"counts": data_counts, "errors": data_errors, "pc_error": pce_data}
         # get data/MC ratio
         count_ratio =  np.divide(data_counts, self.total_background["counts"], where=self.total_background["counts"] > 0, out=np.zeros_like(data_counts))
-        self.data_MC_ratio = {"counts": count_ratio, "error_data": self.data["pc_error"], "error_MC": self.total_background["pc_error"]}
+        self.data_MC_ratio = {"counts": count_ratio, "error_data": self.data["pc_error"], "error_MC_up": self.total_background["pc_error_up"], "error_MC_down": self.total_background["pc_error_down"]}
         return True
 
     def stack_background(self, ax, name):
@@ -289,6 +295,22 @@ class HTT_Histogram:
         self.stacked_step += steps
         return True
 
+    # def get_signal(self):
+    #     # total signal
+    #     for sig, info in self.signal.items():
+    #         sig_counts = np.zeros(len(self.bin_centers))
+    #         sig_sq_errors = np.zeros(len(self.bin_centers))
+    #         for contribution in info["nodes"]:
+    #             counts, errors = self.get_counts_errors(contribution)
+    #             sig_counts += counts
+    #             sig_sq_errors += errors**2
+    #         # store counts and yields for each contribution
+    #         self.signal[sig]["counts"] = sig_counts
+    #         self.signal[sig]["errors"] = np.sqrt(sig_sq_errors)
+
+    #     return True
+
+
     def plot_1D_histo(self, ratio_min=0.5, ratio_max=1.5):
         print("Plotting 1D histogram")
         # plot 1D histogram
@@ -301,24 +323,29 @@ class HTT_Histogram:
         # add uncertainty on total MC
         self.stacked_block = np.insert(self.stacked_block, len(self.stacked_block), 0)
         self.ax.fill_between(self.bin_edges,
-                    self.stacked_block-np.insert(self.total_background["errors"], len(self.total_background["errors"]), 0),
-                    self.stacked_block+np.insert(self.total_background["errors"], len(self.total_background["errors"]), 0),
+                    self.stacked_block-np.insert(self.total_background["error_down"], len(self.total_background["error_down"]), 0),
+                    self.stacked_block+np.insert(self.total_background["error_up"], len(self.total_background["error_up"]), 0),
                     step="post", facecolor='none', hatch='////////', edgecolor='grey', linewidth=0, label = "Background Uncertainty")
         if not self.blind:
             # add data
             self.ax.errorbar(self.bin_centers, self.data['counts'], label='Observation', yerr=self.data['errors'], fmt='o', color = 'black', markersize=3, linewidth=0.6)
             self.ax.errorbar(self.bin_centers, self.data['counts'],xerr=self.bin_widths/2, fmt='o', color = 'black', markersize=3, linewidth=0.6) # add width marker
 
+
+        # TODO: MAKE OPTION to add signal
+
         ## RATIO PLOT
         self.ax_ratio.axhline(1, color='black', linestyle=':')
+        for l in [0.6, 0.8, 1.2, 1.4]: # add horizontal lines
+            self.ax_ratio.axhline(l, color='darkgray', linestyle='dotted')
         self.fig.subplots_adjust(hspace=0.05)
         # add data/MC ratio as points
         if not self.blind:
             self.ax_ratio.errorbar(self.bin_centers, self.data_MC_ratio['counts'], yerr=self.data_MC_ratio['error_data'], xerr=self.bin_widths/2, fmt='o', color = 'black', markersize=3, linewidth=0.6)
         # add MC uncertainty as shaded band
         self.ax_ratio.fill_between(self.bin_edges,
-            1 - np.insert(self.data_MC_ratio['error_MC'], len(self.data_MC_ratio['error_MC']), 0),
-            1 + np.insert(self.data_MC_ratio['error_MC'], len(self.data_MC_ratio['error_MC']), 0),
+            1 - np.insert(self.data_MC_ratio['error_MC_down'], len(self.data_MC_ratio['error_MC_down']), 0),
+            1 + np.insert(self.data_MC_ratio['error_MC_up'], len(self.data_MC_ratio['error_MC_up']), 0),
             step="post", facecolor='none', hatch='////////', edgecolor='grey', linewidth=0)
 
         # legends and labels
@@ -356,7 +383,7 @@ class HTT_Histogram:
             self.ax.set_yscale('log')
             self.ax.set_ylim(0.1, 10*np.max(self.stacked_block))
         else:
-            self.ax.set_ylim(0, 1.5*np.max(self.stacked_block))
+            self.ax.set_ylim(0, 2.0*np.max(self.stacked_block))
         self.ax.set_xlim(self.bin_edges[0], self.bin_edges[-1])
         # ratio plot
         self.ax_ratio.set_ylabel("Obs/Exp")
@@ -364,26 +391,37 @@ class HTT_Histogram:
         self.ax_ratio.set_ylim(ratio_min, ratio_max)
 
         # Save to pdf and png
-        save_path_png = self.file_name.split(os.sep)
-        save_path_png.insert(-1, 'pngs')
-        os.makedirs(os.sep.join(save_path_png[:-1]), exist_ok=True) # make dir if not exists
-        save_path_png = os.sep.join(save_path_png).replace(".root", ".png")
+        if self.save_name:
+            save_path_png = self.save_name+".png"
+            save_path_pdf = self.save_name+".pdf"
+        else:
+            save_path_png = self.file_name.split(os.sep)
+            save_path_png.insert(-1, 'pngs')
+            os.makedirs(os.sep.join(save_path_png[:-1]), exist_ok=True) # make dir if not exists
+            save_path_png = os.sep.join(save_path_png).replace(".root", ".png")
+            save_path_pdf = self.file_name.split(os.sep)
+            save_path_pdf.insert(-1, 'pdfs')
+            os.makedirs(os.sep.join(save_path_pdf[:-1]), exist_ok=True) # make dir if not exists
+            save_path_pdf = os.sep.join(save_path_pdf).replace(".root", ".pdf")
         plt.savefig(save_path_png, bbox_inches='tight')
         print(f'Saved histogram to {save_path_png}')
 
-        save_path_pdf = self.file_name.split(os.sep)
-        save_path_pdf.insert(-1, 'pdfs')
-        os.makedirs(os.sep.join(save_path_pdf[:-1]), exist_ok=True) # make dir if not exists
-        save_path_pdf = os.sep.join(save_path_pdf).replace(".root", ".pdf")
         plt.savefig(save_path_pdf, bbox_inches='tight')
         print(f'Saved histogram to {save_path_pdf}')
 
 
 if __name__ == "__main__":
+    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/ZpT_Recoil_v4_TEST/Run3_2022/control/mm/datacard_pt_tt_inclusive_mm_Run3_2022.root", "mm_inclusive", "mm", "Run3_2022", "pt_tt", log_y=False, blind=False)
+    # histo.plot_1D_histo()
 
-    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Tests1303/IPHC_FF_VVVLoose/Run3_2022/control/tt/datacard_m_vis_cp_inclusive_tt_Run3_2022.root", "tt_cp_inclusive", "tt", "Run3_2022", "m_vis", log_y=False, blind=False)
 
-    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/1303/TestPlotting/Run3_2022/cpdecay/tt/datacard_BDT_pred_score_vs_aco_rho_rho_higgs_rhorho_tt_Run3_2022.root", "tt_higgs_rhorho", "tt", "Run3_2022", "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],[0.0,0.6283185307179586,1.2566370614359172,1.8849555921538759,2.5132741228718345,3.141592653589793,3.7699111843077517,4.39822971502571,5.026548245743669,5.654866776461628,6.283185307179586]", blind=True, is2Dunrolled=True)
+
+    histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/test_datacards_newBDT/Run3_2022/cpdecay/tt/datacard_BDT_pred_score_vs_aco_rho_rho_higgs_rhorho_tt_Run3_2022.root", "tt_higgs_rhorho", "tt", "Run3_2022", "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],[0.0,0.6283185307179586,1.2566370614359172,1.8849555921538759,2.5132741228718345,3.141592653589793,3.7699111843077517,4.39822971502571,5.026548245743669,5.654866776461628,6.283185307179586]", log_y=False, blind=True, is2Dunrolled=True)
     histo.plot_1D_histo()
+
+    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/DeriveIDSFs_May25/AntiIso_0p3/Run3_2022/sf_calculation/mt/datacard_m_vis_mTLt65_aiso_inclusive_mt_Run3_2022.root", "mt_inclusive_mTLt65_aiso", "mt", "Run3_2022", "m_vis", log_y=False, blind=False)
+
+    # histo = HTT_Histogram("/vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/3104/BinnedSFs_DoubleTauJet/Run3_2023/control/tt/datacard_m_vis_1_cp_inclusive_tt_Run3_2023.root", "tt_higgs_rhorho", "tt", "Run3_2022", "BDT_pred_score,aco_rho_rho[0.,0.7,0.8,0.9,1.0],[0.0,0.6283185307179586,1.2566370614359172,1.8849555921538759,2.5132741228718345,3.141592653589793,3.7699111843077517,4.39822971502571,5.026548245743669,5.654866776461628,6.283185307179586]", blind=True, is2Dunrolled=True)
+    # histo.plot_1D_histo()
 
 

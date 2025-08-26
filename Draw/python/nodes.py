@@ -134,9 +134,9 @@ def GetWNode(ana, name='W', samples_dict={}, gen_sels_dict={}, plot='',plot_unmo
     else:
         shape_cat = cat
     shape_selection = BuildCutString(wt, sel, shape_cat, OSSS, '')
-    if method in [1,3,4]:
+    if method in [1,3,4,5]:
         w_node = ana.SummedFactory(name, samples_dict['wjets_samples'], plot, full_selection)
-    elif method == 2:
+    elif method in [2]:
         full_selection = BuildCutString(wt, sel, cat, OSSS)
         ss_selection = BuildCutString(wt, '', cat, '!os', '')
         os_selection = BuildCutString(wt, '', cat, 'os', '')
@@ -223,10 +223,22 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
     else:
         OSSS = "!os"
 
-    cat = categories['cat']    
-    cat_data = categories_unmodified['cat']    
+    cat = categories['cat']
+    cat_data = categories_unmodified['cat']
+
+    # this is for implementing the uncertainty due to the real-tau subtraction
+    sub_wt=''
+    if 'sub_syst' in add_name:
+        if 'Up' in add_name: sub_wt='*1.1'
+        if 'Down' in add_name: sub_wt='*0.9'
 
     ## Add estimation of fake with anti-isolated (fake) leading tau
+    if 'flat_fake_sub_up' in systematic:
+        syst_weight = 1.2
+    elif 'flat_fake_sub_down' in systematic:
+        syst_weight = 0.8
+    else:
+        syst_weight = 1.0
 
     if method == 3: # Flat fake factor method
         data_weight = '(weight)'
@@ -234,13 +246,13 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
         categories['qcd_sdb_cat'] = categories[cat_name]+'&&'+categories['tt_qcd_norm']
         categories_unmodified['qcd_sdb_cat'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_qcd_norm']
 
-        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel+'(genPartFlav_1 != 0)', 'cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
+        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt+sub_wt, sel+'*(genPartFlav_1 != 0)', 'cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
         num_selection = BuildCutString(data_weight, sel, cat_data, '!os')
         num_node = Analysis.SubtractNode('ratio_num',
                        ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, num_selection),
                        subtract_node)
 
-        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel+'(genPartFlav_1 != 0)', 'qcd_sdb_cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
+        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt+sub_wt, sel+'*(genPartFlav_1 != 0)', 'qcd_sdb_cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True)
         den_selection = BuildCutString(data_weight, sel, categories_unmodified['qcd_sdb_cat'], '!os')
         den_node = Analysis.SubtractNode('ratio_den',
                        ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, den_selection),
@@ -248,7 +260,7 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
 
         shape_node = None
         full_selection = BuildCutString(data_weight, sel, categories_unmodified['qcd_sdb_cat'], OSSS)
-        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt, sel+'(genPartFlav_1 != 0)', 'qcd_sdb_cat', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
+        subtract_node = GetSubtractNode(ana, '', plot, plot_unmodified, wt+sub_wt, sel+'*(genPartFlav_1 != 0)', 'qcd_sdb_cat', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
 
         ana.nodes[nodename].AddNode(Analysis.HttQCDNode('JetFakes'+add_name,
             ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, full_selection),
@@ -256,29 +268,32 @@ def GenerateFakes(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={},
             1,
             shape_node,
             num_node,
-            den_node))
+            den_node,
+            add_weight=syst_weight))
 
     elif method == 4:  # Full Fake Factor Method
-        ff_weight = '(weight) * (w_FakeFactor)' # apply the fake factor weight
+        if systematic == 'nominal' or 'sub_syst' in add_name or 'FF_syst:' not in systematic: ff_weight = f'(weight) * (w_FakeFactor_cmb)' # apply the nominal fake factor weight
+        else: ff_weight = f'(weight) * ({systematic.replace("FF_syst:", "").replace("*ff_nom", "w_FakeFactor_cmb")})'
         # application region
         categories['qcd_ff_estimate'] = categories[cat_name]+'&&'+categories['tt_ff_AR']
         categories_unmodified['qcd_ff_estimate'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['tt_ff_AR']
         ff_selection = BuildCutString(ff_weight, sel, categories['qcd_ff_estimate'], OSSS)
         # Get MC background and data yields
-        mc_bkg_node = GetSubtractNode(ana, '', plot, plot_unmodified, ff_weight, sel+'(genPartFlav_1 != 0)', 'qcd_ff_estimate', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
+        mc_bkg_node = GetSubtractNode(ana, '', plot, plot_unmodified, ff_weight+sub_wt, sel+'*(genPartFlav_1 != 0)', 'qcd_ff_estimate', categories, categories_unmodified, method, qcd_factor, get_os, samples_dict, gen_sels_dict, includeW=True)
         data_node = ana.SummedFactory('data', samples_dict['data_samples'], plot_unmodified, ff_selection)
-        # Data - MC background yield
-        qcd_estimate = Analysis.SubtractNode('JetFakes'+add_name,
+        # Data - MC background yield (left with only jet fakes as doing ALL fakes MINUS non-jet fakes)
+        ff_estimate = Analysis.SubtractNode('JetFakes'+add_name,
                        data_node,
                        mc_bkg_node)
-        # Store QCD yield
-        ana.nodes[nodename].AddNode(qcd_estimate)
+        # Store FF yield
+        ana.nodes[nodename].AddNode(ff_estimate)
 
-    ## Add estimation of fakes with fake subleading tau
-    categories['sublead_fakes_estimate'] = categories[cat_name]+'&&'+categories['subleadfake']
-    fake_sublead_selection = BuildCutString('(weight)', sel, categories['sublead_fakes_estimate'], OSSS)
-    fake_sublead_node = ana.SummedFactory('JetFakesSublead'+add_name, samples_dict['ztt_samples']+samples_dict['wjets_samples']+samples_dict['vv_samples']+samples_dict['top_samples'], plot_unmodified, fake_sublead_selection)
-    ana.nodes[nodename].AddNode(fake_sublead_node)
+    if systematic == 'nominal':
+        ## Add estimation of fakes with fake subleading tau
+        categories['sublead_fakes_estimate'] = categories[cat_name]+'&&'+categories['subleadfake']
+        fake_sublead_selection = BuildCutString(f"(weight)*({syst_weight})", sel, categories['sublead_fakes_estimate'], OSSS)
+        fake_sublead_node = ana.SummedFactory('JetFakesSublead'+add_name, samples_dict['ztt_samples']+samples_dict['wjets_samples']+samples_dict['vv_samples']+samples_dict['top_samples'], plot_unmodified, fake_sublead_selection)
+        ana.nodes[nodename].AddNode(fake_sublead_node)
 
 
 def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, systematic='', plot='', plot_unmodified='', wt='', sel='', cat_name='', categories={}, categories_unmodified={}, method=1, qcd_factor=1.0, get_os=True,w_shift=None):
@@ -291,7 +306,7 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
     cat = categories['cat']
     cat_data = categories_unmodified['cat']
 
-    if method in [1,2]:
+    if method in [1,2,5]:
         sub_shift='*1.0'
         if 'qcd_sub_up' in systematic:
             sub_shift = '*1.1'
@@ -299,9 +314,17 @@ def GenerateQCD(ana, nodename, add_name='', samples_dict={}, gen_sels_dict={}, s
             sub_shift = '*0.9'
 
         # TODO: Weight for data
-        # HERE
         data_weight = '(weight)'
         full_selection = BuildCutString(data_weight, sel, cat_data, '!os')
+
+        if method in [5]:
+            categories['qcd_loose_shape_cat'] = categories[cat_name]+'&&'+categories['qcd_loose_shape']
+            categories_unmodified['qcd_loose_shape_cat'] = categories_unmodified[cat_name]+'&&'+categories_unmodified['qcd_loose_shape']
+            shape_selection = BuildCutString(data_weight, sel, categories_unmodified['qcd_loose_shape_cat'], '!os')
+            subtract_node = GetSubtractNode(ana , '', plot, plot_unmodified, wt+sub_shift, sel, 'qcd_loose_shape_cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True, w_shift=w_shift)
+            shape_node = Analysis.SubtractNode('shape', ana.SummedFactory('data_ss', samples_dict['data_samples'], plot_unmodified, shape_selection), subtract_node)
+
+        # method 5 subtract node gets overrided here as it's only used for the shape node
         subtract_node = GetSubtractNode(ana , '', plot, plot_unmodified, wt+sub_shift, sel, 'cat', categories, categories_unmodified, method, qcd_factor, False, samples_dict, gen_sels_dict, includeW=True, w_shift=w_shift)
 
         if get_os:
