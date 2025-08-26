@@ -27,9 +27,9 @@ sf_calculation:
         - [ "systematic_TTbar_Shape", "CMS_htt_ttbarShape" ]
 
   Aliases:
-    Alias1: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && pt_1 > 26 && idDeepTau2017v2p1VSe_2 >= 2)"
+    Alias1: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && pt_1 > 26 && idDeepTau2018v2p5VSe_2 >= 2)"
     Alias2: "category:({category} && m_vis > 40 && pt_1 > 26 && fabs(eta_1) < 2.4 && trg_singlemuon)"
-    Alias1b: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && pt_1 > 26 && idDeepTau2017v2p1VSe_2 >= 6)"
+    Alias1b: "category:({category} && m_vis > 40 && fabs(eta_1) < 2.4 && trg_singlemuon && pt_1 > 26 && idDeepTau2018v2p5VSe_2 >= 6)"
 
   mt:
   # remove _cp and DM2 if normal SFs
