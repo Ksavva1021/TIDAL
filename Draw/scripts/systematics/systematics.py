@@ -81,11 +81,13 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     # Tau ID systematics
     # ----------------------------------------------------------------------------------------------------
 
-    # First Kind: stat1, stat2, syst_TES_era_dm
+    # First Kind: stat1, stat2
     # should be uncorrelated across DMs and eras
     if specific_systematic == 'Tau_ID_PNet':
+
+        samples_to_skip = ['JetFakes', 'QCD']
         kinds = ['stat1','stat2']
-        decay_modes = ["0", "1", "2", "10", "11"]
+        decay_modes = ["0", "1", "2", "10"]
         era = specific_era # no longer run all eras (can deal with this in hadding)
 
         for kind in kinds:
@@ -104,15 +106,17 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
                         up_weights.append(formula.replace('variation_to_replace', up_var))
                         down_weights.append(formula.replace('variation_to_replace', down_var))
-                        print(up_weights)
                         del up_var, down_var
 
                 systematic_name = f'Tau_ID_PNet_{kind.replace("_era_", "_")}_DM{dm}_{era}'
-                histogram_name = f'syst_tau_id_pnet_{kind.replace("_era_", "_")}_DM{dm}_{era}'
+                if specific_name == '':
+                    histogram_name =  f'syst_tau_id_pnet_{kind.replace("_era_", "_")}_DM{dm}_{era}'
+                else:
+                    histogram_name = specific_name.replace("*group", f"{kind}_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
 
                 if specific_channel in ["et","mt","tt"]:
-                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
-                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
+                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), samples_to_skip, None)
+                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), samples_to_skip, None)
 
         del up_weights, down_weights
 
@@ -136,10 +140,14 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 del up_var, down_var
 
         systematic_name = f'Tau_ID_PNet_syst_era_{era}'
-        histogram_name = f'syst_tau_id_pnet_{era}'
+        if specific_name == '':
+            histogram_name =  f'syst_tau_id_pnet_{era}'
+        else:
+            histogram_name = specific_name.replace("*group", f"syst_{specific_era.split('Run3_')[1]}")
+
         if specific_channel in ["et","mt","tt"]:
-            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
-            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
+            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), samples_to_skip, None)
+            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), samples_to_skip, None)
 
         del up_weights, down_weights
 
@@ -159,10 +167,14 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 del up_var, down_var
 
         systematic_name = 'Tau_ID_PNet_syst_all_eras'
-        histogram_name = 'syst_tau_id_pnet_all_eras'
+        if specific_name == '':
+            histogram_name = 'syst_tau_id_pnet_all_eras'
+        else:
+            histogram_name = specific_name.replace("*group", f"syst_alleras")
+
         if specific_channel in ["et","mt","tt"]:
-            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
-            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
+            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), samples_to_skip, None)
+            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), samples_to_skip, None)
 
         del up_weights, down_weights
     # ----------------------------------------------------------------------------------------------------
@@ -278,15 +290,15 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         # Genuine Taus
         if specific_systematic == 'Tau_EnergyScale_PNet_TSCALE':
             prefixes = ['Tau_EnergyScale_PNet_TSCALE_']
-            samples_to_skip = ["QCD"] # ADD JetFakes
+            samples_to_skip = ["JetFakes", "QCD"]
         # Genuine electrons misidentified as taus
         elif specific_systematic == 'Tau_EnergyScale_PNet_ESCALE':
             prefixes = ['Tau_EnergyScale_PNet_ESCALE_']
-            samples_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','signal','W']
+            samples_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','JetFakes','signal','W']
         # Genuine muons misidentified as taus
         elif specific_systematic == 'Tau_EnergyScale_PNet_MUSCALE':
             prefixes = ['Tau_EnergyScale_PNet_MUSCALE_']
-            samples_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','signal','W']
+            samples_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','JetFakes','signal','W']
 
 
         # for index in range(len(prefixes)): # for IDSFs
@@ -312,7 +324,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             'ZJ','ZL','ZLL','ZTT'
             'VVT','VVJ',
             'TTT','TTJ',
-            'QCD','signal',
+            'QCD','JetFakes','signal',
         ]
 
         prefix = 'Tau_EnergyScale_PNet_JSCALE_'
@@ -390,7 +402,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         samples_to_skip = [
             "ZTT", "ZLL", "ZL", "ZJ",
             "VV", "VVT", "VVJ",
-            "W","signal", 'QCD'
+            "W","signal", 'QCD', 'JetFakes'
         ]
         up_var = 'w_Top_pt_Reweighting'
         down_var = '(1/w_Top_pt_Reweighting)'
@@ -414,7 +426,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         samples_to_skip = [
             "TT", "TTT", "TTJ",
             "VV", "VVT", "VVJ",
-            "W","signal", 'QCD'
+            "W","signal", 'QCD', 'JetFakes'
         ]
 
         if specific_systematic == 'DY_Shape':
@@ -489,7 +501,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             "ZTT", "ZLL", "ZL", "ZJ",
             "TT", "TTT", "TTJ",
             "VV", "VVT", "VVJ",
-            "W","signal"
+            "W","signal", 'JetFakes'
         ]
         for updown in ['up','down']:
             systematic_name = 'qcd_sub_' + updown
