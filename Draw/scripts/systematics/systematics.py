@@ -85,69 +85,61 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     # should be uncorrelated across DMs and eras
     if specific_systematic == 'Tau_ID_PNet':
         kinds = ['stat1','stat2']
-        eras = ["Run3_2023", "Run3_2022EE", "Run3_2022", "Run3_2023BPix"]
         decay_modes = ["0", "1", "2", "10", "11"]
+        era = specific_era # no longer run all eras (can deal with this in hadding)
 
         for kind in kinds:
-            for era in eras:
-                for dm in decay_modes:
-                    up_weights = []
-                    down_weights = []
-                    for obj_index, obj_type in enumerate(specific_channel):
-                        if obj_type == 't':
-                            up_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Up'
-                            down_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Down'
+            for dm in decay_modes:
+                up_weights = []
+                down_weights = []
+                for obj_index, obj_type in enumerate(specific_channel):
+                    if obj_type == 't':
+                        up_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Up'
+                        down_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Down'
 
-                            if specific_era == era:
-                                formula = (
-                                    f"((variation_to_replace) * (decayMode_{obj_index+1} == {dm}) + "
-                                    f"(!(decayMode_{obj_index+1} == {dm})))"
-                                )
-                            else:
-                                formula = (
-                                    f"((1) * (decayMode_{obj_index+1} == {dm}) + "
-                                    f"(!(decayMode_{obj_index+1} == {dm})))"
-                                )
+                        formula = (
+                            f"((variation_to_replace) * (decayMode_{obj_index+1} == {dm}) + "
+                            f"(!(decayMode_{obj_index+1} == {dm})))"
+                        )
 
-                            up_weights.append(formula.replace('variation_to_replace', up_var))
-                            down_weights.append(formula.replace('variation_to_replace', down_var))
+                        up_weights.append(formula.replace('variation_to_replace', up_var))
+                        down_weights.append(formula.replace('variation_to_replace', down_var))
+                        print(up_weights)
+                        del up_var, down_var
 
-                            del up_var, down_var
+                systematic_name = f'Tau_ID_PNet_{kind.replace("_era_", "_")}_DM{dm}_{era}'
+                histogram_name = f'syst_tau_id_pnet_{kind.replace("_era_", "_")}_DM{dm}_{era}'
 
-                    systematic_name = f'Tau_ID_{kind.replace("_era_", "_")}_DM{dm}_{era}'
-                    histogram_name = f'syst_tau_id_{kind.replace("_era_", "_")}_DM{dm}_{era}'
-
-                    if specific_channel in ["et","mt","tt"]:
-                        systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
-                        systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
+                if specific_channel in ["et","mt","tt"]:
+                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
+                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
 
         del up_weights, down_weights
 
         # Second Kind: syst_era
         # should be correlated across DMs but uncorrelated across eras
 
-        for era in eras:
-            up_weights = []
-            down_weights = []
-            for obj_index, obj_type in enumerate(specific_channel):
-                if obj_type == 't':
-                    up_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_era_Up'
-                    down_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_era_Down'
+        up_weights = []
+        down_weights = []
+        for obj_index, obj_type in enumerate(specific_channel):
+            if obj_type == 't':
+                up_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_era_Up'
+                down_var = f'w_Tau_ID_PNet_{obj_index+1}_syst_era_Down'
 
-                    if specific_era == era:
-                        up_weights.append(f"({up_var})")
-                        down_weights.append(f"({down_var})")
-                    else:
-                        up_weights.append("(1)")
-                        down_weights.append("(1)")
+                if specific_era == era:
+                    up_weights.append(f"({up_var})")
+                    down_weights.append(f"({down_var})")
+                else:
+                    up_weights.append("(1)")
+                    down_weights.append("(1)")
 
-                    del up_var, down_var
+                del up_var, down_var
 
-            systematic_name = f'Tau_ID_syst_era_{era}'
-            histogram_name = f'syst_tau_id_{era}'
-            if specific_channel in ["et","mt","tt"]:
-                systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
-                systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
+        systematic_name = f'Tau_ID_PNet_syst_era_{era}'
+        histogram_name = f'syst_tau_id_pnet_{era}'
+        if specific_channel in ["et","mt","tt"]:
+            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
+            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
 
         del up_weights, down_weights
 
@@ -166,8 +158,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
                 del up_var, down_var
 
-        systematic_name = 'Tau_ID_syst_all_eras'
-        histogram_name = 'syst_tau_id_all_eras'
+        systematic_name = 'Tau_ID_PNet_syst_all_eras'
+        histogram_name = 'syst_tau_id_pnet_all_eras'
         if specific_channel in ["et","mt","tt"]:
             systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
             systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
