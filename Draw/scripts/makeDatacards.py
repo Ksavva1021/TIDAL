@@ -197,7 +197,7 @@ for era in eras:
             f"Era {era} is not a valid era. Please choose from {available_eras}"
         )
 
-available_schemes = ["sf_calculation", "control", "cpdecay"]
+available_schemes = ["sf_calculation", "control", "cpdecay", "cpdecay_fakefactors_control"]
 for scheme in schemes:
     if scheme not in available_schemes:
         raise ValueError(
