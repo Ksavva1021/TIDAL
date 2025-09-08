@@ -188,11 +188,11 @@ class HTT_Histogram:
         elif self.era == "Run3_2022EE":
             self.lumi = 26.67
         elif self.era == "Run3_2023":
-            self.lumi = 17.79
+            self.lumi = 18.06
         elif self.era == "Run3_2023BPix":
-            self.lumi = 9.45
+            self.lumi = 9.69
         else: 
-            self.lumi = 61.9
+            self.lumi = 62.4
         # get color for each background
         for bkg, info in self.backgrounds.items():
             info['color'] = self.colors[info["color"]]  # replace color name with hex code
@@ -383,7 +383,7 @@ class HTT_Histogram:
             self.ax.set_yscale('log')
             self.ax.set_ylim(0.1, 10*np.max(self.stacked_block))
         else:
-            self.ax.set_ylim(0, 2.0*np.max(self.stacked_block))
+            self.ax.set_ylim(0, 1.6*np.max(self.stacked_block))
         self.ax.set_xlim(self.bin_edges[0], self.bin_edges[-1])
         # ratio plot
         self.ax_ratio.set_ylabel("Obs/Exp")
