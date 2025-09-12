@@ -191,8 +191,14 @@ class HTT_Histogram:
             self.lumi = 18.06
         elif self.era == "Run3_2023BPix":
             self.lumi = 9.69
+        elif self.era == 'full22':
+            self.lumi = 34.65
+        elif self.era == 'full23':
+            self.lumi = 27.76
+        elif self.era == 'earlyrun3':
+            self.lumi = 62.41
         else: 
-            self.lumi = 62.4
+            self.lumi = 0.0
         # get color for each background
         for bkg, info in self.backgrounds.items():
             info['color'] = self.colors[info["color"]]  # replace color name with hex code
