@@ -197,7 +197,7 @@ for era in eras:
             f"Era {era} is not a valid era. Please choose from {available_eras}"
         )
 
-available_schemes = ["sf_calculation", "control", "cpdecay", "cpdecay_fakefactors_control"]
+available_schemes = ["sf_calculation", "control", "cpdecay", "cpdecay_fakefactors_control", "cp_decay_acoplanarity_systematics"]
 for scheme in schemes:
     if scheme not in available_schemes:
         raise ValueError(
@@ -219,7 +219,7 @@ for era in eras:
                 available_aliases = {}
 
             systematics_to_run = []
-            if run_systematics:
+            if run_systematics and "systematics" in config[scheme]:
                 if "per_era" in config[scheme]["systematics"]:
                     if (
                         era not in config[scheme]["systematics"]["per_era"]
