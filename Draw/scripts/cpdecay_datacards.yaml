@@ -1,10 +1,10 @@
-input_folder: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/output/full_syst_noMETrecoil
-output_path: /vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/26Aug/TestSYSTNames
+input_folder: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/output/fullsyst_ThesisUnblinding_rerun
+output_path: /vols/cms/lcr119/offline/HiggsCP/TIDAL/Draw/Plots/Control/Sep10_KlitosUnblinding
 channels: [tt]
 eras: [ Run3_2022, Run3_2022EE, Run3_2023, Run3_2023BPix]
 parameter_path: /vols/cms/lcr119/offline/HiggsCP/HiggsDNA/scripts/ditau/config/
-schemes: [cpdecay]
-run_systematics: true
+schemes: [control]
+run_systematics: false
 
 cpdecay:
 
@@ -93,7 +93,7 @@ control:   # GENERAL CONTROL PLOTS (kinematics etc)
 
   tt:
   # option to use filtered DY (false by default): `use_filtered_DY: true`
-  - { method: "4", category:  [ cp_inclusive ], plotting_variable: [ m_vis]}
+  - { method: "4", category:  [ cp_inclusive ], plotting_variable: [ m_vis, pt_tt, pt_1, pt_2, eta_1, eta_2, phi_1, phi_2, dR, n_jets, met_pt]}
 
 
 cpdecay_fakefactors_control:
