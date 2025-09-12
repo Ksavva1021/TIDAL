@@ -100,8 +100,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                         down_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Down'
 
                         formula = (
-                            f"((variation_to_replace) * (decayMode_{obj_index+1} == {dm}) + "
-                            f"(!(decayMode_{obj_index+1} == {dm})))"
+                            f"((variation_to_replace) * (decayModePNet_{obj_index+1} == {dm}) + "
+                            f"(!(decayModePNet_{obj_index+1} == {dm})))"
                         )
 
                         up_weights.append(formula.replace('variation_to_replace', up_var))
