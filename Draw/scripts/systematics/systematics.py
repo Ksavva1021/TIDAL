@@ -512,4 +512,29 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
             systematics[systematic_name] = ('nominal', histogram_name, 'weight_to_replace', nodes_to_skip, None)
 
+
+    # ----------------------------------------------------------------------------------------------------
+
+    # MET Recoil systematics
+    # ----------------------------------------------------------------------------------------------------
+    if specific_systematic == "MET_Recoil":
+        # exists for W, DY and Signal Samples
+        nodes_to_skip = [
+            "TT", "TTT", "TTJ",
+            "VV", "VVT", "VVJ",
+        ]
+        variations = [{'dir': 'MET_Recoil_Resolution', 'name': 'syst_met_recoil_resolution', 'type': 'res'},
+                      {'dir': 'MET_Recoil_Response', 'name': 'syst_met_recoil_response', 'type': 'scale'}]
+
+        for updown in ['up','down']:
+            for syst_info in variations:
+                systematic_name = syst_info['name'] + '_' + updown
+                folder_name = syst_info['dir'] + '_' + updown
+                if specific_name == '':
+                    histogram_name = '_' + syst_info['name'] + '_'+ updown.capitalize()
+                else:
+                    histogram_name = '_' + specific_name.replace('*type', syst_info['type']) + '_' + updown.capitalize()
+
+                systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+
     return systematics
