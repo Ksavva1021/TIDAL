@@ -348,32 +348,3 @@ def Total_Uncertainty(h0, hists=[]):
         hout.SetBinContent(i, c)
         hout.SetBinError(i, u)
     return (hout, hup, hdown)
-
-
-def CombineZLL(outfile, nodename):
-    outfile.cd(nodename)
-
-    # Clone and save ZL histogram before DYto2L addition
-    h_zl = outfile.Get(nodename + "/ZL").Clone()
-    h_zl_old = h_zl.Clone()
-    h_zl_old.SetName("ZL_Without_DYto2L")
-    h_zl_old.Write("", ROOT.TObject.kOverwrite)
-
-    # Handle subdirectory renaming
-    directory = outfile.Get(nodename)
-    zl_subdir = directory.Get("ZL.subnodes")
-    if zl_subdir:
-        # Create a clone of ZL.subnodes with a new name
-        newdir = directory.mkdir("ZL_Without_DYto2L.subnodes")
-        for key in zl_subdir.GetListOfKeys():
-            obj = zl_subdir.Get(key.GetName())
-            newdir.cd()
-            obj.Write()
-        directory.Delete("ZL.subnodes;1")
-
-    outfile.cd(nodename)
-
-    # Add DYto2L contribution to ZL
-    h_zl_dy2l = outfile.Get(nodename + "/ZL_DYto2L").Clone()
-    h_zl.Add(h_zl_dy2l)
-    h_zl.Write("", ROOT.TObject.kOverwrite)
