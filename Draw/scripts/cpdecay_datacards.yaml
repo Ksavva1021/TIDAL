@@ -109,7 +109,7 @@ cp_decay_acoplanarity_systematics:
     MVA_vs_aco_a1_a1_SV_syst_down: "BDT_pred_score,aco_a1_a1_SV_syst_down[0.,0.7,0.8,0.9,1.0],(4,0,2pi)"
 
   tt:
-  - { method: '4', category: [ 'higgs_pipi' ], plotting_variable: [ MVA_vs_aco_pi_pi_IP_syst_up ], blind: true, unroll: true }
+  - { method: '4', category: [ 'higgs_pipi' ], plotting_variable: [ MVA_vs_aco_pi_pi_IP_syst_up, MVA_vs_aco_pi_pi_IP_syst_down ], blind: true, unroll: true }
   - { method: '4', category: [ 'higgs_pirho' ], plotting_variable: [ MVA_vs_aco_pi_rho_IP_syst_up, MVA_vs_aco_pi_rho_IP_syst_down ], blind: true, unroll: true }
   - { method: '4', category: [ 'higgs_rhopi' ], plotting_variable: [ MVA_vs_aco_rho_pi_IP_syst_up, MVA_vs_aco_rho_pi_IP_syst_down ], blind: true, unroll: true }
   - { method: '4', category: [ 'higgs_pia11pr' ], plotting_variable: [ MVA_vs_aco_pi_a11pr_IP_syst_up, MVA_vs_aco_pi_a11pr_IP_syst_down ], blind: true, unroll: true }
