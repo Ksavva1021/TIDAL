@@ -517,7 +517,12 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     # Signal Theory systematics
     # ----------------------------------------------------------------------------------------------------
     if specific_systematic == "Signal_Theory":
-        samples_to_skip = []
+        samples_to_skip = [
+            "ZTT", "ZLL", "ZL", "ZJ",
+            "TT", "TTT", "TTJ",
+            "VV", "VVT", "VVJ",
+            "W","QCD", 'JetFakes'
+        ]
 
         variations = ["Scale_muR", "Scale_muF",
                    "PS_ISR", "PS_FSR",
