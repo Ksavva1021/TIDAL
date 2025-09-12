@@ -1101,8 +1101,14 @@ if not args.bypass_plotter:
 
             sel = args.sel
             plot = args.var
+
             # use plot_unmodified and categories_unmodified in cases where the data and MC get different selections due to a systematic variation
             plot_unmodified = plot
+            # WARNING: Temporary Patch let's Fix in HiggsDNA
+            # if _IP_syst_up/down or _SV_syst_up/down in plot_unmodified then remove that bit
+            if "_IP_syst_up" in plot_unmodified or "_IP_syst_down" in plot_unmodified or "_SV_syst_up" in plot_unmodified or "_SV_syst_down" in plot_unmodified:
+                plot_unmodified = plot_unmodified.replace("_IP_syst_up", "").replace("_IP_syst_down", "").replace("_SV_syst_up", "").replace("_SV_syst_down", "").strip("_")
+
             categories_unmodified = copy.deepcopy(categories)
             systematic_folder_name = systematics[systematic][0]
             systematic_suffix = systematics[systematic][1]
