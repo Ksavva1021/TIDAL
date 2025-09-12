@@ -86,6 +86,7 @@ systematic_options = [
         "Tau_EnergyScale_PNet_MUSCALE",
         "Tau Energy Scale systematic for genuine muons misidentified as taus",
     ],
+    ['MET_Recoil', 'MET Recoil systematic'],
     ["Jet_EnergyScale_Total", "Jet Energy Scale Total systematic"],
     ["Jet_EnergyResolution", "Jet Energy Resolution systematic"],
     ["Electron_Scale", "Electron Scale systematic"],
@@ -1061,7 +1062,6 @@ if args.run_systematics and not args.do_aiso: # we dont run systematics for anti
             systematics[syst][3],
             systematics[syst][4],
         )
-
 # ------------------------------------------------------------------------------------------------------------------------
 
 categories["cat"] = (
