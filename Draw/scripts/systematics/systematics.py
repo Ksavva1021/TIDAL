@@ -542,7 +542,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     # Signal Theory systematics
     # ----------------------------------------------------------------------------------------------------
     if specific_systematic == "Signal_Theory":
-        samples_to_skip = [
+        nodes_to_skip = [
             "ZTT", "ZLL", "ZL", "ZJ",
             "TT", "TTT", "TTJ",
             "VV", "VVT", "VVJ",
@@ -562,6 +562,6 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 else:
                     histogram_name = '_' + specific_name + f'_{var}{updown.capitalize()}'
 
-                systematics[systematic_name] = ('nominal', histogram_name, f'weight_to_replace * ({weight})', samples_to_skip, None)
+                systematics[systematic_name] = ('nominal', histogram_name, f'weight_to_replace * ({weight})', nodes_to_skip, None)
 
     return systematics
