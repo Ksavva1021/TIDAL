@@ -115,8 +115,10 @@ def GetSubtractNode(ana, add_name, plot, plot_unmodified, wt, sel, cat_name, cat
     subtract_node.AddNode(ztt_node)
 
     zl_node = GetZLNode(ana, "", samples_dict['ztt_samples'], plot, wt, sel, cat, gen_sels_dict['z_sels'], OSSS)
+    zl_DYto2L_node = GetZLNode(ana, "_DYto2L", samples_dict['zll_samples'], plot, wt, sel, cat, gen_sels_dict['z_sels'], OSSS)
     zj_node = GetZJNode(ana, "", samples_dict['ztt_samples'], plot, wt, sel, cat, gen_sels_dict['z_sels'], OSSS)
     subtract_node.AddNode(zl_node)
+    subtract_node.AddNode(zl_DYto2L_node)
     subtract_node.AddNode(zj_node)
 
     return subtract_node
