@@ -290,15 +290,15 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         # Genuine Taus
         if specific_systematic == 'Tau_EnergyScale_PNet_TSCALE':
             prefixes = ['Tau_EnergyScale_PNet_TSCALE_']
-            nodes_to_skip = ["JetFakes", "QCD", "ZL_DYto2L"]
+            nodes_to_skip = ["JetFakes", "QCD", "ZLL"]
         # Genuine electrons misidentified as taus
         elif specific_systematic == 'Tau_EnergyScale_PNet_ESCALE':
             prefixes = ['Tau_EnergyScale_PNet_ESCALE_']
-            nodes_to_skip = ['ZTT','ZL_DYto2L','VVT','VVJ','TTT','TTJ','QCD','JetFakes','signal','W']
+            nodes_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','JetFakes','signal','W']
         # Genuine muons misidentified as taus
         elif specific_systematic == 'Tau_EnergyScale_PNet_MUSCALE':
             prefixes = ['Tau_EnergyScale_PNet_MUSCALE_']
-            nodes_to_skip = ['ZTT','ZL_DYto2L','VVT','VVJ','TTT','TTJ','QCD','JetFakes','signal','W']
+            nodes_to_skip = ['ZTT','VVT','VVJ','TTT','TTJ','QCD','JetFakes','signal','W']
 
 
         # for index in range(len(prefixes)): # for IDSFs
@@ -321,7 +321,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     if specific_systematic == 'Tau_EnergyScale_PNet_JSCALE':
 
         nodes_to_skip = [
-            'ZJ','ZL','ZL_DYto2L','ZLL','ZTT',
+            'ZJ','ZL','ZLL','ZTT',
             'VVT','VVJ',
             'TTT','TTJ',
             'QCD','JetFakes','signal',

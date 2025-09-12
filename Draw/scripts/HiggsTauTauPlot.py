@@ -35,7 +35,6 @@ from Draw.python.HiggsTauTauPlot_utilities import (
     RebinHist,
     UnrollHist2D,
     RenameDatacards,
-    CombineZLL,
     Total_Uncertainty
 )
 from Draw.scripts.systematics.systematics import generate_systematics_dict
@@ -803,7 +802,6 @@ def RunPlotting(
     cat_data = categories_unmodified["cat"]
 
     doZL = True if "ZL" not in nodes_to_skip else False
-    doZL_DYto2L = True if "ZL_DYto2L" not in nodes_to_skip else False
     doZJ = True if "ZJ" not in nodes_to_skip else False
     doTTT = True if "TTT" not in nodes_to_skip else False
     doTTJ = True if "TTJ" not in nodes_to_skip else False
@@ -845,22 +843,7 @@ def RunPlotting(
             ana,
             nodename,
             add_name,
-            samples_dict["ztt_samples"],
-            plot,
-            wt,
-            sel,
-            cat,
-            gen_sels_dict["z_sels"],
-            not args.do_ss,
-            doZL,
-            doZJ,
-        )
-    if "ZL_DYto2L" not in nodes_to_skip:
-        GenerateZLL(
-            ana,
-            nodename,
-            "_DYto2L",
-            samples_dict["zll_samples"],
+            samples_dict["ztt_samples"] + samples_dict["zll_samples"],
             plot,
             wt,
             sel,
@@ -1351,12 +1334,6 @@ if args.rename_procs:
     outfile = ROOT.TFile(output_name, "UPDATE")
     if args.channel in ["mm", "ee"]:
         RenameDatacards(outfile, nodename)
-    outfile.Close()
-
-# combine histograms for ZL and ZL_DYto2L
-if args.channel in ["ee","mm", "mt", "et", "tt"]:
-    outfile = ROOT.TFile(output_name, "UPDATE")
-    CombineZLL(outfile, nodename)
     outfile.Close()
 
 # new plotting available for 1D histograms (NB only 2D unrolled histograms are supported)
