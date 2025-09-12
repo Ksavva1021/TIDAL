@@ -86,6 +86,7 @@ systematic_options = [
         "Tau_EnergyScale_PNet_MUSCALE",
         "Tau Energy Scale systematic for genuine muons misidentified as taus",
     ],
+    ['MET_Recoil', 'MET Recoil systematic'],
     ["Jet_EnergyScale_Total", "Jet Energy Scale Total systematic"],
     ["Jet_EnergyResolution", "Jet Energy Resolution systematic"],
     ["Electron_Scale", "Electron Scale systematic"],
@@ -545,8 +546,6 @@ if args.era in ["Run3_2022", "Run3_2022EE", "Run3_2023", "Run3_2023BPix"]:
         if args.era in ["Run3_2023", "Run3_2023BPix"]:
             zll_samples.remove("DYto2L_M_50_amcatnloFXFX_ext1")
 
-
-
     top_samples = [
         "TTto2L2Nu",
         "TTto2L2Nu_ext1",
@@ -782,7 +781,7 @@ def RunPlotting(
     do_data=True,
     qcd_factor=1.0,
     method=1,
-    samples_to_skip=[],
+    nodes_to_skip=[],
 ):
     """
     RunPlotting handles how each process is added to the analysis
@@ -804,12 +803,12 @@ def RunPlotting(
     cat = categories["cat"]
     cat_data = categories_unmodified["cat"]
 
-    doZL = True if "ZL" not in samples_to_skip else False
-    doZJ = True if "ZJ" not in samples_to_skip else False
-    doTTT = True if "TTT" not in samples_to_skip else False
-    doTTJ = True if "TTJ" not in samples_to_skip else False
-    doVVT = True if "VVT" not in samples_to_skip else False
-    doVVJ = True if "VVJ" not in samples_to_skip else False
+    doZL = True if "ZL" not in nodes_to_skip else False
+    doZJ = True if "ZJ" not in nodes_to_skip else False
+    doTTT = True if "TTT" not in nodes_to_skip else False
+    doTTJ = True if "TTJ" not in nodes_to_skip else False
+    doVVT = True if "VVT" not in nodes_to_skip else False
+    doVVJ = True if "VVJ" not in nodes_to_skip else False
 
 
     if method in [3,4]: # jet fake estimate so don't include other MC jet fakes:
@@ -828,7 +827,7 @@ def RunPlotting(
             ana.SummedFactory("data_obs", data_samples, plot_unmodified, full_selection)
         )
 
-    if "ZTT" not in samples_to_skip:
+    if "ZTT" not in nodes_to_skip:
         GenerateZTT(
             ana,
             nodename,
@@ -841,12 +840,12 @@ def RunPlotting(
             gen_sels_dict["z_sels"],
             not args.do_ss,
         )
-    if "ZLL" not in samples_to_skip:
+    if "ZLL" not in nodes_to_skip:
         GenerateZLL(
             ana,
             nodename,
             add_name,
-            samples_dict["ztt_samples"]+samples_dict["zll_samples"],
+            samples_dict["ztt_samples"] + samples_dict["zll_samples"],
             plot,
             wt,
             sel,
@@ -856,7 +855,7 @@ def RunPlotting(
             doZL,
             doZJ,
         )
-    if "TT" not in samples_to_skip:
+    if "TT" not in nodes_to_skip:
         GenerateTop(
             ana,
             nodename,
@@ -871,7 +870,7 @@ def RunPlotting(
             doTTT,
             doTTJ,
         )
-    if "VV" not in samples_to_skip:
+    if "VV" not in nodes_to_skip:
         GenerateVV(
             ana,
             nodename,
@@ -886,7 +885,7 @@ def RunPlotting(
             doVVT,
             doVVJ,
         )
-    if "W" not in samples_to_skip:
+    if "W" not in nodes_to_skip:
         if method in [1, 2, 5]: # only generate W if no jetfakes
             GenerateW(
                 ana,
@@ -905,7 +904,7 @@ def RunPlotting(
                 qcd_factor=qcd_factor,
                 get_os=not args.do_ss,
             )
-    if "QCD" not in samples_to_skip and method in [1, 2, 5]:  # QCD estimate
+    if "QCD" not in nodes_to_skip and method in [1, 2, 5]:  # QCD estimate
         GenerateQCD(
             ana,
             nodename,
@@ -924,7 +923,7 @@ def RunPlotting(
             qcd_factor=qcd_factor,
             get_os=not args.do_ss,
         )
-    elif "JetFakes" not in samples_to_skip and method in [3, 4]:  # Jet Fakes
+    elif "JetFakes" not in nodes_to_skip and method in [3, 4]:  # Jet Fakes
         GenerateFakes(
             ana,
             nodename,
@@ -944,7 +943,7 @@ def RunPlotting(
             get_os=not args.do_ss,
         )
 
-    if "signal" not in samples_to_skip:
+    if "signal" not in nodes_to_skip:
         # generate correct signal
         # TODO: add scheme or similar flat to determine which ones to use
         GenerateReweightedCPSignal(
@@ -1064,7 +1063,6 @@ if args.run_systematics and not args.do_aiso: # we dont run systematics for anti
             systematics[syst][3],
             systematics[syst][4],
         )
-
 # ------------------------------------------------------------------------------------------------------------------------
 
 categories["cat"] = (
@@ -1074,7 +1072,6 @@ categories["cat"] = (
 # ------------------------------------------------------------------------------------------------------------------------
 
 # Loop over systematics & run plotting, etc
-samples_to_skip_dict = {}
 systematic_suffixes = []
 max_systematics_per_pass = 10
 
@@ -1110,7 +1107,7 @@ if not args.bypass_plotter:
             systematic_folder_name = systematics[systematic][0]
             systematic_suffix = systematics[systematic][1]
             weight = systematics[systematic][2]
-            samples_to_skip = systematics[systematic][3]
+            nodes_to_skip = systematics[systematic][3]
             ff_syst = systematics[systematic][4]
             if not isinstance(ff_syst, str): ff_syst = None
 
@@ -1166,7 +1163,7 @@ if not args.bypass_plotter:
                 do_data,
                 qcd_factor,
                 method,
-                samples_to_skip,
+                nodes_to_skip,
             )
 
             del systematics[systematic]
