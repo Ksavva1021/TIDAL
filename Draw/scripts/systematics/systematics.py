@@ -488,7 +488,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, f"FF_syst:(*ff_nom*(decayModePNet_1 != {dm}) + *ff_nom_{updown}*(decayModePNet_1 == {dm}))")
 
             # subtraction unceratinty
-            systematic_name = f'ff_sub_syst_'+ updown
+            systematic_name = 'ff_sub_syst_'+ updown
             histogram_name = f'_{name_prefix}_sub_syst' + updown.capitalize()
             systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, None)
 
@@ -536,5 +536,32 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                     histogram_name = '_' + specific_name.replace('*type', syst_info['type']) + '_' + updown.capitalize()
 
                 systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+
+    # ----------------------------------------------------------------------------------------------------
+
+    # Signal Theory systematics
+    # ----------------------------------------------------------------------------------------------------
+    if specific_systematic == "Signal_Theory":
+        nodes_to_skip = [
+            "ZTT", "ZLL", "ZL", "ZJ",
+            "TT", "TTT", "TTJ",
+            "VV", "VVT", "VVJ",
+            "W","QCD", 'JetFakes'
+        ]
+
+        variations = ["Scale_muR", "Scale_muF",
+                   "PS_ISR", "PS_FSR",
+        ]
+
+        for updown in ['up','down']:
+            for var in variations:
+                weight = "w_Signal_Theory_" + var + updown.capitalize()
+                systematic_name = f'signal_theory_{var}_{updown}'
+                if specific_name == '':
+                    histogram_name = f'_signal_theory_{var}{updown.capitalize()}'
+                else:
+                    histogram_name = '_' + specific_name + f'_{var}{updown.capitalize()}'
+
+                systematics[systematic_name] = ('nominal', histogram_name, f'weight_to_replace * ({weight})', nodes_to_skip, None)
 
     return systematics

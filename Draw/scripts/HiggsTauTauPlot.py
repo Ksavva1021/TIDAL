@@ -98,6 +98,7 @@ systematic_options = [
     ["Fake_Flat_Uncertainty", "flat fake uncertainty"],
     ["Tau_ID_PNet", "Tau ID systematic"],
     ["Fake_Factors", "fake factor related uncertainties"],
+    ["Signal_Theory", "theoretical uncertainties on the signal"]
 ]
 
 
