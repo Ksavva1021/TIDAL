@@ -600,6 +600,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
         nodes_to_skip = [
             "TT", "TTT", "TTJ",
             "VV", "VVT", "VVJ",
+            "QCD", 'JetFakes'
         ]
         variations = [{'dir': 'MET_Recoil_Resolution', 'name': 'syst_met_recoil_resolution', 'type': 'res'},
                       {'dir': 'MET_Recoil_Response', 'name': 'syst_met_recoil_response', 'type': 'scale'}]
@@ -649,7 +650,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     if specific_systematic == "IP_Calibration":
         nodes_to_skip = [
             "ZJ", "TTJ", "VVJ",
-            "QCD", 'JetFakes'
+            "W","QCD", 'JetFakes'
         ]
 
         variables_to_consider = [
@@ -676,7 +677,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
     if specific_systematic == "SV_Resolution":
         nodes_to_skip = [
             "ZJ", "TTJ", "VVJ",
-            "QCD", 'JetFakes'
+            "W","QCD", 'JetFakes'
         ]
 
         variables_to_consider = [
