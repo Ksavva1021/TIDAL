@@ -2,7 +2,7 @@
 from collections import OrderedDict
 
 
-def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', specific_systematic='MuonID', specific_name=''):
+def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', specific_systematic='MuonID', specific_name='', variable_to_plot='m_vis'):
     systematics = OrderedDict()
 
     # we add eras and channels to names when the name contains *year or *channel
@@ -40,9 +40,9 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                     histogram_name = '_' + specific_name + updown.split('_')[-1]
 
                 if specific_channel == 'mm':
-                    systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading}) * ({formula_subleading})", [], None)
+                    systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading}) * ({formula_subleading})", [], None, None)
                 elif specific_channel == 'mt':
-                    systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading})", [], None)
+                    systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading})", [], None, None)
 
             del up_var, down_var
     # ----------------------------------------------------------------------------------------------------
@@ -71,9 +71,9 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + specific_name + updown.split('_')[-1]
 
             if specific_channel == 'ee':
-                systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading}) * ({formula_subleading})", [], None)
+                systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading}) * ({formula_subleading})", [], None, None)
             elif specific_channel == 'et':
-                systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading})", [], None)
+                systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({formula_leading})", [], None, None)
 
         del up_var, down_var
     # ----------------------------------------------------------------------------------------------------
@@ -115,8 +115,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                     histogram_name = specific_name.replace("*group", f"{kind}_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
 
                 if specific_channel in ["et","mt","tt"]:
-                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
-                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
+                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
 
         del up_weights, down_weights
 
@@ -146,8 +146,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             histogram_name = specific_name.replace("*group", f"syst_{specific_era.split('Run3_')[1]}")
 
         if specific_channel in ["et","mt","tt"]:
-            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
-            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
+            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
 
         del up_weights, down_weights
 
@@ -173,8 +173,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             histogram_name = specific_name.replace("*group", f"syst_alleras")
 
         if specific_channel in ["et","mt","tt"]:
-            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
-            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
+            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
 
         del up_weights, down_weights
     # ----------------------------------------------------------------------------------------------------
@@ -219,8 +219,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = f'syst_etau_fakerate_{era}_eta_{eta}'
 
                 if specific_channel in ["et","mt","tt"]:
-                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
-                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
+                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None, None)
+                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None, None)
 
         del up_weights, down_weights
     # ----------------------------------------------------------------------------------------------------
@@ -271,8 +271,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 systematic_name = f'Tau_mu_FakeRate_{era}_eta_{eta}'
                 histogram_name = f'syst_mutau_fakerate_{era}_eta_{eta}'
                 if specific_channel in ["et","mt","tt"]:
-                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None)
-                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None)
+                    systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), [], None, None)
+                    systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), [], None, None)
 
         del up_weights, down_weights
     # ----------------------------------------------------------------------------------------------------
@@ -316,7 +316,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                         histogram_name = '_' + specific_name.replace("*group", name) + updown.capitalize()
 
                     if specific_channel in ["et","mt","tt"]:
-                        systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+                        systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None, None)
 
     if specific_systematic == 'Tau_EnergyScale_PNet_JSCALE':
 
@@ -337,7 +337,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + specific_name + updown.capitalize()
 
             if specific_channel in ["et","mt","tt"]:
-                systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+                systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None, None)
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -374,8 +374,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 else:
                     histogram_name = specific_name.replace("*kind", f"doubletau_tau_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
 
-                systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
-                systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+                systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
+                systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
 
 
             # DOUBLE TAU JET - TAU VARIATION
@@ -399,8 +399,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 else:
                     histogram_name = specific_name.replace("*kind", f"doubletaujet_tau_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
 
-                systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
-                systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+                systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
+                systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
 
             # DOUBLE TAU JET - JET VARIATION
             up_weight = '(w_Trigger_doubletaujet_jetUp)'
@@ -412,8 +412,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             else:
                 histogram_name = specific_name.replace("*kind", f"doubletaujet_jet_{specific_era.split('Run3_')[1]}")
 
-            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
-            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
+            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
 
         del up_weights, down_weights
 
@@ -434,7 +434,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + prefix + updown.capitalize()
             else:
                 histogram_name = '_' + specific_name + updown.capitalize()
-            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None, None)
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -453,7 +453,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + prefix + updown.capitalize()
             else:
                 histogram_name = '_' + specific_name + updown.capitalize()
-            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+            systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None, None)
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -470,7 +470,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                     histogram_name = '_' + specific_name + updown.capitalize()
 
                 if specific_channel in ["ee","et"]:
-                    systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', [], None)
+                    systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', [], None, None)
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -493,7 +493,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + specific_name + updown.capitalize()
 
             weight_updown = up_var if updown == "up" else down_var
-            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", nodes_to_skip, None)
+            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", nodes_to_skip, None, None)
 
         del up_var, down_var
     # ----------------------------------------------------------------------------------------------------
@@ -522,7 +522,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 histogram_name = '_' + specific_name + updown.capitalize()
 
             weight_updown = up_var if updown == "up" else down_var
-            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", nodes_to_skip, None)
+            systematics[systematic_name] = ('nominal', histogram_name, f"weight_to_replace * ({weight_updown})", nodes_to_skip, None, None)
 
         del up_var, down_var
 
@@ -541,7 +541,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             else:
                 histogram_name = '_' + specific_name + updown.capitalize()
 
-            systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, None)
+            systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, None, None)
 
     if specific_systematic == 'Fake_Factors':
         # note the way this is setup at the moment won't work of the box if doing it for mt and et
@@ -563,12 +563,12 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             for dm in [0,1,2,10]:
                 systematic_name = f'ff_stat_dm{dm}{updown}'
                 histogram_name = f'_{name_prefix}_stat_dm{dm}{updown.capitalize()}'
-                systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, f"FF_syst:(*ff_nom*(decayModePNet_1 != {dm}) + *ff_nom_{updown}*(decayModePNet_1 == {dm}))")
+                systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, f"FF_syst:(*ff_nom*(decayModePNet_1 != {dm}) + *ff_nom_{updown}*(decayModePNet_1 == {dm}))", None)
 
             # subtraction unceratinty
             systematic_name = 'ff_sub_syst_'+ updown
             histogram_name = f'_{name_prefix}_sub_syst' + updown.capitalize()
-            systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, None)
+            systematics[systematic_name] = ('nominal', histogram_name, "weight_to_replace", nodes_to_skip, None, None)
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -588,7 +588,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             else:
                 histogram_name = '_' + specific_name + updown.capitalize()
 
-            systematics[systematic_name] = ('nominal', histogram_name, 'weight_to_replace', nodes_to_skip, None)
+            systematics[systematic_name] = ('nominal', histogram_name, 'weight_to_replace', nodes_to_skip, None, None)
 
 
     # ----------------------------------------------------------------------------------------------------
@@ -613,7 +613,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 else:
                     histogram_name = '_' + specific_name.replace('*type', syst_info['type']) + '_' + updown.capitalize()
 
-                systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+                systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None, None)
 
     # ----------------------------------------------------------------------------------------------------
 
@@ -640,6 +640,63 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 else:
                     histogram_name = '_' + specific_name + f'_{var}{updown.capitalize()}'
 
-                systematics[systematic_name] = ('nominal', histogram_name, f'weight_to_replace * ({weight})', nodes_to_skip, None)
+                systematics[systematic_name] = ('nominal', histogram_name, f'weight_to_replace * ({weight})', nodes_to_skip, None, None)
+    # ----------------------------------------------------------------------------------------------------
+
+
+    # IP Calibration Systematics
+    # ----------------------------------------------------------------------------------------------------
+    if specific_systematic == "IP_Calibration":
+        nodes_to_skip = [
+            "ZJ", "TTJ", "VVJ",
+            "QCD", 'JetFakes'
+        ]
+
+        variables_to_consider = [
+            "aco_pi_pi", "aco_pi_rho", "aco_pi_a1_FASTMTT_MassConstraint",
+            "aco_rho_pi", "aco_a1_pi_FASTMTT_MassConstraint",
+        ]
+
+        for var in variables_to_consider:
+            if var in variable_to_plot:
+                for updown in ['up','down']:
+                    systematic_name = f'IP_Calibration_{updown}'
+                    if specific_name == '':
+                        histogram_name = f'_IP_Calibration{updown.capitalize()}'
+                    else:
+                        histogram_name = '_' + specific_name + f'{updown.capitalize()}'
+
+                    new_variable_to_plot = variable_to_plot.replace(var, f'{var}_IP_syst_{updown}')
+
+                    systematics[systematic_name] = ('nominal', histogram_name, 'weight_to_replace', nodes_to_skip, None, new_variable_to_plot)
+    # ----------------------------------------------------------------------------------------------------
+
+    # Secondary Vertex Systematics
+    # ----------------------------------------------------------------------------------------------------
+    if specific_systematic == "SV_Resolution":
+        nodes_to_skip = [
+            "ZJ", "TTJ", "VVJ",
+            "QCD", 'JetFakes'
+        ]
+
+        variables_to_consider = [
+            "aco_pi_a1_FASTMTT_MassConstraint", "aco_a1_pi_FASTMTT_MassConstraint",
+            "aco_a1_rho_FASTMTT_MassConstraint", "aco_rho_a1_FASTMTT_MassConstraint",
+            "aco_a1_a1",
+        ]
+
+        for var in variables_to_consider:
+            if var in variable_to_plot:
+                for updown in ['up','down']:
+                    systematic_name = f'SV_Resolution_{updown}'
+                    if specific_name == '':
+                        histogram_name = f'_SV_Resolution{updown.capitalize()}'
+                    else:
+                        histogram_name = '_' + specific_name + f'{updown.capitalize()}'
+
+                    new_variable_to_plot = variable_to_plot.replace(var, f'{var}_SV_syst_{updown}')
+
+                    systematics[systematic_name] = ('nominal', histogram_name, 'weight_to_replace', nodes_to_skip, None, new_variable_to_plot)
+    # ----------------------------------------------------------------------------------------------------
 
     return systematics
