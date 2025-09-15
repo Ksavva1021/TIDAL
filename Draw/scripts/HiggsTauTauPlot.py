@@ -99,7 +99,9 @@ systematic_options = [
     ["Fake_Flat_Uncertainty", "flat fake uncertainty"],
     ["Tau_ID_PNet", "Tau ID systematic"],
     ["Fake_Factors", "fake factor related uncertainties"],
-    ["Signal_Theory", "theoretical uncertainties on the signal"]
+    ["Signal_Theory", "theoretical uncertainties on the signal"],
+    ["IP_Calibration", "Uncertainty on the IP calibration"],
+    ["SV_Resolution", "Uncertainty on the SV resolution"]
 ]
 
 
@@ -1021,18 +1023,20 @@ if args.add_weight:
 # - 1st index sets folder name contaning systematic samples
 # - 2nd index sets string to be appended to output histograms
 # - 3rd index specifies the weight to be applied
-# - 4th lists samples that should be skipped
+# - 4th lists nodes that should be skipped
+# - 5th specifies if this is a FF systematic (string specifying which one)
+# - 6th specifies if variable to plot needs to be changed
 systematics = OrderedDict()
 if args.channel == "mt":
-    systematics["nominal"] = ("nominal", "", f"({weight})", [], False)
+    systematics["nominal"] = ("nominal", "", f"({weight})", [], None, None)
 elif args.channel == "et":
-    systematics["nominal"] = ("nominal", "", f"({weight})", [], False)
+    systematics["nominal"] = ("nominal", "", f"({weight})", [], None, None)
 elif args.channel in ["ee", "mm"]:
-    systematics["nominal"] = ("nominal", "", f"({weight})", [], False)
+    systematics["nominal"] = ("nominal", "", f"({weight})", [], None, None)
 elif args.channel == "tt":
-    systematics["nominal"] = ("nominal", "", f"({weight})", [], False)
+    systematics["nominal"] = ("nominal", "", f"({weight})", [], None, None)
 
-if args.run_systematics and not args.do_aiso: # we dont run systematics for anti-iso region 
+if args.run_systematics and not args.do_aiso: # we dont run systematics for anti-iso region
     enabled_systematics = {
         systematic: getattr(args, "systematic_" + systematic)
         for systematic, _ in systematic_options
@@ -1050,6 +1054,7 @@ if args.run_systematics and not args.do_aiso: # we dont run systematics for anti
             specific_channel=args.channel,
             specific_systematic=syst,
             specific_name=specific_systematic_name,
+            variable_to_plot=args.var,
         )
 
         for available_systematic in systematics_dict.keys():
@@ -1063,6 +1068,7 @@ if args.run_systematics and not args.do_aiso: # we dont run systematics for anti
             systematics[syst][2].replace("weight_to_replace", weight),
             systematics[syst][3],
             systematics[syst][4],
+            systematics[syst][5],
         )
 # ------------------------------------------------------------------------------------------------------------------------
 
@@ -1101,7 +1107,7 @@ if not args.bypass_plotter:
             print("")
 
             sel = args.sel
-            plot = args.var
+            plot = args.var if systematics[systematic][5] is None else systematics[systematic][5]
             # use plot_unmodified and categories_unmodified in cases where the data and MC get different selections due to a systematic variation
             plot_unmodified = plot
             categories_unmodified = copy.deepcopy(categories)
