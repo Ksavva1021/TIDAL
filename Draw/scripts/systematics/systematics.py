@@ -100,8 +100,8 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                         down_var = f'w_Tau_ID_PNet_{obj_index+1}_{kind}_Down'
 
                         formula = (
-                            f"((variation_to_replace) * (decayMode_{obj_index+1} == {dm}) + "
-                            f"(!(decayMode_{obj_index+1} == {dm})))"
+                            f"((variation_to_replace) * (decayModePNet_{obj_index+1} == {dm}) + "
+                            f"(!(decayModePNet_{obj_index+1} == {dm})))"
                         )
 
                         up_weights.append(formula.replace('variation_to_replace', up_var))
@@ -338,6 +338,84 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
 
             if specific_channel in ["et","mt","tt"]:
                 systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None)
+
+    # ----------------------------------------------------------------------------------------------------
+
+    # Trigger systematics
+    # ----------------------------------------------------------------------------------------------------
+
+    # should be uncorrelated across DMs and eras
+    if specific_systematic == 'Trigger':
+
+        nodes_to_skip = ['JetFakes', 'QCD']
+        decay_modes = ["0", "1", "2", "10"]
+        era = specific_era
+
+        if specific_channel in ['tt']:
+
+            # DOUBLE TAU - TAU VARIATION
+            for dm in decay_modes:
+                up_weights = []
+                down_weights = []
+                for tau_number in [1, 2]:  # two taus in tt channel
+                    up_var = 'w_Trigger_doubletau_tauUp'
+                    down_var = 'w_Trigger_doubletau_tauDown'
+                    formula = (
+                        f"((variation_to_replace) * (decayModePNet_{tau_number} == {dm}) + "
+                        f"(!(decayModePNet_{tau_number} == {dm})))"
+                    )
+                    up_weights.append(formula.replace('variation_to_replace', up_var))
+                    down_weights.append(formula.replace('variation_to_replace', down_var))
+                    del up_var, down_var
+
+                systematic_name = f'syst_Tau_Trigger_doubletau_tau_DM{dm}_{era}'
+                if specific_name == '':
+                    histogram_name =  f'syst_Tau_Trigger_doubletau_tau_DM{dm}_{era}'
+                else:
+                    histogram_name = specific_name.replace("*kind", f"doubletau_tau_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
+
+                systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
+                systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+
+
+            # DOUBLE TAU JET - TAU VARIATION
+            for dm in decay_modes:
+                up_weights = []
+                down_weights = []
+                for tau_number in [1, 2]:  # two taus in tt channel
+                    up_var = 'w_Trigger_doubletaujet_tauUp'
+                    down_var = 'w_Trigger_doubletaujet_tauDown'
+                    formula = (
+                        f"((variation_to_replace) * (decayModePNet_{tau_number} == {dm}) + "
+                        f"(!(decayModePNet_{tau_number} == {dm})))"
+                    )
+                    up_weights.append(formula.replace('variation_to_replace', up_var))
+                    down_weights.append(formula.replace('variation_to_replace', down_var))
+                    del up_var, down_var
+
+                systematic_name = f'syst_Tau_Trigger_doubletaujet_tau_DM{dm}_{era}'
+                if specific_name == '':
+                    histogram_name =  f'syst_Tau_Trigger_doubletaujet_tau_DM{dm}_{era}'
+                else:
+                    histogram_name = specific_name.replace("*kind", f"doubletaujet_tau_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
+
+                systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
+                systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+
+            # DOUBLE TAU JET - JET VARIATION
+            up_weight = '(w_Trigger_doubletaujet_jetUp)'
+            down_weight = '(w_Trigger_doubletaujet_jetDown)'
+
+            systematic_name = f'syst_Tau_Trigger_doubletaujet_tau_DM{dm}_{era}'
+            if specific_name == '':
+                histogram_name =  f'syst_Tau_Trigger_doubletaujet_tau_DM{dm}_{era}'
+            else:
+                histogram_name = specific_name.replace("*kind", f"doubletaujet_jet_{specific_era.split('Run3_')[1]}")
+
+            systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None)
+            systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None)
+
+        del up_weights, down_weights
 
     # ----------------------------------------------------------------------------------------------------
 

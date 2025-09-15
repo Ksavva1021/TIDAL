@@ -87,6 +87,7 @@ systematic_options = [
         "Tau Energy Scale systematic for genuine muons misidentified as taus",
     ],
     ['MET_Recoil', 'MET Recoil systematic'],
+    ['Trigger', 'Trigger efficiency systematic'],
     ["Jet_EnergyScale_Total", "Jet Energy Scale Total systematic"],
     ["Jet_EnergyResolution", "Jet Energy Resolution systematic"],
     ["Electron_Scale", "Electron Scale systematic"],
