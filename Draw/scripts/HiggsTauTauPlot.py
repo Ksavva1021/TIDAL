@@ -1293,7 +1293,8 @@ for hist in directory.GetListOfKeys():
     processes = ["ZTT", "ZL", "ZJ", "TTT", "ΤΤJ","VVT","VVJ", "W", "QCD", "JetFakes", "JetFakesSublead"]
     if hist.GetName().endswith("Up") or hist.GetName().endswith("Down"):
         for proc in processes:
-            if proc+"_" in hist.GetName():
+            if hist.GetName().startswith(proc + '_'):
+                print(f"Adding {hist.GetName()} to total uncertainty")
                 no_syst_name = proc
                 temp_hist = h0.Clone()
                 temp_hist.Add(directory.Get(no_syst_name),-1)

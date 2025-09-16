@@ -372,7 +372,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 if specific_name == '':
                     histogram_name =  f'syst_Tau_Trigger_doubletau_tau_DM{dm}_{era}'
                 else:
-                    histogram_name = specific_name.replace("*kind", f"doubletau_tau_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
+                    histogram_name = specific_name.replace("*obj", 't').replace("*trigger", "ditau").replace("*group", f'VTight_DM{dm}PNet_{specific_era.split("Run3_")[1]}')
 
                 systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
                 systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
@@ -397,7 +397,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 if specific_name == '':
                     histogram_name =  f'syst_Tau_Trigger_doubletaujet_tau_DM{dm}_{era}'
                 else:
-                    histogram_name = specific_name.replace("*kind", f"doubletaujet_tau_DM{dm}PNet_{specific_era.split('Run3_')[1]}")
+                    histogram_name = specific_name.replace("*obj", 't').replace("*trigger", "ditaujet").replace("*group", f'VTight_DM{dm}PNet_{specific_era.split("Run3_")[1]}')
 
                 systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
                 systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
@@ -406,11 +406,11 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             up_weight = '(w_Trigger_doubletaujet_jetUp)'
             down_weight = '(w_Trigger_doubletaujet_jetDown)'
 
-            systematic_name = f'syst_Tau_Trigger_doubletaujet_tau_DM{dm}_{era}'
+            systematic_name = f'syst_Tau_Trigger_doubletaujet_jet_DM{dm}_{era}'
             if specific_name == '':
-                histogram_name =  f'syst_Tau_Trigger_doubletaujet_tau_DM{dm}_{era}'
+                histogram_name =  f'syst_Tau_Trigger_doubletaujet_jet_DM{dm}_{era}'
             else:
-                histogram_name = specific_name.replace("*kind", f"doubletaujet_jet_{specific_era.split('Run3_')[1]}")
+                histogram_name = specific_name.replace("*obj", 'j').replace("*trigger", "ditaujet").replace("*group", specific_era.split("Run3_")[1])
 
             systematics[systematic_name + '_up'] = ('nominal', '_' + histogram_name + 'Up', 'weight_to_replace*' + '*'.join(up_weights), nodes_to_skip, None, None)
             systematics[systematic_name + '_down'] = ('nominal', '_' + histogram_name + 'Down', 'weight_to_replace*' + '*'.join(down_weights), nodes_to_skip, None, None)
@@ -610,9 +610,9 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 systematic_name = syst_info['name'] + '_' + updown
                 folder_name = syst_info['dir'] + '_' + updown
                 if specific_name == '':
-                    histogram_name = '_' + syst_info['name'] + '_'+ updown.capitalize()
+                    histogram_name = '_' + syst_info['name'] + updown.capitalize()
                 else:
-                    histogram_name = '_' + specific_name.replace('*type', syst_info['type']) + '_' + updown.capitalize()
+                    histogram_name = '_' + specific_name.replace('*type', syst_info['type']) + updown.capitalize()
 
                 systematics[systematic_name] = (folder_name, histogram_name, 'weight_to_replace', nodes_to_skip, None, None)
 
@@ -625,7 +625,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
             "ZTT", "ZLL", "ZL", "ZJ",
             "TT", "TTT", "TTJ",
             "VV", "VVT", "VVJ",
-            "W","QCD", 'JetFakes'
+            "W", "QCD", 'JetFakes'
         ]
 
         variations = ["Scale_muR", "Scale_muF",
@@ -639,7 +639,14 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                 if specific_name == '':
                     histogram_name = f'_signal_theory_{var}{updown.capitalize()}'
                 else:
-                    histogram_name = '_' + specific_name + f'_{var}{updown.capitalize()}'
+                    if var == "Scale_muR":
+                        histogram_name = '_'+ specific_name.replace("*type", "QCDscale_ren") + '' + updown.capitalize()
+                    elif var == "Scale_muF":
+                        histogram_name = '_'+ specific_name.replace("*type", "QCDscale_fac") + '_ACCEPT' + updown.capitalize()
+                    elif var == "PS_ISR":
+                        histogram_name = '_'+ specific_name.replace("*type", "ps_isr")+ updown.capitalize()
+                    elif var == "PS_FSR":
+                        histogram_name = '_'+ specific_name.replace("*type", "ps_fsr")+ updown.capitalize()
 
                 systematics[systematic_name] = ('nominal', histogram_name, f'weight_to_replace * ({weight})', nodes_to_skip, None, None)
     # ----------------------------------------------------------------------------------------------------
