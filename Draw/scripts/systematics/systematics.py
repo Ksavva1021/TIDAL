@@ -640,7 +640,7 @@ def generate_systematics_dict(specific_era='Run3_2022', specific_channel='mt', s
                     histogram_name = f'_signal_theory_{var}{updown.capitalize()}'
                 else:
                     if var == "Scale_muR":
-                        histogram_name = '_'+ specific_name.replace("*type", "QCDscale_ren") + '' + updown.capitalize()
+                        histogram_name = '_'+ specific_name.replace("*type", "QCDscale_ren") + '_ACCEPT' + updown.capitalize()
                     elif var == "Scale_muF":
                         histogram_name = '_'+ specific_name.replace("*type", "QCDscale_fac") + '_ACCEPT' + updown.capitalize()
                     elif var == "PS_ISR":
